@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>食物热量秤</title>
+<style>
+:root{
+  --brand:#1f9d55; --brand-dark:#167a41; --brand-light:#e8f7ee;
+  --text:#1f2328; --sub:#6b7280; --line:#ececf0; --bg:#f5f6f8;
+  --card:#fff; --danger:#ef4444; --warn:#f59e0b;
+  --p:#3b82f6; --f:#f59e0b; --c:#8b5cf6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;
+  padding-bottom:88px;
+}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+/* 顶栏 */
+header{
+  background:linear-gradient(135deg,#1f9d55,#167a41);color:#fff;
+  padding:22px 16px 26px;position:sticky;top:0;z-index:20;
+  box-shadow:0 2px 12px rgba(31,157,85,.22);
+}
+header .h-in{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.5px}
+.sub{font-size:12.5px;opacity:.92;margin-top:3px}
+.tab-btns{display:flex;gap:6px;background:rgba(255,255,255,.18);padding:4px;border-radius:11px;flex-shrink:0}
+.tab-btns button{
+  border:0;background:transparent;color:#fff;font-size:13px;font-weight:600;
+  padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.15s;
+}
+.tab-btns button.on{background:#fff;color:var(--brand-dark)}
+
+/* 卡片 */
+.card{background:var(--card);border-radius:15px;padding:17px;margin-top:14px;box-shadow:0 1px 8px rgba(17,24,39,.06)}
+.card h2{margin:0 0 13px;font-size:15.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.muted{color:var(--sub);font-size:12.5px;font-weight:400}
+
+/* 搜索 */
+.search-box{position:relative;margin-bottom:12px}
+.search-box input{
+  width:100%;padding:12px 38px 12px 14px;font-size:15px;font-family:inherit;
+  border:2px solid var(--line);border-radius:11px;background:#fafbfc;outline:none;transition:.15s;
+}
+.search-box input:focus{border-color:var(--brand);background:#fff}
+.clear-x{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  border:0;background:#e5e7eb;color:#4b5563;width:22px;height:22px;border-radius:50%;
+  cursor:pointer;font-size:15px;line-height:1;display:none;align-items:center;justify-content:center;
+}
+.clear-x.show{display:flex}
+
+/* 分类 */
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cats button{
+  border:1.5px solid var(--line);background:#fff;color:#374151;font-size:12.5px;font-family:inherit;
+  padding:5px 11px;border-radius:999px;cursor:pointer;transition:.15s;white-space:nowrap;
+}
+.cats button:hover{border-color:#c9d4cd}
+.cats button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+
+/* 食物网格 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;max-height:290px;overflow-y:auto;padding:2px}
+.grid::-webkit-scrollbar{width:6px}
+.grid::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.fd{
+  border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px 8px;
+  cursor:pointer;transition:.13s;text-align:center;font-family:inherit;
+}
+.fd:hover{border-color:var(--brand);background:var(--brand-light);transform:translateY(-1px)}
+.fd .n{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd .k{font-size:11px;color:var(--sub);margin-top:2px}
+.gi-badge{
+  display:inline-block;font-size:9.5px;padding:1px 5px;border-radius:5px;
+  margin-top:4px;font-weight:600;white-space:nowrap;
+}
+.empty-tip{text-align:center;color:var(--sub);padding:26px 0;font-size:13.5px}
+
+/* GI 标签 */
+.gi-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.gi-tag{
+  display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;
+  font-weight:600;white-space:nowrap;
+}
+
+/* 升糖汇总 */
+.gi-sum-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.gi-sum-gl{font-size:34px;font-weight:800;line-height:1;color:var(--text)}
+.gi-sum-lv{font-size:15px;font-weight:700}
+.gi-sum-bar{height:8px;border-radius:4px;background:#eef0f2;overflow:hidden;margin-top:13px}
+.gi-sum-bar i{display:block;height:100%;border-radius:4px;transition:width .2s}
+
+/* 已选清单 */
+.item{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:9px;background:#fff}
+.item-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.item-name{font-size:15px;font-weight:700}
+.item-kcal{font-size:19px;font-weight:800;color:var(--brand-dark);white-space:nowrap}
+.item-kcal small{font-size:11.5px;font-weight:400;color:var(--sub);margin-left:1px}
+.item-ctrl{display:flex;align-items:center;gap:7px;margin-top:11px;flex-wrap:wrap}
+.step{
+  width:33px;height:33px;border-radius:9px;border:1.5px solid var(--line);background:#fff;
+  font-size:18px;color:var(--brand-dark);cursor:pointer;font-family:inherit;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:.13s;flex-shrink:0;
+}
+.step:hover{background:var(--brand-light);border-color:var(--brand)}
+.gin{
+  width:74px;height:33px;text-align:center;font-size:15px;font-weight:700;font-family:inherit;
+  border:1.5px solid var(--line);border-radius:9px;background:#fafbfc;outline:none;
+}
+.gin:focus{border-color:var(--brand);background:#fff}
+.unit{font-size:12.5px;color:var(--sub)}
+.quick{
+  border:1.5px solid var(--line);background:#fff;color:var(--brand-dark);font-size:11.5px;
+  padding:4px 9px;border-radius:999px;cursor:pointer;font-family:inherit;transition:.13s;white-space:nowrap;
+}
+.quick:hover{background:var(--brand-light);border-color:var(--brand)}
+.rm{
+  margin-left:auto;border:0;background:transparent;color:var(--danger);font-size:12.5px;
+  cursor:pointer;font-family:inherit;padding:5px 7px;border-radius:7px;
+}
+.rm:hover{background:#fef2f2}
+.macros{display:flex;gap:12px;margin-top:10px;padding-top:9px;border-top:1px dashed var(--line);font-size:12px;color:var(--sub);flex-wrap:wrap}
+.macros b{color:var(--text);font-weight:600}
+
+/* 汇总 */
+.total{
+  background:linear-gradient(135deg,#1f9d55,#167a41);color:#fff;border-radius:15px;
+  padding:19px;margin-top:14px;box-shadow:0 4px 16px rgba(31,157,85,.24);
+}
+.total .big{font-size:42px;font-weight:800;line-height:1;letter-spacing:-1.5px}
+.total .big small{font-size:15px;font-weight:400;opacity:.9;margin-left:5px;letter-spacing:0}
+.total .meta{font-size:13px;opacity:.93;margin-top:7px}
+.bar{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-top:15px;background:rgba(255,255,255,.25)}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:15px;margin-top:9px;font-size:11.5px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tbl{width:100%;border-collapse:collapse;margin-top:4px}
+.tbl td{padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:last-child{text-align:right;font-weight:700}
+
+/* 按钮 */
+.btn{
+  border:0;border-radius:11px;padding:12px;font-size:14.5px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:.15s;width:100%;
+}
+.btn-p{background:var(--brand);color:#fff}
+.btn-p:hover{background:var(--brand-dark)}
+.btn-g{background:#f1f2f4;color:var(--text)}
+.btn-g:hover{background:#e6e8eb}
+.btn-row{display:flex;gap:9px;margin-top:14px}
+
+/* 固定底栏 */
+.footbar{
+  position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);
+  border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(8px);z-index:30;
+}
+.footbar .in{max-width:760px;margin:0 auto;display:flex;gap:9px;align-items:center}
+.footbar .btn{width:auto;flex:1}
+.footbar .count{
+  font-size:12.5px;color:var(--sub);white-space:nowrap;padding:0 4px;
+}
+
+/* 隐藏 */
+.hide{display:none !important}
+.hero-note{
+  background:#fffbeb;color:#92400e;border-radius:11px;padding:11px 13px;
+  font-size:12.5px;margin-top:12px;line-height:1.55;
+}
+
+/* ===== 拍照测重 ===== */
+.canvas-wrap{
+  position:relative;width:100%;background:#1f2328;border-radius:12px;
+  overflow:hidden;margin-top:10px;line-height:0;
+}
+.canvas-wrap canvas{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair}
+.measure-line{
+  margin-top:11px;padding:10px 13px;border-radius:9px;background:#f1f2f4;
+  font-size:13.5px;font-weight:600;text-align:center;
+}
+.measure-line.ok{background:var(--brand-light);color:var(--brand-dark)}
+.height-row{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.step-hint{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:19px;height:19px;border-radius:50%;background:var(--brand);color:#fff;
+  font-size:11.5px;font-weight:700;margin-right:5px;flex-shrink:0;
+}
+.ref-chip{
+  border:1.5px solid var(--line);background:#fff;color:#374151;font-size:12.5px;
+  font-family:inherit;padding:5px 11px;border-radius:999px;cursor:pointer;transition:.15s;
+  white-space:nowrap;
+}
+.ref-chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-in">
+    <div>
+      <h1>食物热量秤</h1>
+      <div class="sub">选食物 · 填重量 · 算热量与营养</div>
+    </div>
+    <div class="tab-btns">
+      <button id="tabAdd" class="on">记录</button>
+      <button id="tabPhoto">拍照测重</button>
+      <button id="tabToday">今日</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ 记录页 ============ -->
+  <section id="viewAdd">
+
+    <div class="card">
+      <h2>选择食物 <span class="muted" id="dbCount"></span></h2>
+
+      <div class="search-box">
+        <input id="search" type="text" placeholder="搜索食物，如：米饭、鸡胸肉、苹果" autocomplete="off">
+        <button class="clear-x" id="clearX">×</button>
+      </div>
+
+      <div class="cats" id="cats"></div>
+      <div class="cats" id="giFilter">
+        <button data-gi="all" class="on">全部 GI</button>
+        <button data-gi="low">🟢 低 GI</button>
+        <button data-gi="mid">🟡 中 GI</button>
+        <button data-gi="high">🔴 高 GI</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty-tip hide" id="emptyTip">没有匹配的食物，换个说法试试</div>
+    </div>
+
+    <div class="card hide" id="pickedCard">
+      <h2>本次记录 <span class="muted" id="pickedCount"></span></h2>
+      <div id="pickedList"></div>
+    </div>
+
+    <div class="total hide" id="totalBox">
+      <div class="big" id="tKcal">0<small>千卡</small></div>
+      <div class="meta" id="tMeta"></div>
+      <div class="bar" id="tBar"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#93c5fd"></i>蛋白 <b id="lp">0%</b></span>
+        <span><i class="dot" style="background:#fcd34d"></i>脂肪 <b id="lf">0%</b></span>
+        <span><i class="dot" style="background:#c4b5fd"></i>碳水 <b id="lc">0%</b></span>
+      </div>
+    </div>
+
+    <div class="card hide" id="giSummary">
+      <h2>升糖影响 <span class="muted">GI / GL</span></h2>
+      <div id="giSummaryBody"></div>
+    </div>
+
+    <div class="card hide" id="nutriCard">
+      <h2>营养合计</h2>
+      <table class="tbl">
+        <tr><td>热量</td><td id="nKcal">0 千卡</td></tr>
+        <tr><td>蛋白质</td><td id="nP">0 g</td></tr>
+        <tr><td>脂肪</td><td id="nF">0 g</td></tr>
+        <tr><td>碳水化合物</td><td id="nC">0 g</td></tr>
+        <tr><td>膳食纤维</td><td id="nFib">0 g</td></tr>
+        <tr><td>钠</td><td id="nNa">0 mg</td></tr>
+        <tr><td>占每日推荐</td><td id="nPct" class="muted">0%</td></tr>
+      </table>
+    </div>
+
+    <div class="card" id="noteCard">
+      <div class="hero-note">
+        💡 常见份量参考：一碗米饭约 <b>200g</b>、一个鸡蛋约 <b>55g</b>、一个中等苹果约 <b>180g</b>、
+        一份家常炒菜约 <b>200g</b>。拿不准就按这个填，比瞎估准得多。
+      </div>
+
+      <h2 style="margin-top:16px">关于 GI 和 GL</h2>
+      <div class="muted" style="font-size:12.5px;line-height:1.75">
+        <b>GI（血糖生成指数）</b>衡量食物升血糖的「快慢」：<br>
+        🟢 GI ≤ 55 低 · 🟡 56–69 中 · 🔴 ≥ 70 高 · ⚪ 无碳水（肉蛋油，几乎不升糖）<br><br>
+        <b>GL（血糖负荷）</b>衡量实际吃的这一份影响有多大 = GI × 可利用碳水 ÷ 100：<br>
+        🟢 GL ≤ 10 低 · 🟡 11–19 中 · 🔴 ≥ 20 高。一餐 GL 控制在 <b>20 以内</b>较理想。<br><br>
+        ⚠️ <b>为什么要看 GL 而不是只看 GI</b>：西瓜 GI 72 属高 GI，但一次吃 200g 的 GL 只有约 9，
+        影响其实不大；而米饭 GI 83，吃两碗 GL 就超过 40。<b>GI 看「质」，GL 看「质 × 量」</b>，
+        后者才贴近真实影响。<br><br>
+        ⚠️ <b>数据局限（请务必知道）</b>：GI 受品种、成熟度、烹饪方式影响极大 ——
+        煮得越烂升糖越快（粥的 GI 高于硬饭）。下表是国际 GI 表（Atkinson 2021）
+        与《中国食物成分表》的典型值，仅供参考。<b>没有可靠数据的食物标注为「暂无」，
+        不做推测</b>。GI 相关指标不适用于糖尿病诊断或用药调整，请遵医嘱。
+      </div>
+
+      <div class="muted" style="margin-top:11px;font-size:12px;line-height:1.6">
+        营养数据参考《中国食物成分表（第 6 版）》与 USDA，为每 100g 可食部的典型值。
+        结果仅供饮食记录参考，不构成医疗或营养建议。
+        <br><br>
+        ⚠️ 上方「蛋白/脂肪/碳水」供能比只统计这三大营养素。<b>酒类</b>的热量主要来自酒精
+        （7 千卡/克），不计入这三项，所以啤酒等饮品的供能比看起来会偏低——热量总数是对的。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 拍照测重页 ============ -->
+  <section id="viewPhoto" class="hide">
+
+    <div class="card">
+      <h2>第一步：放参照物并拍照</h2>
+      <div class="hero-note" style="margin-top:0">
+        在食物旁边放一枚<b>硬币</b>或一张<b>银行卡</b>，一起拍进照片。
+        有已知尺寸的参照物，才能标定出真实的厘米/毫米。
+        <br>拍照角度尽量<b>垂直俯拍</b>，让镜头正对食物表面。
+      </div>
+
+      <div class="btn-row" style="margin-top:13px">
+        <button class="btn btn-p" id="btnPickPhoto">选择照片</button>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" class="hide">
+      <div class="muted" style="font-size:12px;margin-top:9px;line-height:1.55">
+        照片只在本机处理，<b>不会上传到任何服务器</b>。
+      </div>
+    </div>
+
+    <div class="card hide" id="calibCard">
+      <h2>第二步：标定参照物 <span class="muted">拖动手柄对齐</span></h2>
+      <div class="muted" style="font-size:12.5px;margin-bottom:10px">
+        选一个参照物，然后<b>拖动两个圆点</b>，让它们正好落在参照物的两端。
+      </div>
+
+      <div class="cats" id="refPicker"></div>
+
+      <div class="canvas-wrap">
+        <canvas id="calibCanvas"></canvas>
+      </div>
+
+      <div class="measure-line" id="calibReadout">尚未标定</div>
+
+      <div class="muted" style="font-size:12px;margin-top:8px">
+        提示：硬币量<b>直径</b>，银行卡/身份证量<b>长边</b>，A4 纸量<b>长边</b>。
+      </div>
+    </div>
+
+    <div class="card hide" id="areaCard">
+      <h2>第三步：框出食物 <span class="muted">拖动手柄调整</span></h2>
+      <div class="muted" style="font-size:12.5px;margin-bottom:10px">
+        拖动四个角，把食物在照片里的<b>俯视轮廓</b>框起来（近似成一个矩形）。
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="areaCanvas"></canvas>
+      </div>
+
+      <div class="measure-line" id="areaReadout">尚未框选</div>
+    </div>
+
+    <div class="card hide" id="heightCard">
+      <h2>第四步：填写高度</h2>
+      <div class="muted" style="font-size:12.5px;margin-bottom:12px">
+        相机看不到高度，必须你告诉我食物堆了多厚。<b>这一步决定了准确度。</b>
+      </div>
+
+      <div class="height-row">
+        <span class="unit" style="font-size:14px">平均厚度</span>
+        <input class="gin" id="heightInput" type="number" inputmode="decimal"
+               value="3" min="0.2" max="30" step="0.5" style="width:88px">
+        <span class="unit">厘米</span>
+      </div>
+
+      <div class="cats" id="thicknessPresets" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card hide" id="pickFoodCard">
+      <h2>第五步：这是什么食物</h2>
+      <div class="muted" style="font-size:12.5px;margin-bottom:10px">
+        选对食物才能用对密度，重量才准。
+      </div>
+      <div class="search-box">
+        <input id="photoSearch" type="text" placeholder="搜索食物，如：米饭" autocomplete="off">
+      </div>
+      <div class="grid" id="photoGrid" style="max-height:210px"></div>
+    </div>
+
+    <div class="total hide" id="photoResult">
+      <div class="big" id="prWeight">0<small>克</small></div>
+      <div class="meta" id="prMeta"></div>
+    </div>
+
+    <div class="card hide" id="photoDetail">
+      <h2>测算过程 <span class="muted">可核对</span></h2>
+      <table class="tbl" id="prTable"></table>
+      <div class="muted" style="font-size:12px;margin-top:11px;line-height:1.6" id="prNote"></div>
+      <div class="btn-row">
+        <button class="btn btn-g" id="btnPrRetry">重新框选</button>
+        <button class="btn btn-p" id="btnPrAccept">用这个重量</button>
+      </div>
+    </div>
+
+    <div class="card" id="photoHelp">
+      <h2>为什么这样能算出重量？</h2>
+      <div class="muted" style="font-size:12.5px;line-height:1.75">
+        相机有透视，单张照片<b>无法直接测出真实尺寸</b>。但如果画面里有一个已知大小的物体
+        （比如直径 25mm 的 1 元硬币），就能算出「1 像素 = 多少毫米」。<br><br>
+        有了比例之后：<br>
+        ① 框出食物俯视<b>面积</b>（像素 → 真实 mm²）<br>
+        ② 乘上你填的<b>厚度</b>，得到<b>体积</b><br>
+        ③ 乘上该食物的<b>密度</b>（g/ml，如米饭 0.8、肉类 1.05）<br>
+        ④ 得到<b>重量</b><br><br>
+        ⚠️ <b>误差来源</b>：① 参照物没放平或没对准会有比例误差；② 照片有透视变形，
+        边缘的物体会被拉伸；③ <b>厚度填错是最大误差源</b> —— 填 3cm 和填 5cm，结果能差 60%；
+        ④ 食物表面不平整，用矩形近似会低估。<br><br>
+        实际误差通常在 <b>±25%~40%</b>。它能给你一个量级判断，但<b>不能替代厨房秤</b>。
+        想更准就多测几次取平均，或者直接用手边的秤复核。
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 今日页 ============ -->
+  <section id="viewToday" class="hide">
+    <div class="total" id="todayTotal">
+      <div class="big" id="dKcal">0<small>千卡</small></div>
+      <div class="meta" id="dMeta">今天还没有记录</div>
+      <div class="bar" id="dBar"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#93c5fd"></i>蛋白 <b id="dp">0%</b></span>
+        <span><i class="dot" style="background:#fcd34d"></i>脂肪 <b id="df">0%</b></span>
+        <span><i class="dot" style="background:#c4b5fd"></i>碳水 <b id="dc">0%</b></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>今日明细 <span class="muted" id="dCount"></span></h2>
+      <div id="todayList"><div class="empty-tip">还没有记录，去「记录」页添加吧</div></div>
+    </div>
+
+    <div class="card">
+      <h2>营养合计</h2>
+      <table class="tbl">
+        <tr><td>蛋白质</td><td id="dP">0 g</td></tr>
+        <tr><td>脂肪</td><td id="dF">0 g</td></tr>
+        <tr><td>碳水化合物</td><td id="dC">0 g</td></tr>
+        <tr><td>膳食纤维</td><td id="dFib">0 g</td></tr>
+        <tr><td>钠</td><td id="dNa">0 mg</td></tr>
+      </table>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-g" id="btnExport">导出 CSV</button>
+      <button class="btn btn-g" id="btnClearDay" style="color:#ef4444">清空今日</button>
+    </div>
+    <div class="card">
+      <div class="muted" style="font-size:12px;line-height:1.6">
+        数据保存在这台设备的浏览器里（localStorage），不会上传到任何服务器。
+        换浏览器或清理浏览器数据会丢失。
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footbar">
+  <div class="in">
+    <span class="count" id="footCount">未选择</span>
+    <button class="btn btn-g" id="btnReset" style="flex:0 0 auto;padding:12px 18px">清空</button>
+    <button class="btn btn-p" id="btnSave">保存到今日</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   食物营养数据库（每 100g 可食部）
+   kcal 千卡 | protein 蛋白质g | fat 脂肪g | carb 碳水g | fiber 纤维g | sodium 钠mg
+   unitWeight 常见「一个/一份」参考克重 | cat 分类
+   ========================================================================== */
+const FOODS = {
+  米饭:{kcal:116,protein:2.6,fat:0.3,carb:25.9,fiber:0.3,sodium:2,unitWeight:200,cat:'主食',density:0.8,gi:83,aliases:['白米饭','大米饭','蒸米饭','熟米饭']},
+  蛋炒饭:{kcal:163,protein:5.4,fat:5.6,carb:22.4,fiber:0.5,sodium:380,unitWeight:300,cat:'主食',density:0.78,gi:75,aliases:['炒饭']},
+  面条:{kcal:110,protein:3.6,fat:0.4,carb:22.5,fiber:0.8,sodium:60,unitWeight:250,cat:'主食',density:0.75,gi:55,aliases:['煮面条','清汤面','汤面']},
+  馒头:{kcal:223,protein:7.0,fat:1.1,carb:47.0,fiber:1.3,sodium:165,unitWeight:100,cat:'主食',density:0.45,gi:88,aliases:['白馒头']},
+  包子:{kcal:227,protein:7.5,fat:7.0,carb:33.0,fiber:1.2,sodium:400,unitWeight:80,cat:'主食',density:0.5,gi:70,aliases:['肉包','菜包','肉包子']},
+  饺子:{kcal:240,protein:9.0,fat:8.5,carb:31.0,fiber:1.1,sodium:450,unitWeight:20,cat:'主食',density:0.7,gi:65,aliases:['水饺','煮饺子']},
+  白面包:{kcal:265,protein:8.3,fat:3.5,carb:50.6,fiber:2.5,sodium:480,unitWeight:35,cat:'主食',density:0.3,gi:75,aliases:['面包','吐司','吐司面包','切片面包']},
+  全麦面包:{kcal:246,protein:9.7,fat:3.6,carb:45.0,fiber:6.8,sodium:450,unitWeight:38,cat:'主食',density:0.32,gi:69,aliases:['全麦吐司']},
+  燕麦片:{kcal:367,protein:13.0,fat:6.7,carb:61.0,fiber:10.6,sodium:3,unitWeight:40,cat:'主食',density:0.4,gi:55,aliases:['燕麦','麦片']},
+  米粥:{kcal:46,protein:1.1,fat:0.2,carb:9.9,fiber:0.1,sodium:2,unitWeight:300,cat:'主食',density:1,gi:88,aliases:['白粥','稀饭','粥']},
+  玉米:{kcal:86,protein:3.3,fat:1.2,carb:19.0,fiber:2.9,sodium:1,unitWeight:200,cat:'主食',density:0.7,gi:55,aliases:['甜玉米','煮玉米','玉米棒']},
+  红薯:{kcal:86,protein:1.6,fat:0.2,carb:20.1,fiber:3.0,sodium:28,unitWeight:180,cat:'主食',density:0.9,gi:77,aliases:['地瓜','番薯','烤红薯']},
+  土豆:{kcal:77,protein:2.0,fat:0.1,carb:17.2,fiber:2.2,sodium:6,unitWeight:150,cat:'主食',density:0.85,gi:62,aliases:['马铃薯','洋芋']},
+  油条:{kcal:388,protein:6.9,fat:17.6,carb:51.0,fiber:0.9,sodium:585,unitWeight:60,cat:'主食',density:0.25,gi:75,aliases:[]},
+  煎饼:{kcal:336,protein:7.6,fat:10.0,carb:53.0,fiber:2.0,sodium:500,unitWeight:120,cat:'主食',density:0.5,gi:70,aliases:['煎饼果子']},
+  糙米饭:{kcal:112,protein:2.6,fat:0.9,carb:23.0,fiber:1.6,sodium:3,unitWeight:200,cat:'主食',density:0.8,gi:68,aliases:['糙米','玄米饭']},
+  小米饭:{kcal:122,protein:3.0,fat:0.5,carb:26.0,fiber:1.0,sodium:2,unitWeight:200,cat:'主食',density:0.8,gi:71,aliases:['小米干饭']},
+  糯米饭:{kcal:126,protein:2.5,fat:0.4,carb:27.5,fiber:0.6,sodium:2,unitWeight:200,cat:'主食',density:0.8,gi:87,aliases:['江米饭','糯米蒸饭']},
+  黑米饭:{kcal:118,protein:3.2,fat:0.6,carb:24.5,fiber:1.5,sodium:3,unitWeight:200,cat:'主食',density:0.8,gi:55,aliases:['黑米蒸饭']},
+  紫米饭:{kcal:120,protein:3.0,fat:0.6,carb:25.0,fiber:1.4,sodium:3,unitWeight:200,cat:'主食',density:0.8,gi:55,aliases:['紫米蒸饭']},
+  扬州炒饭:{kcal:190,protein:6.2,fat:6.8,carb:25.5,fiber:0.6,sodium:450,unitWeight:250,cat:'主食',density:0.75,gi:68,aliases:['什锦炒饭']},
+  咖喱饭:{kcal:150,protein:4.2,fat:4.5,carb:23.5,fiber:0.7,sodium:400,unitWeight:300,cat:'主食',density:0.85,gi:65,aliases:['咖喱米饭']},
+  盖浇饭:{kcal:165,protein:6.0,fat:5.5,carb:22.5,fiber:0.6,sodium:480,unitWeight:350,cat:'主食',density:0.85,gi:65,aliases:['盖饭']},
+  煲仔饭:{kcal:172,protein:6.5,fat:5.8,carb:23.0,fiber:0.6,sodium:520,unitWeight:350,cat:'主食',density:0.85,gi:66,aliases:['腊味煲仔饭']},
+  寿司饭:{kcal:140,protein:2.6,fat:0.3,carb:31.0,fiber:0.3,sodium:180,unitWeight:200,cat:'主食',density:0.85,gi:75,aliases:['醋饭','寿司米']},
+  饭团:{kcal:160,protein:2.8,fat:0.6,carb:34.5,fiber:0.4,sodium:220,unitWeight:120,cat:'主食',density:0.9,gi:78,aliases:['米饭团']},
+  小米粥:{kcal:46,protein:1.4,fat:0.7,carb:8.4,fiber:0.3,sodium:2,unitWeight:300,cat:'主食',density:1.0,gi:61,aliases:['小米稀饭']},
+  八宝粥:{kcal:85,protein:2.4,fat:1.2,carb:16.5,fiber:1.2,sodium:15,unitWeight:300,cat:'主食',density:1.05,gi:65,aliases:['腊八粥']},
+  皮蛋瘦肉粥:{kcal:71,protein:3.6,fat:2.2,carb:9.0,fiber:0.2,sodium:420,unitWeight:350,cat:'主食',density:1.02,gi:70,aliases:['瘦肉皮蛋粥']},
+  南瓜粥:{kcal:52,protein:1.2,fat:0.3,carb:11.2,fiber:0.6,sodium:3,unitWeight:300,cat:'主食',density:1.02,gi:65,aliases:['南瓜稀饭']},
+  红豆粥:{kcal:78,protein:2.9,fat:0.4,carb:16.2,fiber:1.6,sodium:3,unitWeight:300,cat:'主食',density:1.03,gi:45,aliases:['红豆稀饭','赤豆粥']},
+  绿豆粥:{kcal:72,protein:2.8,fat:0.3,carb:15.0,fiber:1.4,sodium:3,unitWeight:300,cat:'主食',density:1.03,gi:40,aliases:['绿豆稀饭']},
+  银耳粥:{kcal:56,protein:1.0,fat:0.2,carb:12.5,fiber:1.5,sodium:4,unitWeight:300,cat:'主食',density:1.02,gi:60,aliases:['银耳莲子粥','冰糖银耳粥']},
+  燕麦粥:{kcal:62,protein:2.2,fat:1.2,carb:10.8,fiber:1.5,sodium:4,unitWeight:300,cat:'主食',density:1.02,gi:55,aliases:['燕麦片粥']},
+  玉米粥:{kcal:50,protein:1.3,fat:0.4,carb:10.4,fiber:0.5,sodium:2,unitWeight:300,cat:'主食',density:1.0,gi:69,aliases:['玉米面粥','棒子面粥']},
+  挂面:{kcal:109,protein:3.6,fat:0.3,carb:22.5,fiber:0.5,sodium:150,unitWeight:250,cat:'主食',density:0.75,gi:57,aliases:['干面条','龙须面']},
+  拉面:{kcal:138,protein:4.5,fat:1.5,carb:26.5,fiber:0.7,sodium:520,unitWeight:400,cat:'主食',density:0.78,gi:60,aliases:['兰州拉面']},
+  刀削面:{kcal:132,protein:4.3,fat:1.8,carb:24.8,fiber:0.7,sodium:480,unitWeight:400,cat:'主食',density:0.78,gi:60,aliases:['削面']},
+  阳春面:{kcal:118,protein:3.5,fat:2.6,carb:20.5,fiber:0.5,sodium:620,unitWeight:350,cat:'主食',density:0.8,gi:60,aliases:['清汤面','光面']},
+  炸酱面:{kcal:168,protein:5.8,fat:6.2,carb:22.5,fiber:0.9,sodium:680,unitWeight:400,cat:'主食',density:0.8,gi:62,aliases:['老北京炸酱面']},
+  热干面:{kcal:186,protein:5.5,fat:7.5,carb:24.5,fiber:0.8,sodium:700,unitWeight:300,cat:'主食',density:0.78,gi:63,aliases:['武汉热干面']},
+  牛肉面:{kcal:125,protein:6.5,fat:3.5,carb:17.5,fiber:0.6,sodium:750,unitWeight:500,cat:'主食',density:0.85,gi:60,aliases:['牛肉拉面汤面']},
+  意大利面:{kcal:131,protein:4.5,fat:1.1,carb:25.0,fiber:1.5,sodium:180,unitWeight:250,cat:'主食',density:0.75,gi:49,aliases:['意面','通心粉']},
+  方便面:{kcal:197,protein:4.5,fat:8.0,carb:26.0,fiber:0.8,sodium:1144,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['泡面','速食面']},
+  米粉:{kcal:110,protein:1.8,fat:0.2,carb:25.0,fiber:0.3,sodium:20,unitWeight:250,cat:'主食',density:0.8,gi:61,aliases:['粉']},
+  河粉:{kcal:105,protein:1.6,fat:0.3,carb:24.0,fiber:0.3,sodium:25,unitWeight:250,cat:'主食',density:0.8,gi:61,aliases:['沙河粉','粿条']},
+  米线:{kcal:98,protein:1.5,fat:0.2,carb:22.5,fiber:0.2,sodium:20,unitWeight:250,cat:'主食',density:0.82,gi:61,aliases:['过桥米线']},
+  螺蛳粉:{kcal:145,protein:3.5,fat:4.5,carb:22.0,fiber:0.9,sodium:900,unitWeight:400,cat:'主食',density:0.82,gi:62,aliases:['柳州螺蛳粉']},
+  粉丝:{kcal:83,protein:0.8,fat:0.2,carb:19.5,fiber:0.3,sodium:9,unitWeight:200,cat:'主食',density:0.7,gi:39,aliases:['龙口粉丝','冬粉']},
+  凉皮:{kcal:118,protein:4.4,fat:1.5,carb:21.8,fiber:0.6,sodium:520,unitWeight:250,cat:'主食',density:0.85,gi:62,aliases:['酿皮']},
+  酸辣粉:{kcal:132,protein:1.8,fat:3.5,carb:23.0,fiber:0.8,sodium:850,unitWeight:300,cat:'主食',density:0.85,gi:61,aliases:['红薯酸辣粉']},
+  花卷:{kcal:217,protein:6.4,fat:1.6,carb:45.6,fiber:1.2,sodium:230,unitWeight:90,cat:'主食',density:0.45,gi:85,aliases:['葱油花卷']},
+  肉包子:{kcal:227,protein:8.0,fat:7.0,carb:32.0,fiber:1.0,sodium:420,unitWeight:100,cat:'主食',density:0.5,gi:70,aliases:['肉包','猪肉包子']},
+  菜包子:{kcal:190,protein:5.5,fat:3.5,carb:34.5,fiber:1.6,sodium:380,unitWeight:100,cat:'主食',density:0.5,gi:65,aliases:['素包子','菜包']},
+  豆沙包:{kcal:236,protein:5.2,fat:2.5,carb:49.0,fiber:1.8,sodium:180,unitWeight:90,cat:'主食',density:0.5,gi:80,aliases:['甜包']},
+  馄饨:{kcal:190,protein:7.5,fat:6.0,carb:26.0,fiber:0.8,sodium:560,unitWeight:18,cat:'主食',density:0.8,gi:65,aliases:['云吞','抄手']},
+  烧麦:{kcal:238,protein:7.0,fat:8.5,carb:33.0,fiber:1.0,sodium:520,unitWeight:35,cat:'主食',density:0.7,gi:70,aliases:['烧卖','稍麦']},
+  汤包:{kcal:220,protein:7.5,fat:7.5,carb:30.0,fiber:0.9,sodium:600,unitWeight:30,cat:'主食',density:0.7,gi:70,aliases:['灌汤包']},
+  小笼包:{kcal:235,protein:8.2,fat:8.8,carb:30.5,fiber:1.0,sodium:560,unitWeight:25,cat:'主食',density:0.7,gi:70,aliases:['南翔小笼']},
+  春卷:{kcal:265,protein:6.0,fat:13.5,carb:30.5,fiber:1.5,sodium:450,unitWeight:40,cat:'主食',density:0.4,gi:68,aliases:['油炸春卷']},
+  锅贴:{kcal:250,protein:8.0,fat:10.5,carb:31.0,fiber:1.2,sodium:520,unitWeight:22,cat:'主食',density:0.75,gi:68,aliases:['煎饺']},
+  手抓饼:{kcal:310,protein:6.5,fat:15.0,carb:37.0,fiber:1.5,sodium:520,unitWeight:110,cat:'主食',density:0.5,gi:70,aliases:['台湾手抓饼']},
+  葱油饼:{kcal:308,protein:6.2,fat:14.5,carb:38.5,fiber:1.4,sodium:560,unitWeight:100,cat:'主食',density:0.5,gi:70,aliases:['葱油酥饼']},
+  烙饼:{kcal:255,protein:7.0,fat:5.5,carb:44.0,fiber:1.5,sodium:420,unitWeight:100,cat:'主食',density:0.5,gi:73,aliases:['家常饼','大饼']},
+  千层饼:{kcal:290,protein:6.5,fat:12.5,carb:38.5,fiber:1.4,sodium:480,unitWeight:100,cat:'主食',density:0.45,gi:72,aliases:['层饼']},
+  油饼:{kcal:399,protein:7.5,fat:22.9,carb:42.4,fiber:1.0,sodium:560,unitWeight:80,cat:'主食',density:0.3,gi:75,aliases:['炸油饼']},
+  麻花:{kcal:527,protein:8.3,fat:31.5,carb:53.0,fiber:1.5,sodium:400,unitWeight:40,cat:'主食',density:0.25,gi:75,aliases:['天津麻花']},
+  烧饼:{kcal:298,protein:8.0,fat:9.5,carb:45.5,fiber:1.5,sodium:580,unitWeight:80,cat:'主食',density:0.45,gi:74,aliases:['芝麻烧饼']},
+  法棍:{kcal:274,protein:8.8,fat:1.8,carb:55.0,fiber:2.7,sodium:600,unitWeight:70,cat:'主食',density:0.28,gi:75,aliases:['法式长棍','法国面包']},
+  吐司:{kcal:280,protein:8.6,fat:5.0,carb:49.0,fiber:2.2,sodium:480,unitWeight:35,cat:'主食',density:0.28,gi:75,aliases:['土司','方包']},
+  汉堡胚:{kcal:290,protein:9.0,fat:5.0,carb:52.0,fiber:2.0,sodium:480,unitWeight:70,cat:'主食',density:0.3,gi:75,aliases:['汉堡面包']},
+  可颂:{kcal:406,protein:8.2,fat:21.0,carb:45.8,fiber:2.6,sodium:490,unitWeight:65,cat:'主食',density:0.25,gi:67,aliases:['牛角包','羊角面包']},
+  欧包:{kcal:255,protein:8.5,fat:2.5,carb:50.0,fiber:3.0,sodium:520,unitWeight:80,cat:'主食',density:0.35,gi:70,aliases:['欧式面包','硬欧包']},
+  贝果:{kcal:257,protein:10.0,fat:1.7,carb:50.0,fiber:2.5,sodium:450,unitWeight:100,cat:'主食',density:0.4,gi:69,aliases:['百吉饼']},
+  戚风蛋糕:{kcal:290,protein:7.0,fat:13.0,carb:36.5,fiber:0.8,sodium:180,unitWeight:70,cat:'主食',density:0.3,gi:65,aliases:['海绵蛋糕']},
+  蛋挞:{kcal:330,protein:5.5,fat:19.0,carb:34.0,fiber:0.7,sodium:190,unitWeight:60,cat:'主食',density:0.5,gi:65,aliases:['葡式蛋挞','蛋塔']},
+  泡芙:{kcal:300,protein:6.5,fat:19.0,carb:25.0,fiber:0.8,sodium:200,unitWeight:45,cat:'主食',density:0.25,gi:65,aliases:['奶油泡芙']},
+  甜甜圈:{kcal:412,protein:6.0,fat:22.0,carb:47.0,fiber:1.5,sodium:420,unitWeight:60,cat:'主食',density:0.3,gi:76,aliases:['唐纳滋']},
+  华夫饼:{kcal:310,protein:7.5,fat:12.0,carb:42.5,fiber:1.5,sodium:400,unitWeight:60,cat:'主食',density:0.3,gi:76,aliases:['格子饼','窝夫']},
+  松饼:{kcal:280,protein:7.0,fat:9.5,carb:42.0,fiber:1.5,sodium:430,unitWeight:50,cat:'主食',density:0.35,gi:67,aliases:['美式煎饼','班戟']},
+  糯玉米:{kcal:172,protein:4.7,fat:1.2,carb:36.0,fiber:2.4,sodium:2,unitWeight:200,cat:'主食',density:0.7,gi:68,aliases:['黏玉米','粘玉米']},
+  小米:{kcal:361,protein:9.0,fat:3.1,carb:75.1,fiber:1.6,sodium:4,unitWeight:50,cat:'主食',density:0.75,gi:71,aliases:['粟米','谷子']},
+  大麦:{kcal:327,protein:10.2,fat:1.4,carb:73.3,fiber:9.9,sodium:3,unitWeight:50,cat:'主食',density:0.7,gi:25,aliases:['大麦米','牟麦']},
+  荞麦:{kcal:337,protein:9.3,fat:2.3,carb:73.0,fiber:6.5,sodium:4,unitWeight:50,cat:'主食',density:0.72,gi:54,aliases:['荞麦米','三角麦']},
+  藜麦:{kcal:368,protein:14.1,fat:6.1,carb:64.2,fiber:7.0,sodium:5,unitWeight:50,cat:'主食',density:0.72,gi:53,aliases:['藜麦米']},
+  薏米:{kcal:361,protein:12.8,fat:3.3,carb:71.1,fiber:2.0,sodium:4,unitWeight:50,cat:'主食',density:0.75,gi:54,aliases:['薏苡仁','苡米']},
+  高粱米:{kcal:360,protein:10.4,fat:3.1,carb:74.7,fiber:4.3,sodium:7,unitWeight:50,cat:'主食',density:0.72,gi:70,aliases:['高粱','蜀黍']},
+  黑米:{kcal:341,protein:9.4,fat:2.5,carb:72.2,fiber:3.9,sodium:7,unitWeight:50,cat:'主食',density:0.75,gi:55,aliases:['紫米','血糯米']},
+  糯米:{kcal:350,protein:7.3,fat:1.0,carb:78.3,fiber:0.8,sodium:2,unitWeight:50,cat:'主食',density:0.75,gi:87,aliases:['江米','元米']},
+  面粉:{kcal:366,protein:11.2,fat:1.5,carb:73.6,fiber:2.1,sodium:3,unitWeight:50,cat:'主食',density:0.55,gi:null,aliases:['小麦粉','白面']},
+  淀粉:{kcal:346,protein:0.5,fat:0.1,carb:85.0,fiber:0.5,sodium:5,unitWeight:20,cat:'主食',density:0.6,gi:null,aliases:['玉米淀粉','生粉']},
+  年糕:{kcal:154,protein:3.3,fat:0.6,carb:34.7,fiber:0.8,sodium:60,unitWeight:100,cat:'主食',density:0.9,gi:82,aliases:['水磨年糕','白年糕']},
+  汤圆:{kcal:290,protein:5.0,fat:10.0,carb:45.0,fiber:0.8,sodium:35,unitWeight:20,cat:'主食',density:0.85,gi:80,aliases:['元宵','黑芝麻汤圆']},
+  粽子:{kcal:212,protein:4.5,fat:6.5,carb:34.0,fiber:0.7,sodium:320,unitWeight:150,cat:'主食',density:0.9,gi:75,aliases:['肉粽','糯米粽']},
+  窝头:{kcal:227,protein:7.2,fat:2.3,carb:45.0,fiber:3.2,sodium:230,unitWeight:80,cat:'主食',density:0.5,gi:70,aliases:['玉米窝头','窝窝头']},
+  发糕:{kcal:220,protein:5.5,fat:1.2,carb:47.5,fiber:1.0,sodium:150,unitWeight:80,cat:'主食',density:0.45,gi:85,aliases:['米发糕','红糖发糕']},
+  三明治:{kcal:245,protein:11.0,fat:10.0,carb:28.0,fiber:1.8,sodium:560,unitWeight:150,cat:'主食',density:0.55,gi:65,aliases:['火腿三明治']},
+  肉夹馍:{kcal:290,protein:11.0,fat:12.0,carb:34.5,fiber:1.3,sodium:620,unitWeight:160,cat:'主食',density:0.6,gi:70,aliases:['腊汁肉夹馍','中国汉堡']},
+  手抓饭:{kcal:185,protein:4.5,fat:6.5,carb:27.0,fiber:0.9,sodium:380,unitWeight:300,cat:'主食',density:0.85,gi:65,aliases:['新疆手抓饭','抓饭']},
+  炒河粉:{kcal:175,protein:4.8,fat:6.0,carb:25.5,fiber:0.7,sodium:680,unitWeight:300,cat:'主食',density:0.78,gi:65,aliases:['干炒牛河','炒粿条']},
+  炒面:{kcal:180,protein:5.5,fat:6.5,carb:25.0,fiber:1.0,sodium:700,unitWeight:300,cat:'主食',density:0.75,gi:65,aliases:['炒面条','酱油炒面']},
+  鸡胸肉:{kcal:133,protein:24.6,fat:2.5,carb:0.6,fiber:0,sodium:63,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['鸡胸','鸡脯肉']},
+  鸡腿:{kcal:181,protein:16.0,fat:13.0,carb:0,fiber:0,sodium:85,unitWeight:100,cat:'肉类',density:1,gi:0,aliases:['鸡腿肉','琵琶腿']},
+  炸鸡:{kcal:279,protein:20.0,fat:17.0,carb:11.0,fiber:0.5,sodium:700,unitWeight:90,cat:'肉类',density:0.6,gi:null,aliases:['炸鸡块','鸡米花','炸鸡腿']},
+  猪瘦肉:{kcal:143,protein:20.3,fat:6.2,carb:1.5,fiber:0,sodium:57,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['瘦肉','猪肉']},
+  五花肉:{kcal:508,protein:7.7,fat:53.0,carb:2.4,fiber:0,sodium:40,unitWeight:80,cat:'肉类',density:0.95,gi:0,aliases:['红烧肉','猪五花']},
+  排骨:{kcal:278,protein:16.7,fat:23.1,carb:0.7,fiber:0,sodium:62,unitWeight:60,cat:'肉类',density:1,gi:0,aliases:['猪排骨','糖醋排骨']},
+  牛肉:{kcal:125,protein:19.9,fat:4.2,carb:2.0,fiber:0,sodium:84,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['瘦牛肉','牛里脊']},
+  牛排:{kcal:217,protein:22.0,fat:13.5,carb:1.0,fiber:0,sodium:320,unitWeight:200,cat:'肉类',density:1.05,gi:0,aliases:['西冷','菲力']},
+  羊肉:{kcal:203,protein:19.0,fat:14.1,carb:0,fiber:0,sodium:80,unitWeight:110,cat:'肉类',density:1.05,gi:0,aliases:['羊肉串','羊排']},
+  培根:{kcal:181,protein:22.3,fat:9.0,carb:2.6,fiber:0,sodium:1400,unitWeight:25,cat:'肉类',density:0.6,gi:0,aliases:[]},
+  香肠:{kcal:508,protein:24.1,fat:40.7,carb:11.2,fiber:0,sodium:2309,unitWeight:50,cat:'肉类',density:0.9,gi:null,aliases:['腊肠','火腿肠']},
+  火腿:{kcal:330,protein:16.0,fat:27.4,carb:4.9,fiber:0,sodium:1086,unitWeight:40,cat:'肉类',density:0.95,gi:null,aliases:['火腿片']},
+  猪里脊:{kcal:155,protein:20.2,fat:7.9,carb:0.7,fiber:0,sodium:43,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['里脊肉','猪柳']},
+  猪蹄:{kcal:260,protein:22.6,fat:18.8,carb:0,fiber:0,sodium:101,unitWeight:200,cat:'肉类',density:1.0,gi:0,aliases:['猪脚','元蹄']},
+  猪排骨:{kcal:278,protein:16.7,fat:23.1,carb:0.7,fiber:0,sodium:62,unitWeight:150,cat:'肉类',density:0.95,gi:0,aliases:['排骨','肋排']},
+  猪肝:{kcal:129,protein:19.3,fat:3.5,carb:5.0,fiber:0,sodium:68,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['猪肝脏','猪肝片']},
+  猪腰:{kcal:96,protein:15.4,fat:3.2,carb:1.4,fiber:0,sodium:134,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['猪肾','腰花']},
+  猪心:{kcal:119,protein:16.6,fat:5.3,carb:1.1,fiber:0,sodium:71,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['猪心脏']},
+  猪肚:{kcal:110,protein:15.2,fat:5.1,carb:0.7,fiber:0,sodium:75,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['猪胃']},
+  猪大肠:{kcal:191,protein:6.9,fat:18.7,carb:0,fiber:0,sodium:116,unitWeight:100,cat:'肉类',density:1.0,gi:0,aliases:['肥肠','大肠']},
+  猪肺:{kcal:84,protein:12.2,fat:3.9,carb:0.1,fiber:0,sodium:81,unitWeight:100,cat:'肉类',density:1.0,gi:0,aliases:['猪肺叶']},
+  猪血:{kcal:55,protein:12.2,fat:0.3,carb:0.9,fiber:0,sodium:56,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['血豆腐','猪红']},
+  猪皮:{kcal:264,protein:27.4,fat:16.3,carb:0,fiber:0,sodium:52,unitWeight:60,cat:'肉类',density:1.0,gi:0,aliases:['肉皮','猪肤']},
+  猪耳朵:{kcal:190,protein:19.1,fat:12.3,carb:0,fiber:0,sodium:88,unitWeight:60,cat:'肉类',density:1.0,gi:0,aliases:['猪耳','耳丝']},
+  猪舌:{kcal:233,protein:15.7,fat:18.1,carb:1.7,fiber:0,sodium:76,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['口条','猪口条']},
+  猪脑:{kcal:131,protein:10.8,fat:9.8,carb:0,fiber:0,sodium:130,unitWeight:80,cat:'肉类',density:1.0,gi:0,aliases:['脑花','猪脑髓']},
+  猪骨汤:{kcal:45,protein:3.2,fat:3.4,carb:0.4,fiber:0,sodium:320,unitWeight:250,cat:'肉类',density:1.0,gi:0,aliases:['大骨汤','排骨汤']},
+  腊肉:{kcal:498,protein:11.8,fat:48.8,carb:1.0,fiber:0,sodium:763,unitWeight:40,cat:'肉类',density:0.95,gi:0,aliases:['湖南腊肉','烟熏肉']},
+  咸肉:{kcal:390,protein:16.5,fat:36.0,carb:0,fiber:0,sodium:1200,unitWeight:40,cat:'肉类',density:0.95,gi:0,aliases:['腌肉','咸猪肉']},
+  叉烧:{kcal:253,protein:20.6,fat:15.8,carb:8.0,fiber:0,sodium:780,unitWeight:80,cat:'肉类',density:1.0,gi:null,aliases:['叉烧肉','蜜汁叉烧']},
+  红烧肉:{kcal:480,protein:11.5,fat:46.0,carb:6.0,fiber:0,sodium:620,unitWeight:100,cat:'肉类',density:0.95,gi:null,aliases:['东坡肉','扣肉']},
+  糖醋排骨:{kcal:290,protein:13.5,fat:18.0,carb:18.0,fiber:0.3,sodium:560,unitWeight:120,cat:'肉类',density:0.9,gi:null,aliases:['糖醋小排']},
+  回锅肉:{kcal:370,protein:12.8,fat:33.0,carb:5.5,fiber:0.8,sodium:700,unitWeight:120,cat:'肉类',density:0.9,gi:null,aliases:['熬锅肉']},
+  猪肉脯:{kcal:400,protein:43.0,fat:11.0,carb:33.0,fiber:0,sodium:1450,unitWeight:30,cat:'肉类',density:1.1,gi:null,aliases:['肉脯','猪肉干']},
+  猪肉松:{kcal:396,protein:41.8,fat:10.7,carb:33.0,fiber:0,sodium:1500,unitWeight:20,cat:'肉类',density:0.4,gi:null,aliases:['肉松','太仓肉松']},
+  腊肠:{kcal:584,protein:22.0,fat:48.3,carb:15.0,fiber:0,sodium:1478,unitWeight:40,cat:'肉类',density:0.98,gi:null,aliases:['风干肠','广式腊肠']},
+  火腿肠:{kcal:212,protein:14.0,fat:10.4,carb:15.6,fiber:0,sodium:1030,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['王中王']},
+  午餐肉:{kcal:229,protein:9.4,fat:15.9,carb:12.0,fiber:0,sodium:980,unitWeight:60,cat:'肉类',density:1.0,gi:null,aliases:['午餐肉罐头']},
+  肉丸:{kcal:215,protein:12.5,fat:14.0,carb:9.5,fiber:0.3,sodium:640,unitWeight:25,cat:'肉类',density:1.0,gi:null,aliases:['猪肉丸','贡丸']},
+  狮子头:{kcal:265,protein:13.0,fat:19.5,carb:11.0,fiber:0.4,sodium:600,unitWeight:100,cat:'肉类',density:0.95,gi:null,aliases:['四喜丸子','大肉圆']},
+  牛里脊:{kcal:107,protein:22.2,fat:0.9,carb:2.4,fiber:0,sodium:53,unitWeight:120,cat:'肉类',density:1.07,gi:0,aliases:['牛柳','菲力牛']},
+  牛腱:{kcal:126,protein:21.3,fat:3.0,carb:1.7,fiber:0,sodium:60,unitWeight:120,cat:'肉类',density:1.08,gi:0,aliases:['牛腱子','金钱腱']},
+  牛腩:{kcal:332,protein:17.1,fat:29.3,carb:0,fiber:0,sodium:60,unitWeight:120,cat:'肉类',density:0.98,gi:0,aliases:['牛腹肉','腩肉']},
+  牛肋条:{kcal:280,protein:18.0,fat:23.0,carb:0,fiber:0,sodium:66,unitWeight:120,cat:'肉类',density:1.0,gi:0,aliases:['牛小排']},
+  西冷牛排:{kcal:250,protein:19.0,fat:19.0,carb:0,fiber:0,sodium:55,unitWeight:200,cat:'肉类',density:1.02,gi:0,aliases:['沙朗牛排','西冷']},
+  菲力牛排:{kcal:190,protein:22.5,fat:11.0,carb:0,fiber:0,sodium:52,unitWeight:180,cat:'肉类',density:1.05,gi:0,aliases:['牛柳排']},
+  肥牛:{kcal:310,protein:15.4,fat:27.5,carb:0.3,fiber:0,sodium:58,unitWeight:100,cat:'肉类',density:0.95,gi:0,aliases:['肥牛肉片','雪花牛肉']},
+  牛肉丸:{kcal:145,protein:14.0,fat:7.0,carb:6.5,fiber:0,sodium:700,unitWeight:20,cat:'肉类',density:1.05,gi:null,aliases:['潮汕牛肉丸','牛丸']},
+  牛舌:{kcal:196,protein:17.0,fat:13.5,carb:1.0,fiber:0,sodium:69,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['牛口条']},
+  牛肚:{kcal:72,protein:14.5,fat:1.6,carb:1.6,fiber:0,sodium:60,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['毛肚','金钱肚']},
+  牛百叶:{kcal:70,protein:14.0,fat:1.4,carb:1.8,fiber:0,sodium:65,unitWeight:100,cat:'肉类',density:1.0,gi:0,aliases:['千层肚','牛胃']},
+  牛心:{kcal:106,protein:15.4,fat:4.5,carb:1.0,fiber:0,sodium:68,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['牛心脏']},
+  牛肝:{kcal:139,protein:19.8,fat:3.9,carb:6.2,fiber:0,sodium:73,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['牛肝脏']},
+  牛尾:{kcal:236,protein:17.6,fat:18.0,carb:0,fiber:0,sodium:72,unitWeight:150,cat:'肉类',density:0.95,gi:0,aliases:['牛尾巴']},
+  酱牛肉:{kcal:246,protein:31.4,fat:11.9,carb:3.2,fiber:0,sodium:870,unitWeight:50,cat:'肉类',density:1.05,gi:null,aliases:['卤牛肉','五香牛肉']},
+  牛肉干:{kcal:550,protein:45.6,fat:40.0,carb:1.9,fiber:0,sodium:412,unitWeight:25,cat:'肉类',density:1.1,gi:null,aliases:['风干牛肉','牛干巴']},
+  牛肉粒:{kcal:420,protein:38.0,fat:18.0,carb:22.0,fiber:0,sodium:1050,unitWeight:20,cat:'肉类',density:1.05,gi:null,aliases:['沙嗲牛肉粒']},
+  羊腿:{kcal:200,protein:19.2,fat:12.8,carb:0.5,fiber:0,sodium:69,unitWeight:150,cat:'肉类',density:1.02,gi:0,aliases:['羊后腿','羊腿肉']},
+  羊排:{kcal:260,protein:18.0,fat:20.0,carb:0.5,fiber:0,sodium:72,unitWeight:150,cat:'肉类',density:1.0,gi:0,aliases:['法式羊排','羊肋排']},
+  羊里脊:{kcal:103,protein:20.5,fat:2.0,carb:1.0,fiber:0,sodium:75,unitWeight:120,cat:'肉类',density:1.06,gi:0,aliases:['羊柳','羊脊肉']},
+  羊蝎子:{kcal:175,protein:17.0,fat:11.5,carb:0,fiber:0,sodium:80,unitWeight:150,cat:'肉类',density:0.95,gi:0,aliases:['羊脊骨','羊龙骨']},
+  羊肉卷:{kcal:198,protein:16.5,fat:14.0,carb:0.6,fiber:0,sodium:80,unitWeight:100,cat:'肉类',density:0.95,gi:0,aliases:['涮羊肉','羊肉片']},
+  羊肉串:{kcal:234,protein:19.0,fat:16.0,carb:2.5,fiber:0.4,sodium:520,unitWeight:25,cat:'肉类',density:0.95,gi:0,aliases:['烤羊肉串','新疆羊肉串']},
+  羊杂:{kcal:135,protein:15.5,fat:6.5,carb:3.0,fiber:0,sodium:150,unitWeight:100,cat:'肉类',density:1.0,gi:0,aliases:['羊杂碎','羊下水']},
+  羊肝:{kcal:134,protein:17.9,fat:3.6,carb:7.2,fiber:0,sodium:123,unitWeight:80,cat:'肉类',density:1.05,gi:0,aliases:['羊肝脏']},
+  羊肚:{kcal:87,protein:12.2,fat:3.4,carb:1.8,fiber:0,sodium:80,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['羊胃','羊肚丝']},
+  鸡翅:{kcal:194,protein:17.4,fat:11.8,carb:4.6,fiber:0,sodium:85,unitWeight:50,cat:'肉类',density:1.02,gi:0,aliases:['鸡翅膀','翅中']},
+  鸡爪:{kcal:254,protein:23.9,fat:16.4,carb:2.7,fiber:0,sodium:169,unitWeight:35,cat:'肉类',density:1.0,gi:0,aliases:['凤爪','鸡脚']},
+  鸡胗:{kcal:118,protein:19.2,fat:2.8,carb:4.0,fiber:0,sodium:74,unitWeight:30,cat:'肉类',density:1.05,gi:0,aliases:['鸡肫','鸡胃']},
+  鸡肝:{kcal:121,protein:16.6,fat:4.8,carb:2.8,fiber:0,sodium:92,unitWeight:40,cat:'肉类',density:1.05,gi:0,aliases:['鸡肝脏']},
+  鸡心:{kcal:172,protein:15.9,fat:11.8,carb:0.6,fiber:0,sodium:85,unitWeight:20,cat:'肉类',density:1.05,gi:0,aliases:['鸡心脏']},
+  鸡皮:{kcal:349,protein:12.0,fat:33.5,carb:0,fiber:0,sodium:80,unitWeight:30,cat:'肉类',density:0.95,gi:0,aliases:['鸡皮丝']},
+  鸡脖:{kcal:195,protein:16.5,fat:14.0,carb:0.5,fiber:0,sodium:95,unitWeight:60,cat:'肉类',density:1.0,gi:0,aliases:['鸡脖子','凤脖']},
+  整鸡:{kcal:167,protein:19.3,fat:9.4,carb:1.3,fiber:0,sodium:63,unitWeight:1000,cat:'肉类',density:1.0,gi:0,aliases:['土鸡','光鸡']},
+  乌鸡:{kcal:111,protein:22.3,fat:2.3,carb:0.3,fiber:0,sodium:64,unitWeight:800,cat:'肉类',density:1.0,gi:0,aliases:['乌骨鸡','竹丝鸡']},
+  鸭肉:{kcal:240,protein:15.5,fat:19.7,carb:0.2,fiber:0,sodium:69,unitWeight:120,cat:'肉类',density:1.0,gi:0,aliases:['鸭','水鸭']},
+  鸭腿:{kcal:235,protein:17.0,fat:18.0,carb:0,fiber:0,sodium:74,unitWeight:110,cat:'肉类',density:1.0,gi:0,aliases:['鸭大腿']},
+  鸭胸:{kcal:138,protein:19.5,fat:6.0,carb:0.5,fiber:0,sodium:63,unitWeight:120,cat:'肉类',density:1.04,gi:0,aliases:['鸭胸肉','鸭脯']},
+  鸭翅:{kcal:205,protein:16.5,fat:15.0,carb:0.5,fiber:0,sodium:80,unitWeight:45,cat:'肉类',density:1.0,gi:0,aliases:['鸭翅膀']},
+  鸭掌:{kcal:150,protein:24.0,fat:4.5,carb:2.5,fiber:0,sodium:210,unitWeight:35,cat:'肉类',density:1.0,gi:0,aliases:['鸭爪','鸭脚']},
+  鸭舌:{kcal:245,protein:15.5,fat:20.0,carb:0.5,fiber:0,sodium:120,unitWeight:15,cat:'肉类',density:1.0,gi:0,aliases:['鸭舌条']},
+  鸭肝:{kcal:128,protein:17.1,fat:4.8,carb:5.0,fiber:0,sodium:95,unitWeight:40,cat:'肉类',density:1.05,gi:0,aliases:['鸭肝脏']},
+  鸭血:{kcal:56,protein:13.6,fat:0.4,carb:0,fiber:0,sodium:173,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['鸭血块','血豆腐']},
+  烤鸭:{kcal:436,protein:16.6,fat:38.4,carb:6.0,fiber:0,sodium:580,unitWeight:80,cat:'肉类',density:0.9,gi:null,aliases:['北京烤鸭','挂炉烤鸭']},
+  板鸭:{kcal:385,protein:24.0,fat:30.0,carb:2.5,fiber:0,sodium:1500,unitWeight:60,cat:'肉类',density:1.0,gi:null,aliases:['南京板鸭','腊鸭']},
+  盐水鸭:{kcal:212,protein:22.0,fat:12.5,carb:1.5,fiber:0,sodium:1050,unitWeight:80,cat:'肉类',density:1.0,gi:null,aliases:['桂花鸭','南京盐水鸭']},
+  鹅肉:{kcal:251,protein:17.9,fat:19.9,carb:0,fiber:0,sodium:58,unitWeight:120,cat:'肉类',density:1.0,gi:0,aliases:['鹅','家鹅']},
+  鹅肝:{kcal:461,protein:8.5,fat:45.0,carb:4.0,fiber:0,sodium:140,unitWeight:50,cat:'肉类',density:1.0,gi:0,aliases:['肥鹅肝']},
+  乳鸽:{kcal:201,protein:16.5,fat:14.2,carb:1.7,fiber:0,sodium:69,unitWeight:250,cat:'肉类',density:1.0,gi:0,aliases:['鸽子','白鸽']},
+  鹌鹑:{kcal:110,protein:20.2,fat:3.1,carb:0.2,fiber:0,sodium:48,unitWeight:80,cat:'肉类',density:1.0,gi:0,aliases:['鹌鹑鸟','鹑肉']},
+  火鸡胸:{kcal:111,protein:24.0,fat:1.5,carb:0.5,fiber:0,sodium:55,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['火鸡肉']},
+  兔肉:{kcal:102,protein:19.7,fat:2.2,carb:0.9,fiber:0,sodium:45,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['家兔肉','兔子肉']},
+  狗肉:{kcal:116,protein:16.8,fat:4.6,carb:1.8,fiber:0,sodium:70,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['狗腿肉']},
+  驴肉:{kcal:116,protein:21.5,fat:3.2,carb:0.4,fiber:0,sodium:46,unitWeight:100,cat:'肉类',density:1.06,gi:0,aliases:['毛驴肉']},
+  鹿肉:{kcal:111,protein:20.6,fat:2.5,carb:1.2,fiber:0,sodium:55,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['梅花鹿肉','鹿腿肉']},
+  蛇肉:{kcal:88,protein:17.2,fat:1.6,carb:1.5,fiber:0,sodium:70,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['榕蛇肉','蛇段']},
+  田鸡腿:{kcal:90,protein:20.5,fat:0.6,carb:0,fiber:0,sodium:55,unitWeight:30,cat:'肉类',density:1.05,gi:0,aliases:['青蛙腿','石蛙腿']},
+  三文鱼:{kcal:139,protein:17.2,fat:7.8,carb:0,fiber:0,sodium:62,unitWeight:120,cat:'水产',density:1,gi:0,aliases:['鲑鱼','三文鱼刺身']},
+  鱼:{kcal:113,protein:18.0,fat:4.3,carb:0,fiber:0,sodium:70,unitWeight:150,cat:'水产',density:1,gi:0,aliases:['鱼肉','清蒸鱼','鲈鱼','草鱼']},
+  虾:{kcal:93,protein:18.6,fat:0.8,carb:2.8,fiber:0,sodium:165,unitWeight:15,cat:'水产',density:0.95,gi:0,aliases:['基围虾','白灼虾','大虾','虾仁']},
+  螃蟹:{kcal:103,protein:17.5,fat:2.6,carb:2.3,fiber:0,sodium:260,unitWeight:150,cat:'水产',density:0.9,gi:0,aliases:['大闸蟹','蟹']},
+  鱿鱼:{kcal:84,protein:17.0,fat:0.8,carb:2.5,fiber:0,sodium:134,unitWeight:100,cat:'水产',density:1,gi:0,aliases:['鱿鱼须']},
+  草鱼:{kcal:113,protein:16.6,fat:5.2,carb:0,fiber:0,sodium:46,unitWeight:200,cat:'水产',density:0.9,gi:0,aliases:['鲩鱼','草鲩']},
+  鲤鱼:{kcal:109,protein:17.6,fat:4.1,carb:0.5,fiber:0,sodium:53,unitWeight:250,cat:'水产',density:0.9,gi:0,aliases:['鲤拐子','红鲤']},
+  鲫鱼:{kcal:108,protein:17.1,fat:2.7,carb:3.8,fiber:0,sodium:41,unitWeight:200,cat:'水产',density:0.9,gi:0,aliases:['鲫瓜子','喜头鱼']},
+  鲢鱼:{kcal:102,protein:17.8,fat:3.6,carb:0,fiber:0,sodium:57,unitWeight:250,cat:'水产',density:0.9,gi:0,aliases:['白鲢']},
+  鳙鱼:{kcal:100,protein:15.3,fat:2.2,carb:4.7,fiber:0,sodium:60,unitWeight:300,cat:'水产',density:0.9,gi:0,aliases:['胖头鱼','花鲢']},
+  鲈鱼:{kcal:105,protein:18.6,fat:3.4,carb:0,fiber:0,sodium:144,unitWeight:200,cat:'水产',density:0.92,gi:0,aliases:['花鲈','海鲈鱼']},
+  鳜鱼:{kcal:117,protein:19.9,fat:4.2,carb:0,fiber:0,sodium:69,unitWeight:200,cat:'水产',density:0.92,gi:0,aliases:['桂鱼','花鲫鱼']},
+  黑鱼:{kcal:85,protein:18.5,fat:1.2,carb:0,fiber:0,sodium:48,unitWeight:200,cat:'水产',density:0.92,gi:0,aliases:['乌鳢','生鱼']},
+  黄颡鱼:{kcal:124,protein:17.8,fat:4.8,carb:1.5,fiber:0,sodium:60,unitWeight:80,cat:'水产',density:0.92,gi:0,aliases:['黄骨鱼','昂刺鱼']},
+  罗非鱼:{kcal:98,protein:18.4,fat:2.0,carb:0,fiber:0,sodium:52,unitWeight:200,cat:'水产',density:0.95,gi:0,aliases:['非洲鲫鱼','福寿鱼']},
+  武昌鱼:{kcal:129,protein:18.3,fat:6.3,carb:0.7,fiber:0,sodium:52,unitWeight:250,cat:'水产',density:0.9,gi:0,aliases:['团头鲂','鳊花']},
+  青鱼:{kcal:116,protein:20.1,fat:4.2,carb:0,fiber:0,sodium:47,unitWeight:250,cat:'水产',density:0.9,gi:0,aliases:['青鲩','螺蛳青']},
+  鳊鱼:{kcal:135,protein:18.3,fat:6.3,carb:1.2,fiber:0,sodium:55,unitWeight:200,cat:'水产',density:0.9,gi:0,aliases:['边鱼','长身鳊']},
+  泥鳅:{kcal:96,protein:17.9,fat:2.0,carb:1.7,fiber:0,sodium:74,unitWeight:40,cat:'水产',density:0.95,gi:0,aliases:['鳅鱼','河鳅']},
+  黄鳝:{kcal:89,protein:18.0,fat:1.4,carb:1.2,fiber:0,sodium:70,unitWeight:80,cat:'水产',density:0.95,gi:0,aliases:['鳝鱼','长鱼']},
+  鲶鱼:{kcal:103,protein:17.3,fat:3.7,carb:0,fiber:0,sodium:49,unitWeight:200,cat:'水产',density:0.92,gi:0,aliases:['胡子鲶','塘鲺']},
+  带鱼:{kcal:127,protein:17.7,fat:4.9,carb:3.1,fiber:0,sodium:150,unitWeight:120,cat:'水产',density:0.9,gi:0,aliases:['刀鱼','牙带鱼']},
+  黄花鱼:{kcal:97,protein:17.7,fat:2.5,carb:0.8,fiber:0,sodium:120,unitWeight:150,cat:'水产',density:0.9,gi:0,aliases:['黄鱼','大黄鱼']},
+  鲳鱼:{kcal:142,protein:18.5,fat:7.3,carb:0,fiber:0,sodium:62,unitWeight:150,cat:'水产',density:0.9,gi:0,aliases:['平鱼','银鲳']},
+  鲅鱼:{kcal:121,protein:21.2,fat:3.1,carb:2.1,fiber:0,sodium:74,unitWeight:200,cat:'水产',density:0.92,gi:0,aliases:['马鲛鱼','燕鲅']},
+  金枪鱼:{kcal:110,protein:24.0,fat:0.9,carb:0,fiber:0,sodium:45,unitWeight:100,cat:'水产',density:1.0,gi:0,aliases:['吞拿鱼','鲔鱼']},
+  鳕鱼:{kcal:88,protein:20.4,fat:0.5,carb:0.5,fiber:0,sodium:130,unitWeight:120,cat:'水产',density:1.0,gi:0,aliases:['大头青','明太鱼']},
+  巴沙鱼:{kcal:90,protein:16.5,fat:2.8,carb:0,fiber:0,sodium:60,unitWeight:120,cat:'水产',density:1.0,gi:0,aliases:['巴沙鱼片','越南鲶']},
+  龙利鱼:{kcal:83,protein:17.7,fat:1.4,carb:0,fiber:0,sodium:100,unitWeight:120,cat:'水产',density:1.0,gi:0,aliases:['舌鳎','踏板鱼']},
+  秋刀鱼:{kcal:297,protein:18.5,fat:24.5,carb:0,fiber:0,sodium:110,unitWeight:100,cat:'水产',density:0.92,gi:0,aliases:['秋刀','竹刀鱼']},
+  沙丁鱼:{kcal:208,protein:24.6,fat:11.7,carb:0,fiber:0,sodium:110,unitWeight:40,cat:'水产',density:0.95,gi:0,aliases:['沙甸鱼']},
+  鲭鱼:{kcal:205,protein:20.0,fat:13.0,carb:0,fiber:0,sodium:95,unitWeight:120,cat:'水产',density:0.95,gi:0,aliases:['青花鱼','鲐鱼']},
+  鲷鱼:{kcal:100,protein:19.5,fat:2.0,carb:0,fiber:0,sodium:80,unitWeight:150,cat:'水产',density:1.0,gi:0,aliases:['加吉鱼','真鲷']},
+  比目鱼:{kcal:86,protein:17.7,fat:1.5,carb:0.5,fiber:0,sodium:120,unitWeight:150,cat:'水产',density:1.0,gi:0,aliases:['偏口鱼','鲽鱼']},
+  多宝鱼:{kcal:96,protein:17.5,fat:2.8,carb:0,fiber:0,sodium:110,unitWeight:300,cat:'水产',density:0.95,gi:0,aliases:['大菱鲆']},
+  石斑鱼:{kcal:105,protein:20.5,fat:2.0,carb:0,fiber:0,sodium:90,unitWeight:200,cat:'水产',density:0.95,gi:0,aliases:['青斑','老虎斑']},
+  鳗鱼:{kcal:181,protein:18.6,fat:10.8,carb:2.3,fiber:0,sodium:58,unitWeight:150,cat:'水产',density:0.95,gi:0,aliases:['白鳝','河鳗']},
+  安康鱼:{kcal:76,protein:15.0,fat:1.5,carb:0,fiber:0,sodium:95,unitWeight:150,cat:'水产',density:1.0,gi:0,aliases:['鮟鱇鱼','蛤蟆鱼']},
+  基围虾:{kcal:101,protein:18.2,fat:1.4,carb:3.9,fiber:0,sodium:172,unitWeight:15,cat:'水产',density:1.0,gi:0,aliases:['刀额新对虾','麻虾']},
+  白虾:{kcal:95,protein:18.6,fat:1.7,carb:1.5,fiber:0,sodium:150,unitWeight:12,cat:'水产',density:1.0,gi:0,aliases:['脊尾白虾','小白虾']},
+  河虾:{kcal:87,protein:16.4,fat:2.4,carb:0,fiber:0,sodium:133,unitWeight:8,cat:'水产',density:1.0,gi:0,aliases:['青虾','草虾']},
+  小龙虾:{kcal:93,protein:18.9,fat:1.6,carb:0.5,fiber:0,sodium:190,unitWeight:25,cat:'水产',density:1.0,gi:0,aliases:['克氏原螯虾','淡水小龙虾']},
+  皮皮虾:{kcal:100,protein:20.6,fat:1.2,carb:1.0,fiber:0,sodium:180,unitWeight:30,cat:'水产',density:1.0,gi:0,aliases:['虾蛄','濑尿虾']},
+  对虾:{kcal:93,protein:18.6,fat:0.8,carb:2.8,fiber:0,sodium:165,unitWeight:20,cat:'水产',density:1.0,gi:0,aliases:['明虾','大虾']},
+  北极甜虾:{kcal:96,protein:20.5,fat:0.8,carb:1.5,fiber:0,sodium:180,unitWeight:10,cat:'水产',density:1.0,gi:0,aliases:['北极虾','甜虾']},
+  大闸蟹:{kcal:103,protein:17.5,fat:2.6,carb:2.3,fiber:0,sodium:260,unitWeight:150,cat:'水产',density:0.95,gi:0,aliases:['中华绒螯蟹','河蟹']},
+  梭子蟹:{kcal:95,protein:15.9,fat:3.1,carb:0.9,fiber:0,sodium:300,unitWeight:200,cat:'水产',density:0.95,gi:0,aliases:['白蟹','枪蟹']},
+  青蟹:{kcal:80,protein:14.6,fat:1.6,carb:1.7,fiber:0,sodium:260,unitWeight:200,cat:'水产',density:0.95,gi:0,aliases:['膏蟹','蝤蛑']},
+  花蟹:{kcal:95,protein:17.0,fat:2.0,carb:1.5,fiber:0,sodium:280,unitWeight:180,cat:'水产',density:0.95,gi:0,aliases:['远海梭子蟹','兰花蟹']},
+  蟹肉:{kcal:97,protein:19.0,fat:1.5,carb:1.5,fiber:0,sodium:320,unitWeight:50,cat:'水产',density:1.0,gi:0,aliases:['拆蟹肉']},
+  蟹棒:{kcal:123,protein:8.1,fat:0.8,carb:21.0,fiber:0.4,sodium:850,unitWeight:15,cat:'水产',density:1.0,gi:null,aliases:['蟹柳','蟹味棒']},
+  蛤蜊:{kcal:62,protein:10.1,fat:1.1,carb:2.8,fiber:0,sodium:425,unitWeight:15,cat:'水产',density:1.0,gi:0,aliases:['花蛤','文蛤']},
+  花甲:{kcal:56,protein:10.0,fat:0.8,carb:1.8,fiber:0,sodium:400,unitWeight:12,cat:'水产',density:1.0,gi:0,aliases:['花甲螺','菲律宾蛤仔']},
+  扇贝:{kcal:60,protein:11.1,fat:0.6,carb:2.6,fiber:0,sodium:339,unitWeight:25,cat:'水产',density:1.0,gi:0,aliases:['海扇']},
+  生蚝:{kcal:73,protein:10.9,fat:1.5,carb:4.6,fiber:0,sodium:270,unitWeight:30,cat:'水产',density:1.0,gi:0,aliases:['牡蛎','海蛎子']},
+  青口:{kcal:86,protein:11.9,fat:2.2,carb:4.5,fiber:0,sodium:290,unitWeight:20,cat:'水产',density:1.0,gi:0,aliases:['贻贝','海红']},
+  蛏子:{kcal:40,protein:7.3,fat:0.3,carb:2.1,fiber:0,sodium:245,unitWeight:15,cat:'水产',density:1.0,gi:0,aliases:['缢蛏','蛏子王']},
+  蚬子:{kcal:47,protein:7.0,fat:1.4,carb:1.7,fiber:0,sodium:180,unitWeight:10,cat:'水产',density:1.0,gi:0,aliases:['河蚬','黄蚬子']},
+  鲍鱼:{kcal:84,protein:12.6,fat:0.8,carb:6.6,fiber:0,sodium:201,unitWeight:50,cat:'水产',density:1.0,gi:0,aliases:['九孔鲍','鲍螺']},
+  海螺:{kcal:110,protein:20.2,fat:0.9,carb:5.6,fiber:0,sodium:230,unitWeight:60,cat:'水产',density:1.0,gi:0,aliases:['脉红螺','大海螺']},
+  香螺:{kcal:118,protein:22.0,fat:1.2,carb:4.5,fiber:0,sodium:250,unitWeight:50,cat:'水产',density:1.0,gi:0,aliases:['响螺','角螺']},
+  田螺:{kcal:60,protein:11.0,fat:1.2,carb:1.0,fiber:0,sodium:120,unitWeight:12,cat:'水产',density:1.0,gi:0,aliases:['螺蛳','田螺肉']},
+  鱿鱼须:{kcal:90,protein:17.5,fat:1.4,carb:1.5,fiber:0,sodium:150,unitWeight:100,cat:'水产',density:1.0,gi:0,aliases:['鱿鱼爪','鱿鱼头须']},
+  章鱼:{kcal:82,protein:18.9,fat:0.4,carb:0.6,fiber:0,sodium:230,unitWeight:100,cat:'水产',density:1.0,gi:0,aliases:['八爪鱼','望潮']},
+  墨鱼:{kcal:83,protein:15.2,fat:1.0,carb:3.4,fiber:0,sodium:117,unitWeight:120,cat:'水产',density:1.0,gi:0,aliases:['乌贼','墨斗鱼']},
+  海参:{kcal:78,protein:16.5,fat:0.2,carb:2.5,fiber:0,sodium:502,unitWeight:50,cat:'水产',density:1.0,gi:0,aliases:['刺参','海参段']},
+  海蜇:{kcal:33,protein:3.7,fat:0.3,carb:3.8,fiber:0,sodium:325,unitWeight:100,cat:'水产',density:1.0,gi:0,aliases:['海蜇皮','水母']},
+  海胆:{kcal:120,protein:12.5,fat:7.2,carb:2.0,fiber:0,sodium:230,unitWeight:30,cat:'水产',density:1.0,gi:0,aliases:['海胆黄','紫海胆']},
+  鱼籽:{kcal:131,protein:22.0,fat:4.0,carb:2.0,fiber:0,sodium:180,unitWeight:30,cat:'水产',density:1.0,gi:0,aliases:['鱼卵','鱼子']},
+  鱼丸:{kcal:107,protein:10.5,fat:1.8,carb:12.0,fiber:0.2,sodium:620,unitWeight:20,cat:'水产',density:1.0,gi:null,aliases:['鱼蛋','鱼丸仔']},
+  鱼豆腐:{kcal:160,protein:9.0,fat:6.0,carb:17.0,fiber:0.3,sodium:750,unitWeight:20,cat:'水产',density:1.0,gi:null,aliases:['炸鱼腐']},
+  鱼露:{kcal:47,protein:8.0,fat:0.2,carb:3.0,fiber:0,sodium:7700,unitWeight:10,cat:'水产',density:1.1,gi:null,aliases:['鱼酱油','虾油']},
+  虾皮:{kcal:153,protein:30.7,fat:2.2,carb:2.5,fiber:0,sodium:5057,unitWeight:5,cat:'水产',density:0.6,gi:0,aliases:['海米皮','虾米皮']},
+  虾米:{kcal:198,protein:43.7,fat:2.6,carb:0,fiber:0,sodium:4892,unitWeight:5,cat:'水产',density:0.7,gi:0,aliases:['海米','金钩']},
+  干贝:{kcal:264,protein:55.6,fat:2.4,carb:5.1,fiber:0,sodium:1200,unitWeight:8,cat:'水产',density:0.8,gi:0,aliases:['瑶柱','江瑶柱']},
+  淡菜:{kcal:355,protein:47.8,fat:9.3,carb:20.1,fiber:0,sodium:1100,unitWeight:8,cat:'水产',density:0.8,gi:0,aliases:['贻贝干','海红干']},
+  鸡蛋:{kcal:144,protein:13.3,fat:8.8,carb:2.8,fiber:0,sodium:132,unitWeight:55,cat:'蛋奶豆',density:1,gi:0,aliases:['水煮蛋','煎蛋','荷包蛋','蛋']},
+  牛奶:{kcal:54,protein:3.0,fat:3.2,carb:3.4,fiber:0,sodium:37,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:27,aliases:['纯牛奶','全脂牛奶']},
+  酸奶:{kcal:72,protein:2.5,fat:2.7,carb:9.3,fiber:0,sodium:39,unitWeight:150,cat:'蛋奶豆',density:1.03,gi:36,aliases:['原味酸奶']},
+  豆浆:{kcal:31,protein:3.0,fat:1.6,carb:1.2,fiber:1.1,sodium:3,unitWeight:300,cat:'蛋奶豆',density:1,gi:34,aliases:[]},
+  豆腐:{kcal:82,protein:8.1,fat:3.7,carb:4.2,fiber:0.4,sodium:7,unitWeight:100,cat:'蛋奶豆',density:1.05,gi:15,aliases:['老豆腐','嫩豆腐','北豆腐']},
+  奶酪:{kcal:328,protein:25.7,fat:23.5,carb:3.5,fiber:0,sodium:584,unitWeight:20,cat:'蛋奶豆',density:1,gi:0,aliases:['芝士','起司']},
+  蛋清:{kcal:60,protein:11.6,fat:0.1,carb:3.1,fiber:0,sodium:166,unitWeight:33,cat:'蛋奶豆',density:1.03,gi:0,aliases:['鸡蛋白','蛋白液']},
+  蛋黄:{kcal:328,protein:15.2,fat:28.2,carb:3.4,fiber:0,sodium:54,unitWeight:17,cat:'蛋奶豆',density:1.05,gi:0,aliases:['鸡蛋黄','蛋黄液']},
+  土鸡蛋:{kcal:138,protein:14.0,fat:8.0,carb:1.5,fiber:0,sodium:130,unitWeight:50,cat:'蛋奶豆',density:1.03,gi:0,aliases:['柴鸡蛋','笨鸡蛋']},
+  鹌鹑蛋:{kcal:160,protein:12.8,fat:11.1,carb:2.1,fiber:0,sodium:106,unitWeight:10,cat:'蛋奶豆',density:1.03,gi:0,aliases:['鹑鸟蛋']},
+  鸭蛋:{kcal:180,protein:12.6,fat:13.0,carb:3.1,fiber:0,sodium:106,unitWeight:70,cat:'蛋奶豆',density:1.03,gi:0,aliases:['鸭子蛋','青皮蛋']},
+  咸鸭蛋:{kcal:190,protein:12.7,fat:12.7,carb:6.3,fiber:0,sodium:2706,unitWeight:70,cat:'蛋奶豆',density:1.05,gi:0,aliases:['盐蛋','咸蛋']},
+  皮蛋:{kcal:171,protein:14.2,fat:10.7,carb:4.5,fiber:0,sodium:542,unitWeight:60,cat:'蛋奶豆',density:1.05,gi:0,aliases:['松花蛋','变蛋']},
+  鹅蛋:{kcal:196,protein:11.1,fat:15.6,carb:2.8,fiber:0,sodium:90,unitWeight:130,cat:'蛋奶豆',density:1.03,gi:0,aliases:['鹅卵蛋']},
+  茶叶蛋:{kcal:150,protein:13.0,fat:9.5,carb:3.0,fiber:0,sodium:700,unitWeight:55,cat:'蛋奶豆',density:1.03,gi:0,aliases:['卤茶蛋','茶鸡蛋']},
+  卤蛋:{kcal:160,protein:13.5,fat:10.0,carb:3.5,fiber:0,sodium:850,unitWeight:50,cat:'蛋奶豆',density:1.03,gi:0,aliases:['卤鸡蛋','酱蛋']},
+  煎蛋:{kcal:200,protein:13.5,fat:15.0,carb:1.5,fiber:0,sodium:210,unitWeight:60,cat:'蛋奶豆',density:1.0,gi:0,aliases:['荷包蛋','煎鸡蛋']},
+  炒蛋:{kcal:175,protein:11.5,fat:12.5,carb:2.0,fiber:0,sodium:220,unitWeight:120,cat:'蛋奶豆',density:1.0,gi:0,aliases:['炒鸡蛋','滑蛋']},
+  脱脂牛奶:{kcal:34,protein:3.4,fat:0.1,carb:5.0,fiber:0,sodium:42,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:32,aliases:['零脂牛奶','脱脂奶']},
+  低脂牛奶:{kcal:45,protein:3.3,fat:1.5,carb:4.9,fiber:0,sodium:44,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:30,aliases:['半脱脂牛奶','部分脱脂奶']},
+  羊奶:{kcal:59,protein:1.5,fat:3.5,carb:5.4,fiber:0,sodium:34,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:28,aliases:['山羊奶','羊乳']},
+  希腊酸奶:{kcal:97,protein:9.0,fat:5.0,carb:3.6,fiber:0,sodium:35,unitWeight:150,cat:'蛋奶豆',density:1.05,gi:35,aliases:['浓缩酸奶','过滤酸奶']},
+  老酸奶:{kcal:85,protein:3.2,fat:3.5,carb:10.0,fiber:0,sodium:45,unitWeight:150,cat:'蛋奶豆',density:1.05,gi:36,aliases:['凝固型酸奶','碗装酸奶']},
+  风味酸奶:{kcal:95,protein:2.8,fat:2.5,carb:15.5,fiber:0,sodium:50,unitWeight:200,cat:'蛋奶豆',density:1.03,gi:null,aliases:['果味酸奶','调味酸奶']},
+  马苏里拉:{kcal:280,protein:22.0,fat:20.0,carb:3.1,fiber:0,sodium:627,unitWeight:20,cat:'蛋奶豆',density:1.0,gi:0,aliases:['水牛芝士','披萨芝士']},
+  奶油奶酪:{kcal:342,protein:6.2,fat:34.0,carb:4.1,fiber:0,sodium:314,unitWeight:25,cat:'蛋奶豆',density:1.0,gi:0,aliases:['奶油芝士','忌廉芝士']},
+  淡奶油:{kcal:345,protein:2.1,fat:37.0,carb:2.8,fiber:0,sodium:38,unitWeight:30,cat:'蛋奶豆',density:0.99,gi:0,aliases:['动物性淡奶油','稀奶油']},
+  黄油:{kcal:717,protein:0.9,fat:81.1,carb:0.1,fiber:0,sodium:40,unitWeight:10,cat:'蛋奶豆',density:0.95,gi:0,aliases:['牛油','白脱']},
+  炼乳:{kcal:321,protein:7.9,fat:8.7,carb:54.4,fiber:0,sodium:127,unitWeight:20,cat:'蛋奶豆',density:1.2,gi:61,aliases:['甜炼乳','加糖炼乳']},
+  奶粉:{kcal:478,protein:19.9,fat:21.2,carb:51.7,fiber:0,sodium:260,unitWeight:25,cat:'蛋奶豆',density:0.5,gi:27,aliases:['全脂奶粉','牛奶粉']},
+  豆奶:{kcal:31,protein:2.4,fat:1.5,carb:1.8,fiber:0.2,sodium:30,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:34,aliases:['豆奶饮料','植物奶']},
+  甜豆浆:{kcal:38,protein:1.8,fat:0.7,carb:6.5,fiber:0.8,sodium:3,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:null,aliases:['加糖豆浆','甜豆乳']},
+  北豆腐:{kcal:116,protein:12.2,fat:4.8,carb:4.2,fiber:0.5,sodium:7,unitWeight:100,cat:'蛋奶豆',density:1.05,gi:0,aliases:['老豆腐','硬豆腐']},
+  南豆腐:{kcal:87,protein:6.2,fat:2.5,carb:4.8,fiber:0.4,sodium:7,unitWeight:100,cat:'蛋奶豆',density:1.05,gi:0,aliases:['嫩豆腐','水豆腐']},
+  内酯豆腐:{kcal:50,protein:5.0,fat:1.9,carb:3.3,fiber:0.4,sodium:5,unitWeight:100,cat:'蛋奶豆',density:1.05,gi:0,aliases:['盒装豆腐','滑豆腐']},
+  豆腐干:{kcal:140,protein:16.2,fat:3.6,carb:11.5,fiber:0.8,sodium:76,unitWeight:30,cat:'蛋奶豆',density:1.05,gi:0,aliases:['香干','豆干']},
+  豆腐皮:{kcal:409,protein:44.6,fat:17.4,carb:18.8,fiber:0.2,sodium:15,unitWeight:20,cat:'蛋奶豆',density:0.6,gi:0,aliases:['豆皮','腐皮']},
+  腐竹:{kcal:459,protein:44.6,fat:21.7,carb:22.3,fiber:1.0,sodium:27,unitWeight:20,cat:'蛋奶豆',density:0.6,gi:0,aliases:['豆腐衣','腐竹条']},
+  油豆腐:{kcal:244,protein:17.0,fat:17.6,carb:4.9,fiber:0.6,sodium:9,unitWeight:20,cat:'蛋奶豆',density:0.6,gi:0,aliases:['豆泡','炸豆腐']},
+  冻豆腐:{kcal:95,protein:10.0,fat:5.0,carb:3.0,fiber:0.5,sodium:7,unitWeight:80,cat:'蛋奶豆',density:0.8,gi:0,aliases:['冻豆付','海绵豆腐']},
+  臭豆腐:{kcal:130,protein:12.0,fat:7.0,carb:4.5,fiber:0.6,sodium:900,unitWeight:30,cat:'蛋奶豆',density:1.0,gi:0,aliases:['臭干子','青方']},
+  豆花:{kcal:40,protein:4.0,fat:1.5,carb:2.5,fiber:0.3,sodium:5,unitWeight:200,cat:'蛋奶豆',density:1.03,gi:0,aliases:['豆腐脑','豆腐花']},
+  素鸡:{kcal:194,protein:16.5,fat:12.5,carb:5.0,fiber:0.9,sodium:340,unitWeight:30,cat:'蛋奶豆',density:1.0,gi:0,aliases:['素肠','豆制素鸡']},
+  千张:{kcal:262,protein:24.5,fat:16.0,carb:5.5,fiber:1.0,sodium:20,unitWeight:30,cat:'蛋奶豆',density:1.0,gi:0,aliases:['百叶','豆腐干片']},
+  黄豆:{kcal:390,protein:35.0,fat:16.0,carb:34.2,fiber:15.5,sodium:2,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:18,aliases:['大豆','黄大豆']},
+  黑豆:{kcal:401,protein:36.0,fat:15.9,carb:33.6,fiber:10.2,sodium:3,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:42,aliases:['乌豆','黑大豆']},
+  红豆:{kcal:324,protein:20.2,fat:0.6,carb:63.4,fiber:7.7,sodium:2,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:26,aliases:['赤小豆','红小豆']},
+  绿豆:{kcal:329,protein:21.6,fat:0.8,carb:62.0,fiber:6.4,sodium:3,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:27,aliases:['青小豆','绿豆仁']},
+  鹰嘴豆:{kcal:364,protein:19.3,fat:6.0,carb:61.0,fiber:17.4,sodium:24,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:33,aliases:['桃豆','回回豆']},
+  芸豆:{kcal:334,protein:21.4,fat:1.3,carb:62.5,fiber:15.2,sodium:5,unitWeight:25,cat:'蛋奶豆',density:0.8,gi:31,aliases:['白芸豆','四季豆']},
+  西兰花:{kcal:36,protein:4.1,fat:0.6,carb:4.3,fiber:1.6,sodium:18,unitWeight:150,cat:'蔬菜',density:0.4,gi:15,aliases:['绿花菜']},
+  白菜:{kcal:17,protein:1.5,fat:0.1,carb:3.2,fiber:0.8,sodium:57,unitWeight:150,cat:'蔬菜',density:0.4,gi:15,aliases:['大白菜','小白菜']},
+  菠菜:{kcal:28,protein:2.6,fat:0.3,carb:4.5,fiber:1.7,sodium:85,unitWeight:120,cat:'蔬菜',density:0.3,gi:15,aliases:[]},
+  生菜:{kcal:15,protein:1.3,fat:0.3,carb:2.0,fiber:0.7,sodium:32,unitWeight:60,cat:'蔬菜',density:0.2,gi:15,aliases:['球生菜']},
+  番茄:{kcal:20,protein:0.9,fat:0.2,carb:4.0,fiber:0.5,sodium:5,unitWeight:150,cat:'蔬菜',density:0.95,gi:15,aliases:['西红柿']},
+  黄瓜:{kcal:16,protein:0.8,fat:0.2,carb:2.9,fiber:0.5,sodium:5,unitWeight:200,cat:'蔬菜',density:0.95,gi:15,aliases:[]},
+  胡萝卜:{kcal:39,protein:1.0,fat:0.2,carb:8.8,fiber:1.1,sodium:71,unitWeight:100,cat:'蔬菜',density:0.9,gi:71,aliases:[]},
+  青椒:{kcal:22,protein:1.4,fat:0.3,carb:5.4,fiber:1.4,sodium:3,unitWeight:80,cat:'蔬菜',density:0.5,gi:15,aliases:['柿子椒','彩椒']},
+  茄子:{kcal:23,protein:1.1,fat:0.2,carb:4.9,fiber:1.3,sodium:5,unitWeight:150,cat:'蔬菜',density:0.6,gi:15,aliases:[]},
+  蘑菇:{kcal:24,protein:2.7,fat:0.1,carb:4.1,fiber:2.1,sodium:8,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['香菇','口蘑','菌菇']},
+  洋葱:{kcal:40,protein:1.1,fat:0.2,carb:9.0,fiber:0.9,sodium:4,unitWeight:100,cat:'蔬菜',density:0.7,gi:15,aliases:[]},
+  南瓜:{kcal:23,protein:0.7,fat:0.1,carb:5.3,fiber:0.8,sodium:1,unitWeight:150,cat:'蔬菜',density:0.7,gi:75,aliases:[]},
+  大白菜:{kcal:17,protein:1.5,fat:0.1,carb:3.2,fiber:0.8,sodium:57,unitWeight:150,cat:'蔬菜',density:0.3,gi:15,aliases:['结球白菜','黄芽菜']},
+  小白菜:{kcal:15,protein:1.5,fat:0.3,carb:2.7,fiber:1.1,sodium:74,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['青菜','油白菜']},
+  娃娃菜:{kcal:13,protein:1.2,fat:0.2,carb:2.4,fiber:0.9,sodium:48,unitWeight:120,cat:'蔬菜',density:0.3,gi:15,aliases:['微型大白菜']},
+  油菜:{kcal:23,protein:1.8,fat:0.5,carb:3.8,fiber:1.1,sodium:55,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['小油菜','普通白菜']},
+  上海青:{kcal:15,protein:1.7,fat:0.2,carb:2.2,fiber:1.0,sodium:60,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['青梗菜']},
+  油麦菜:{kcal:15,protein:1.4,fat:0.4,carb:2.1,fiber:0.6,sodium:80,unitWeight:150,cat:'蔬菜',density:0.22,gi:15,aliases:['莜麦菜']},
+  空心菜:{kcal:20,protein:2.2,fat:0.3,carb:3.6,fiber:1.4,sodium:94,unitWeight:150,cat:'蔬菜',density:0.25,gi:15,aliases:['蕹菜','通菜']},
+  苋菜:{kcal:25,protein:2.8,fat:0.4,carb:4.1,fiber:1.8,sodium:40,unitWeight:150,cat:'蔬菜',density:0.25,gi:15,aliases:['米苋','青香苋']},
+  茼蒿:{kcal:21,protein:1.9,fat:0.3,carb:3.9,fiber:1.2,sodium:161,unitWeight:150,cat:'蔬菜',density:0.22,gi:15,aliases:['蓬蒿','皇帝菜']},
+  芥蓝:{kcal:24,protein:2.8,fat:0.4,carb:3.6,fiber:1.6,sodium:50,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['盖菜','芥兰']},
+  芥菜:{kcal:24,protein:2.5,fat:0.4,carb:4.0,fiber:1.6,sodium:52,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['雪里蕻']},
+  韭菜:{kcal:26,protein:2.4,fat:0.4,carb:4.6,fiber:1.4,sodium:8,unitWeight:100,cat:'蔬菜',density:0.3,gi:15,aliases:['起阳草','长生韭']},
+  芹菜:{kcal:17,protein:1.2,fat:0.2,carb:3.3,fiber:1.2,sodium:159,unitWeight:150,cat:'蔬菜',density:0.3,gi:15,aliases:['旱芹','药芹','西芹']},
+  香菜:{kcal:31,protein:1.8,fat:0.4,carb:6.2,fiber:1.2,sodium:48,unitWeight:20,cat:'蔬菜',density:0.25,gi:15,aliases:['芫荽','胡荽']},
+  茴香:{kcal:24,protein:2.5,fat:0.4,carb:3.4,fiber:1.6,sodium:186,unitWeight:100,cat:'蔬菜',density:0.22,gi:15,aliases:['小茴香','香丝菜']},
+  紫甘蓝:{kcal:25,protein:1.4,fat:0.2,carb:6.2,fiber:2.0,sodium:27,unitWeight:150,cat:'蔬菜',density:0.5,gi:15,aliases:['紫卷心菜','红甘蓝']},
+  卷心菜:{kcal:24,protein:1.5,fat:0.2,carb:4.6,fiber:1.0,sodium:27,unitWeight:150,cat:'蔬菜',density:0.5,gi:15,aliases:['结球甘蓝','圆白菜','包菜','甘蓝']},
+  羽衣甘蓝:{kcal:35,protein:2.9,fat:0.6,carb:6.4,fiber:1.6,sodium:43,unitWeight:100,cat:'蔬菜',density:0.2,gi:15,aliases:['无头甘蓝','凯尔']},
+  芝麻菜:{kcal:25,protein:2.6,fat:0.7,carb:3.7,fiber:1.6,sodium:27,unitWeight:50,cat:'蔬菜',density:0.2,gi:15,aliases:['火箭菜','芸芥']},
+  豌豆苗:{kcal:34,protein:4.0,fat:0.8,carb:4.6,fiber:1.9,sodium:18,unitWeight:100,cat:'蔬菜',density:0.22,gi:15,aliases:['豌豆尖']},
+  红薯叶:{kcal:30,protein:2.8,fat:0.4,carb:5.1,fiber:2.0,sodium:20,unitWeight:150,cat:'蔬菜',density:0.25,gi:15,aliases:['地瓜叶','番薯叶']},
+  木耳菜:{kcal:20,protein:1.7,fat:0.3,carb:3.5,fiber:1.5,sodium:35,unitWeight:150,cat:'蔬菜',density:0.25,gi:15,aliases:['落葵','潺菜']},
+  荠菜:{kcal:27,protein:2.9,fat:0.4,carb:4.7,fiber:1.7,sodium:31,unitWeight:150,cat:'蔬菜',density:0.25,gi:15,aliases:['地菜','护生草']},
+  莴笋叶:{kcal:19,protein:1.6,fat:0.3,carb:3.2,fiber:1.2,sodium:60,unitWeight:120,cat:'蔬菜',density:0.24,gi:15,aliases:['莴苣叶']},
+  苦菊:{kcal:17,protein:1.5,fat:0.3,carb:2.8,fiber:1.1,sodium:30,unitWeight:100,cat:'蔬菜',density:0.2,gi:15,aliases:['苦苣','菊苣']},
+  乌塌菜:{kcal:25,protein:2.6,fat:0.4,carb:3.6,fiber:1.4,sodium:60,unitWeight:150,cat:'蔬菜',density:0.3,gi:15,aliases:['塌棵菜','太古菜']},
+  菜心:{kcal:24,protein:2.8,fat:0.4,carb:3.4,fiber:1.5,sodium:50,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['菜薹','广东菜心']},
+  鸡毛菜:{kcal:15,protein:1.6,fat:0.2,carb:2.2,fiber:0.9,sodium:70,unitWeight:150,cat:'蔬菜',density:0.28,gi:15,aliases:['幼小白菜']},
+  白萝卜:{kcal:16,protein:0.7,fat:0.1,carb:4.0,fiber:1.0,sodium:62,unitWeight:200,cat:'蔬菜',density:0.7,gi:15,aliases:['莱菔','萝卜']},
+  红萝卜:{kcal:22,protein:0.8,fat:0.1,carb:5.0,fiber:1.2,sodium:60,unitWeight:150,cat:'蔬菜',density:0.75,gi:15,aliases:['红皮萝卜','胭脂萝卜']},
+  大葱:{kcal:33,protein:1.7,fat:0.3,carb:6.5,fiber:1.3,sodium:4,unitWeight:50,cat:'蔬菜',density:0.6,gi:15,aliases:['葱白','京葱']},
+  小葱:{kcal:27,protein:1.6,fat:0.3,carb:4.9,fiber:1.3,sodium:5,unitWeight:15,cat:'蔬菜',density:0.4,gi:15,aliases:['香葱','细香葱']},
+  蒜苗:{kcal:37,protein:2.1,fat:0.4,carb:6.2,fiber:1.8,sodium:6,unitWeight:100,cat:'蔬菜',density:0.5,gi:15,aliases:['蒜薹','青蒜']},
+  蒜苔:{kcal:61,protein:2.0,fat:0.3,carb:12.5,fiber:2.5,sodium:4,unitWeight:100,cat:'蔬菜',density:0.55,gi:15,aliases:['蒜毫','青蒜薹']},
+  生姜:{kcal:41,protein:1.3,fat:0.6,carb:7.6,fiber:2.7,sodium:14,unitWeight:10,cat:'蔬菜',density:0.7,gi:15,aliases:['姜','鲜姜']},
+  大蒜:{kcal:128,protein:4.5,fat:0.2,carb:26.5,fiber:1.1,sodium:19,unitWeight:10,cat:'蔬菜',density:0.9,gi:30,aliases:['蒜头','蒜瓣']},
+  竹笋:{kcal:23,protein:2.6,fat:0.2,carb:3.6,fiber:1.8,sodium:0,unitWeight:100,cat:'蔬菜',density:0.6,gi:15,aliases:['春笋','毛笋','冬笋']},
+  莴笋:{kcal:15,protein:1.0,fat:0.1,carb:2.8,fiber:0.6,sodium:36,unitWeight:150,cat:'蔬菜',density:0.7,gi:15,aliases:['莴苣','青笋']},
+  甜菜根:{kcal:43,protein:1.6,fat:0.2,carb:9.6,fiber:2.8,sodium:78,unitWeight:150,cat:'蔬菜',density:0.85,gi:64,aliases:['红菜头','火焰菜']},
+  牛蒡:{kcal:72,protein:1.5,fat:0.2,carb:16.5,fiber:3.4,sodium:5,unitWeight:100,cat:'蔬菜',density:0.7,gi:35,aliases:['东洋参','大力子']},
+  芜菁:{kcal:28,protein:1.1,fat:0.2,carb:6.0,fiber:1.6,sodium:40,unitWeight:150,cat:'蔬菜',density:0.8,gi:30,aliases:['蔓菁','大头菜']},
+  葛根:{kcal:82,protein:2.2,fat:0.2,carb:18.6,fiber:2.4,sodium:12,unitWeight:100,cat:'蔬菜',density:0.8,gi:39,aliases:['粉葛','葛薯']},
+  茭白:{kcal:23,protein:1.7,fat:0.2,carb:4.0,fiber:1.9,sodium:6,unitWeight:100,cat:'蔬菜',density:0.65,gi:15,aliases:['茭笋','菰米']},
+  洋姜:{kcal:56,protein:1.6,fat:0.2,carb:12.4,fiber:2.2,sodium:8,unitWeight:100,cat:'蔬菜',density:0.8,gi:35,aliases:['菊芋','鬼子姜']},
+  榨菜:{kcal:29,protein:2.2,fat:0.3,carb:5.0,fiber:1.6,sodium:4252,unitWeight:20,cat:'蔬菜',density:0.9,gi:15,aliases:['涪陵榨菜','茎瘤芥']},
+  圣女果:{kcal:22,protein:1.0,fat:0.2,carb:4.2,fiber:1.0,sodium:6,unitWeight:15,cat:'蔬菜',density:0.95,gi:15,aliases:['樱桃番茄','小番茄']},
+  冬瓜:{kcal:12,protein:0.4,fat:0.2,carb:2.6,fiber:0.7,sodium:2,unitWeight:200,cat:'蔬菜',density:0.9,gi:15,aliases:['白瓜','枕瓜']},
+  丝瓜:{kcal:20,protein:1.0,fat:0.2,carb:4.2,fiber:0.6,sodium:2,unitWeight:150,cat:'蔬菜',density:0.9,gi:15,aliases:['水瓜','天丝瓜']},
+  苦瓜:{kcal:22,protein:1.0,fat:0.1,carb:4.9,fiber:1.4,sodium:2,unitWeight:150,cat:'蔬菜',density:0.9,gi:15,aliases:['凉瓜','癞葡萄']},
+  西葫芦:{kcal:19,protein:0.8,fat:0.2,carb:3.8,fiber:0.6,sodium:5,unitWeight:200,cat:'蔬菜',density:0.9,gi:15,aliases:['角瓜','美洲南瓜']},
+  彩椒:{kcal:26,protein:1.0,fat:0.2,carb:6.0,fiber:1.4,sodium:3,unitWeight:100,cat:'蔬菜',density:0.6,gi:15,aliases:['甜椒','柿子椒']},
+  尖椒:{kcal:23,protein:1.5,fat:0.3,carb:5.2,fiber:1.8,sodium:2,unitWeight:30,cat:'蔬菜',density:0.55,gi:15,aliases:['青尖椒','牛角椒']},
+  辣椒:{kcal:32,protein:1.3,fat:0.4,carb:7.0,fiber:2.1,sodium:3,unitWeight:20,cat:'蔬菜',density:0.55,gi:15,aliases:['红辣椒','小米椒']},
+  秋葵:{kcal:37,protein:2.0,fat:0.2,carb:7.0,fiber:3.9,sodium:9,unitWeight:60,cat:'蔬菜',density:0.55,gi:15,aliases:['黄秋葵','羊角豆']},
+  佛手瓜:{kcal:16,protein:0.8,fat:0.2,carb:3.0,fiber:1.2,sodium:1,unitWeight:150,cat:'蔬菜',density:0.85,gi:15,aliases:['隼人瓜','合掌瓜']},
+  瓠瓜:{kcal:14,protein:0.7,fat:0.1,carb:3.0,fiber:0.8,sodium:1,unitWeight:150,cat:'蔬菜',density:0.85,gi:15,aliases:['瓠子','葫芦瓜']},
+  蛇瓜:{kcal:18,protein:0.9,fat:0.2,carb:3.6,fiber:1.0,sodium:2,unitWeight:150,cat:'蔬菜',density:0.85,gi:15,aliases:['蛇豆','长栝楼']},
+  紫角叶:{kcal:20,protein:1.6,fat:0.3,carb:3.4,fiber:1.2,sodium:30,unitWeight:100,cat:'蔬菜',density:0.25,gi:15,aliases:['木耳菜籽','潺菜叶']},
+  四季豆:{kcal:31,protein:2.0,fat:0.4,carb:5.7,fiber:1.5,sodium:4,unitWeight:120,cat:'蔬菜',density:0.6,gi:15,aliases:['菜豆','芸豆','豆角']},
+  豇豆:{kcal:32,protein:2.9,fat:0.3,carb:5.8,fiber:2.3,sodium:4,unitWeight:120,cat:'蔬菜',density:0.6,gi:15,aliases:['长豆角','带豆']},
+  荷兰豆:{kcal:30,protein:2.5,fat:0.3,carb:4.9,fiber:1.4,sodium:3,unitWeight:100,cat:'蔬菜',density:0.55,gi:15,aliases:['软荚豌豆','甜豌豆']},
+  豌豆:{kcal:105,protein:7.4,fat:0.3,carb:21.2,fiber:3.0,sodium:1,unitWeight:80,cat:'蔬菜',density:0.75,gi:42,aliases:['青豌豆','豌豆粒']},
+  毛豆:{kcal:131,protein:13.1,fat:5.0,carb:10.5,fiber:4.0,sodium:4,unitWeight:80,cat:'蔬菜',density:0.7,gi:18,aliases:['青豆','枝豆']},
+  蚕豆:{kcal:104,protein:8.8,fat:0.4,carb:19.5,fiber:3.1,sodium:4,unitWeight:80,cat:'蔬菜',density:0.75,gi:31,aliases:['胡豆','罗汉豆']},
+  黄豆芽:{kcal:44,protein:4.5,fat:1.6,carb:4.5,fiber:1.5,sodium:7,unitWeight:100,cat:'蔬菜',density:0.55,gi:15,aliases:['大豆黄卷','黄豆芽']},
+  绿豆芽:{kcal:18,protein:2.1,fat:0.1,carb:2.9,fiber:0.8,sodium:4,unitWeight:100,cat:'蔬菜',density:0.5,gi:15,aliases:['银芽','豆芽菜']},
+  扁豆:{kcal:37,protein:2.7,fat:0.2,carb:6.1,fiber:2.1,sodium:4,unitWeight:120,cat:'蔬菜',density:0.6,gi:15,aliases:['眉豆','蛾眉豆']},
+  刀豆:{kcal:35,protein:3.1,fat:0.3,carb:5.9,fiber:2.3,sodium:4,unitWeight:120,cat:'蔬菜',density:0.6,gi:15,aliases:['大刀豆','挟剑豆']},
+  菜花:{kcal:24,protein:2.1,fat:0.2,carb:4.6,fiber:1.2,sodium:32,unitWeight:150,cat:'蔬菜',density:0.4,gi:15,aliases:['花椰菜','白花菜']},
+  黄花菜:{kcal:199,protein:19.4,fat:1.4,carb:34.9,fiber:7.7,sodium:59,unitWeight:30,cat:'蔬菜',density:0.3,gi:15,aliases:['金针菜','忘忧草']},
+  芦笋:{kcal:22,protein:2.6,fat:0.1,carb:4.9,fiber:1.9,sodium:3,unitWeight:100,cat:'蔬菜',density:0.45,gi:15,aliases:['石刁柏']},
+  平菇:{kcal:24,protein:1.9,fat:0.3,carb:4.6,fiber:2.3,sodium:8,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['侧耳','秀珍菇']},
+  金针菇:{kcal:32,protein:2.4,fat:0.4,carb:6.0,fiber:2.7,sodium:4,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['朴菇','金菇']},
+  杏鲍菇:{kcal:35,protein:1.3,fat:0.1,carb:8.3,fiber:2.1,sodium:3,unitWeight:100,cat:'蔬菜',density:0.4,gi:15,aliases:['刺芹侧耳','鲍鱼菇']},
+  口蘑:{kcal:242,protein:38.7,fat:3.3,carb:31.6,fiber:17.2,sodium:5,unitWeight:30,cat:'蔬菜',density:0.4,gi:15,aliases:['白蘑菇干','双孢蘑菇干']},
+  草菇:{kcal:27,protein:2.7,fat:0.2,carb:4.3,fiber:1.6,sodium:73,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['兰花菇','包脚菇']},
+  茶树菇:{kcal:309,protein:23.1,fat:2.6,carb:56.1,fiber:15.4,sodium:36,unitWeight:30,cat:'蔬菜',density:0.4,gi:15,aliases:['茶薪菇','柱状田头菇']},
+  鸡腿菇:{kcal:29,protein:2.5,fat:0.3,carb:4.6,fiber:2.4,sodium:6,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['毛头鬼伞','鸡腿蘑']},
+  木耳:{kcal:265,protein:12.1,fat:1.5,carb:65.6,fiber:29.9,sodium:48,unitWeight:10,cat:'蔬菜',density:0.35,gi:15,aliases:['黑木耳','云耳','木耳干']},
+  银耳:{kcal:261,protein:10.0,fat:1.4,carb:67.3,fiber:30.4,sodium:82,unitWeight:10,cat:'蔬菜',density:0.3,gi:15,aliases:['白木耳','雪耳','银耳干']},
+  竹荪:{kcal:155,protein:17.8,fat:3.1,carb:22.0,fiber:8.4,sodium:20,unitWeight:10,cat:'蔬菜',density:0.25,gi:15,aliases:['竹笙','长裙竹荪']},
+  猴头菇:{kcal:21,protein:2.0,fat:0.2,carb:4.9,fiber:4.2,sodium:2,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['猴头菌','刺猬菌']},
+  松茸:{kcal:30,protein:3.0,fat:0.5,carb:4.2,fiber:2.0,sodium:4,unitWeight:50,cat:'蔬菜',density:0.4,gi:15,aliases:['松口蘑','松蕈']},
+  牛肝菌:{kcal:28,protein:2.8,fat:0.4,carb:4.0,fiber:2.5,sodium:5,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['美味牛肝菌','大脚菇']},
+  白玉菇:{kcal:26,protein:2.1,fat:0.3,carb:4.8,fiber:2.0,sodium:4,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['白雪菇','白色真姬菇']},
+  蟹味菇:{kcal:25,protein:2.0,fat:0.3,carb:4.6,fiber:2.1,sodium:4,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['真姬菇','海鲜菇']},
+  双孢菇:{kcal:26,protein:2.9,fat:0.2,carb:3.6,fiber:1.5,sodium:5,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['洋蘑菇','白蘑菇']},
+  海带:{kcal:13,protein:1.2,fat:0.1,carb:2.1,fiber:0.5,sodium:107,unitWeight:100,cat:'蔬菜',density:0.6,gi:15,aliases:['昆布','江白菜']},
+  紫菜:{kcal:207,protein:26.7,fat:1.1,carb:44.1,fiber:21.6,sodium:710,unitWeight:5,cat:'蔬菜',density:0.3,gi:15,aliases:['海苔','索菜']},
+  裙带菜:{kcal:25,protein:1.9,fat:0.1,carb:5.0,fiber:1.1,sodium:280,unitWeight:80,cat:'蔬菜',density:0.4,gi:15,aliases:['海芥菜','若布']},
+  石花菜:{kcal:314,protein:5.4,fat:0.1,carb:78.5,fiber:32.0,sodium:300,unitWeight:10,cat:'蔬菜',density:0.3,gi:15,aliases:['海冻菜','鸡脚菜']},
+  发菜:{kcal:246,protein:22.8,fat:0.8,carb:36.8,fiber:21.9,sodium:400,unitWeight:5,cat:'蔬菜',density:0.3,gi:15,aliases:['地毛','头发菜']},
+  海白菜:{kcal:20,protein:2.0,fat:0.2,carb:3.0,fiber:1.2,sodium:180,unitWeight:80,cat:'蔬菜',density:0.5,gi:15,aliases:['石莼','海菠菜']},
+  玉米笋:{kcal:26,protein:2.2,fat:0.2,carb:5.0,fiber:1.8,sodium:2,unitWeight:60,cat:'蔬菜',density:0.55,gi:15,aliases:['珍珠笋','小玉米']},
+  菱角:{kcal:98,protein:3.6,fat:0.5,carb:21.4,fiber:1.7,sodium:5,unitWeight:80,cat:'蔬菜',density:0.85,gi:45,aliases:['水栗','菱实']},
+  慈姑:{kcal:94,protein:4.6,fat:0.2,carb:19.9,fiber:1.4,sodium:39,unitWeight:80,cat:'蔬菜',density:0.85,gi:45,aliases:['燕尾草','剪刀草']},
+  百合:{kcal:166,protein:3.2,fat:0.1,carb:38.8,fiber:1.7,sodium:7,unitWeight:50,cat:'蔬菜',density:0.8,gi:40,aliases:['百合片','卷丹']},
+  莲子:{kcal:162,protein:4.9,fat:0.6,carb:36.6,fiber:2.8,sodium:5,unitWeight:30,cat:'蔬菜',density:0.8,gi:45,aliases:['鲜莲子','莲肉']},
+  玉米粒:{kcal:112,protein:4.0,fat:1.2,carb:22.8,fiber:2.9,sodium:2,unitWeight:150,cat:'蔬菜',density:0.65,gi:55,aliases:['鲜玉米','玉米籽']},
+  魔芋:{kcal:7,protein:0.1,fat:0.1,carb:3.0,fiber:2.0,sodium:5,unitWeight:100,cat:'蔬菜',density:0.9,gi:15,aliases:['蒟蒻','鬼芋']},
+  芦荟:{kcal:14,protein:0.5,fat:0.1,carb:3.2,fiber:0.8,sodium:4,unitWeight:50,cat:'蔬菜',density:0.85,gi:15,aliases:['油葱','库拉索芦荟']},
+  仙人掌:{kcal:17,protein:1.1,fat:0.2,carb:3.2,fiber:1.4,sodium:2,unitWeight:100,cat:'蔬菜',density:0.8,gi:15,aliases:['食用仙人掌','仙巴掌']},
+  苹果:{kcal:53,protein:0.2,fat:0.2,carb:13.5,fiber:1.2,sodium:1,unitWeight:180,cat:'水果',density:0.85,gi:36,aliases:[]},
+  香蕉:{kcal:93,protein:1.4,fat:0.2,carb:22.0,fiber:1.2,sodium:1,unitWeight:120,cat:'水果',density:0.9,gi:52,aliases:[]},
+  橙子:{kcal:48,protein:0.8,fat:0.2,carb:11.1,fiber:0.6,sodium:1,unitWeight:180,cat:'水果',density:0.9,gi:43,aliases:['橘子','柑橘']},
+  葡萄:{kcal:45,protein:0.4,fat:0.3,carb:10.3,fiber:1.0,sodium:2,unitWeight:8,cat:'水果',density:0.9,gi:53,aliases:['提子']},
+  西瓜:{kcal:26,protein:0.6,fat:0.1,carb:6.8,fiber:0.3,sodium:3,unitWeight:300,cat:'水果',density:1,gi:72,aliases:[]},
+  草莓:{kcal:32,protein:1.0,fat:0.2,carb:7.1,fiber:1.1,sodium:4,unitWeight:15,cat:'水果',density:0.6,gi:40,aliases:[]},
+  蓝莓:{kcal:57,protein:0.7,fat:0.3,carb:14.5,fiber:2.4,sodium:1,unitWeight:2,cat:'水果',density:0.65,gi:53,aliases:[]},
+  猕猴桃:{kcal:61,protein:0.8,fat:0.6,carb:14.5,fiber:2.6,sodium:10,unitWeight:100,cat:'水果',density:0.9,gi:52,aliases:['奇异果']},
+  牛油果:{kcal:171,protein:2.0,fat:15.3,carb:7.4,fiber:5.9,sodium:10,unitWeight:150,cat:'水果',density:0.9,gi:15,aliases:['鳄梨']},
+  橘子:{kcal:44,protein:0.8,fat:0.1,carb:10.2,fiber:0.4,sodium:1,unitWeight:100,cat:'水果',density:0.9,gi:43,aliases:['桔子','蜜橘']},
+  柚子:{kcal:42,protein:0.8,fat:0.2,carb:9.5,fiber:0.4,sodium:3,unitWeight:200,cat:'水果',density:0.9,gi:25,aliases:['文旦','栾']},
+  柠檬:{kcal:37,protein:1.1,fat:1.2,carb:6.2,fiber:1.3,sodium:1,unitWeight:90,cat:'水果',density:0.9,gi:20,aliases:['洋柠檬']},
+  青柠:{kcal:30,protein:0.7,fat:0.2,carb:6.8,fiber:2.8,sodium:2,unitWeight:65,cat:'水果',density:0.9,gi:20,aliases:['莱姆','青柠檬']},
+  提子:{kcal:52,protein:0.5,fat:0.2,carb:12.6,fiber:0.4,sodium:2,unitWeight:8,cat:'水果',density:0.9,gi:53,aliases:['红提','葡萄']},
+  哈密瓜:{kcal:34,protein:0.5,fat:0.1,carb:7.9,fiber:0.2,sodium:27,unitWeight:250,cat:'水果',density:0.95,gi:65,aliases:['甜瓜','雪瓜']},
+  甜瓜:{kcal:26,protein:0.4,fat:0.1,carb:6.2,fiber:0.4,sodium:9,unitWeight:200,cat:'水果',density:0.95,gi:65,aliases:['香瓜','白兰瓜']},
+  树莓:{kcal:52,protein:1.2,fat:0.7,carb:11.9,fiber:6.5,sodium:1,unitWeight:4,cat:'水果',density:0.6,gi:32,aliases:['覆盆子','山莓']},
+  黑莓:{kcal:43,protein:1.4,fat:0.5,carb:9.6,fiber:5.3,sodium:1,unitWeight:5,cat:'水果',density:0.6,gi:25,aliases:['黑刺莓']},
+  桑葚:{kcal:57,protein:1.7,fat:0.4,carb:13.8,fiber:4.1,sodium:2,unitWeight:5,cat:'水果',density:0.6,gi:25,aliases:['桑果','桑枣']},
+  芒果:{kcal:60,protein:0.6,fat:0.4,carb:15.0,fiber:1.6,sodium:2,unitWeight:200,cat:'水果',density:0.9,gi:51,aliases:['檬果','望果']},
+  菠萝:{kcal:44,protein:0.5,fat:0.1,carb:10.8,fiber:1.3,sodium:1,unitWeight:200,cat:'水果',density:0.85,gi:66,aliases:['凤梨','黄梨']},
+  木瓜:{kcal:29,protein:0.4,fat:0.1,carb:7.0,fiber:0.8,sodium:28,unitWeight:200,cat:'水果',density:0.9,gi:59,aliases:['番木瓜','万寿果']},
+  火龙果:{kcal:55,protein:1.1,fat:0.2,carb:13.3,fiber:1.6,sodium:3,unitWeight:300,cat:'水果',density:0.9,gi:48,aliases:['红龙果','青龙果']},
+  白心火龙果:{kcal:51,protein:1.1,fat:0.2,carb:12.3,fiber:1.6,sodium:3,unitWeight:300,cat:'水果',density:0.9,gi:48,aliases:['白肉火龙果']},
+  荔枝:{kcal:71,protein:0.9,fat:0.2,carb:16.6,fiber:0.5,sodium:2,unitWeight:20,cat:'水果',density:0.85,gi:57,aliases:['丹荔','离枝']},
+  龙眼:{kcal:71,protein:1.2,fat:0.1,carb:16.6,fiber:0.4,sodium:4,unitWeight:10,cat:'水果',density:0.85,gi:52,aliases:['桂圆','元肉']},
+  榴莲:{kcal:147,protein:2.6,fat:3.3,carb:28.3,fiber:1.7,sodium:2,unitWeight:150,cat:'水果',density:0.9,gi:49,aliases:['韶子','麝香猫果']},
+  山竹:{kcal:72,protein:0.7,fat:0.2,carb:18.0,fiber:1.5,sodium:4,unitWeight:80,cat:'水果',density:0.9,gi:25,aliases:['莽吉柿']},
+  红毛丹:{kcal:82,protein:1.0,fat:0.1,carb:21.0,fiber:0.9,sodium:11,unitWeight:25,cat:'水果',density:0.85,gi:45,aliases:['毛荔枝','韶子']},
+  百香果:{kcal:97,protein:2.2,fat:0.7,carb:23.0,fiber:10.4,sodium:28,unitWeight:50,cat:'水果',density:0.9,gi:30,aliases:['西番莲','鸡蛋果']},
+  杨桃:{kcal:31,protein:0.6,fat:0.2,carb:7.4,fiber:1.2,sodium:1,unitWeight:150,cat:'水果',density:0.9,gi:30,aliases:['五敛子','阳桃']},
+  番石榴:{kcal:68,protein:2.6,fat:1.0,carb:14.2,fiber:5.9,sodium:2,unitWeight:150,cat:'水果',density:0.9,gi:31,aliases:['芭乐','鸡矢果']},
+  释迦:{kcal:99,protein:1.7,fat:0.6,carb:23.6,fiber:3.0,sodium:4,unitWeight:250,cat:'水果',density:0.9,gi:54,aliases:['番荔枝','佛头果']},
+  莲雾:{kcal:34,protein:0.5,fat:0.2,carb:8.6,fiber:0.8,sodium:3,unitWeight:90,cat:'水果',density:0.9,gi:25,aliases:['洋蒲桃','爪哇蒲桃']},
+  椰子肉:{kcal:354,protein:3.3,fat:33.5,carb:15.2,fiber:9.0,sodium:20,unitWeight:50,cat:'水果',density:0.9,gi:45,aliases:['椰肉','椰蓉']},
+  椰子水:{kcal:19,protein:0.7,fat:0.2,carb:3.7,fiber:1.1,sodium:105,unitWeight:250,cat:'水果',density:1.0,gi:55,aliases:['椰汁']},
+  柿子:{kcal:71,protein:0.4,fat:0.1,carb:18.5,fiber:1.4,sodium:1,unitWeight:180,cat:'水果',density:0.9,gi:50,aliases:['朱果','红柿']},
+  石榴:{kcal:72,protein:1.4,fat:0.2,carb:18.7,fiber:4.8,sodium:1,unitWeight:200,cat:'水果',density:0.9,gi:35,aliases:['安石榴','若榴木']},
+  无花果:{kcal:65,protein:0.8,fat:0.2,carb:16.0,fiber:3.0,sodium:5,unitWeight:50,cat:'水果',density:0.9,gi:61,aliases:['映日果','文仙果']},
+  杨梅:{kcal:30,protein:0.8,fat:0.2,carb:6.7,fiber:1.0,sodium:1,unitWeight:12,cat:'水果',density:0.85,gi:25,aliases:['树梅','珠红']},
+  枇杷:{kcal:41,protein:0.8,fat:0.2,carb:9.3,fiber:0.8,sodium:4,unitWeight:35,cat:'水果',density:0.9,gi:40,aliases:['芦橘','金丸']},
+  樱桃:{kcal:46,protein:1.1,fat:0.2,carb:10.2,fiber:0.3,sodium:8,unitWeight:8,cat:'水果',density:0.85,gi:22,aliases:['车厘子','朱樱']},
+  车厘子:{kcal:63,protein:1.1,fat:0.2,carb:16.0,fiber:2.1,sodium:8,unitWeight:10,cat:'水果',density:0.85,gi:22,aliases:['樱桃','甜樱桃']},
+  桃子:{kcal:42,protein:0.9,fat:0.1,carb:10.9,fiber:1.3,sodium:6,unitWeight:150,cat:'水果',density:0.9,gi:28,aliases:['毛桃','水蜜桃']},
+  油桃:{kcal:44,protein:1.1,fat:0.3,carb:10.6,fiber:1.7,sodium:1,unitWeight:130,cat:'水果',density:0.9,gi:35,aliases:['李光桃','光桃']},
+  李子:{kcal:38,protein:0.7,fat:0.2,carb:8.7,fiber:0.9,sodium:4,unitWeight:80,cat:'水果',density:0.9,gi:24,aliases:['玉皇李','嘉庆子']},
+  杏:{kcal:38,protein:0.9,fat:0.1,carb:9.1,fiber:1.3,sodium:1,unitWeight:35,cat:'水果',density:0.9,gi:31,aliases:['杏子','甜梅']},
+  梨:{kcal:44,protein:0.4,fat:0.2,carb:10.5,fiber:3.1,sodium:1,unitWeight:200,cat:'水果',density:0.9,gi:36,aliases:['白梨','鸭梨']},
+  香梨:{kcal:46,protein:0.4,fat:0.2,carb:11.2,fiber:2.7,sodium:2,unitWeight:120,cat:'水果',density:0.9,gi:36,aliases:['库尔勒香梨','新疆梨']},
+  枣:{kcal:122,protein:1.1,fat:0.3,carb:28.6,fiber:1.9,sodium:1,unitWeight:15,cat:'水果',density:0.9,gi:42,aliases:['鲜枣','大枣']},
+  红枣:{kcal:276,protein:3.2,fat:0.5,carb:67.8,fiber:6.2,sodium:6,unitWeight:8,cat:'水果',density:0.8,gi:62,aliases:['干枣','大红枣']},
+  葡萄干:{kcal:344,protein:2.5,fat:0.4,carb:83.4,fiber:1.6,sodium:19,unitWeight:10,cat:'水果',density:0.7,gi:64,aliases:['提子干','葡萄脯']},
+  蔓越莓干:{kcal:308,protein:0.1,fat:0.5,carb:82.4,fiber:5.7,sodium:3,unitWeight:8,cat:'水果',density:0.7,gi:62,aliases:['小红莓干','蔓越莓果干']},
+  芒果干:{kcal:319,protein:1.5,fat:1.2,carb:78.6,fiber:2.4,sodium:72,unitWeight:12,cat:'水果',density:0.7,gi:60,aliases:['芒果脯','蜜芒果干']},
+  香蕉片:{kcal:519,protein:2.3,fat:33.6,carb:58.4,fiber:7.7,sodium:3,unitWeight:15,cat:'水果',density:0.5,gi:55,aliases:['脆香蕉片','香蕉脆片']},
+  沙糖桔:{kcal:48,protein:0.7,fat:0.2,carb:11.5,fiber:0.5,sodium:1,unitWeight:45,cat:'水果',density:0.9,gi:43,aliases:['砂糖橘','十月桔']},
+  丑橘:{kcal:49,protein:0.9,fat:0.2,carb:11.7,fiber:0.6,sodium:1,unitWeight:200,cat:'水果',density:0.9,gi:44,aliases:['不知火','凸顶柑']},
+  沃柑:{kcal:48,protein:0.8,fat:0.2,carb:11.5,fiber:0.5,sodium:1,unitWeight:120,cat:'水果',density:0.9,gi:43,aliases:['沃桔','茂谷柑']},
+  甘蔗:{kcal:64,protein:0.4,fat:0.1,carb:16.0,fiber:0.6,sodium:3,unitWeight:200,cat:'水果',density:1.0,gi:43,aliases:['糖蔗','竿蔗']},
+  荸荠:{kcal:61,protein:1.2,fat:0.2,carb:14.2,fiber:1.1,sodium:16,unitWeight:20,cat:'水果',density:1.0,gi:35,aliases:['马蹄','地栗']},
+  芭蕉:{kcal:109,protein:1.2,fat:0.1,carb:28.9,fiber:3.1,sodium:1,unitWeight:100,cat:'水果',density:0.9,gi:53,aliases:['甘蕉','板蕉']},
+  人参果:{kcal:86,protein:0.6,fat:0.7,carb:21.2,fiber:3.5,sodium:3,unitWeight:150,cat:'水果',density:0.9,gi:35,aliases:['香瓜茄','南美香瓜茄']},
+  蛇皮果:{kcal:77,protein:0.6,fat:1.0,carb:20.9,fiber:0.8,sodium:2,unitWeight:60,cat:'水果',density:0.85,gi:50,aliases:['沙叻','蛇皮果']},
+  黄金瓜:{kcal:30,protein:0.6,fat:0.1,carb:7.0,fiber:0.4,sodium:8,unitWeight:250,cat:'水果',density:0.95,gi:65,aliases:['金瓜','伊丽莎白瓜']},
+  冬枣:{kcal:122,protein:1.1,fat:0.3,carb:28.6,fiber:2.2,sodium:1,unitWeight:12,cat:'水果',density:0.9,gi:42,aliases:['冻枣','雁来红']},
+  青枣:{kcal:51,protein:0.8,fat:0.2,carb:12.0,fiber:1.6,sodium:1,unitWeight:40,cat:'水果',density:0.9,gi:42,aliases:['台湾青枣','牛奶枣']},
+  西梅:{kcal:42,protein:0.5,fat:0.2,carb:11.4,fiber:0.9,sodium:1,unitWeight:60,cat:'水果',density:0.9,gi:29,aliases:['加州西梅','欧洲李']},
+  黑布林:{kcal:46,protein:0.7,fat:0.3,carb:10.8,fiber:1.4,sodium:2,unitWeight:100,cat:'水果',density:0.9,gi:24,aliases:['黑李子','黑布林李']},
+  花生:{kcal:574,protein:24.8,fat:44.3,carb:21.7,fiber:5.5,sodium:4,unitWeight:1,cat:'零食',density:0.6,gi:14,aliases:['花生米','炒花生']},
+  杏仁:{kcal:578,protein:22.5,fat:45.4,carb:23.9,fiber:8.0,sodium:8,unitWeight:1,cat:'零食',density:0.6,gi:15,aliases:['巴旦木']},
+  核桃:{kcal:646,protein:14.9,fat:58.8,carb:19.1,fiber:9.5,sodium:6,unitWeight:10,cat:'零食',density:0.5,gi:15,aliases:[]},
+  腰果:{kcal:559,protein:17.3,fat:36.7,carb:41.6,fiber:3.6,sodium:251,unitWeight:2,cat:'零食',density:0.6,gi:22,aliases:[]},
+  薯片:{kcal:548,protein:7.5,fat:37.6,carb:49.2,fiber:4.4,sodium:585,unitWeight:5,cat:'零食',density:0.15,gi:54,aliases:['土豆片']},
+  巧克力:{kcal:589,protein:4.3,fat:40.1,carb:53.4,fiber:1.5,sodium:111,unitWeight:10,cat:'零食',density:0.9,gi:40,aliases:['黑巧克力','牛奶巧克力']},
+  饼干:{kcal:435,protein:9.0,fat:12.7,carb:71.7,fiber:1.1,sodium:300,unitWeight:10,cat:'零食',density:0.4,gi:70,aliases:['曲奇']},
+  蛋糕:{kcal:347,protein:5.0,fat:13.0,carb:52.0,fiber:0.5,sodium:250,unitWeight:100,cat:'零食',density:0.5,gi:67,aliases:['生日蛋糕','奶油蛋糕']},
+  冰淇淋:{kcal:127,protein:2.4,fat:5.3,carb:17.3,fiber:0,sodium:54,unitWeight:100,cat:'零食',density:0.6,gi:51,aliases:['雪糕','冰激凌']},
+  花生米:{kcal:601,protein:23.9,fat:48.0,carb:21.7,fiber:7.7,sodium:445,unitWeight:25,cat:'零食',density:0.55,gi:14,aliases:['炒花生','油炸花生米']},
+  巴旦木:{kcal:579,protein:21.2,fat:49.9,carb:21.6,fiber:12.5,sodium:1,unitWeight:25,cat:'零食',density:0.55,gi:15,aliases:['扁桃仁','美国大杏仁']},
+  核桃仁:{kcal:646,protein:14.9,fat:58.8,carb:19.1,fiber:9.5,sodium:6,unitWeight:25,cat:'零食',density:0.5,gi:15,aliases:['核桃肉','胡桃仁']},
+  开心果:{kcal:614,protein:20.6,fat:53.0,carb:21.9,fiber:8.2,sodium:757,unitWeight:25,cat:'零食',density:0.5,gi:15,aliases:['阿月浑子','无名子']},
+  榛子:{kcal:611,protein:20.0,fat:50.3,carb:24.0,fiber:9.6,sodium:3,unitWeight:25,cat:'零食',density:0.55,gi:15,aliases:['山板栗','平榛']},
+  夏威夷果:{kcal:718,protein:8.3,fat:75.8,carb:13.8,fiber:8.6,sodium:5,unitWeight:20,cat:'零食',density:0.55,gi:10,aliases:['澳洲坚果','昆士兰果']},
+  碧根果:{kcal:691,protein:9.2,fat:72.0,carb:13.9,fiber:9.6,sodium:1,unitWeight:20,cat:'零食',density:0.55,gi:10,aliases:['长寿果','美国山核桃']},
+  松子:{kcal:718,protein:13.4,fat:70.6,carb:12.2,fiber:10.0,sodium:3,unitWeight:20,cat:'零食',density:0.5,gi:15,aliases:['海松子','松元']},
+  板栗:{kcal:185,protein:4.2,fat:0.7,carb:42.2,fiber:1.7,sodium:13,unitWeight:15,cat:'零食',density:0.6,gi:60,aliases:['栗子','毛栗']},
+  榧子:{kcal:618,protein:10.0,fat:57.0,carb:24.0,fiber:7.0,sodium:4,unitWeight:15,cat:'零食',density:0.5,gi:15,aliases:['香榧','玉榧']},
+  葵花籽:{kcal:606,protein:22.6,fat:52.8,carb:17.3,fiber:7.8,sodium:5,unitWeight:25,cat:'零食',density:0.5,gi:15,aliases:['向日葵籽','瓜子']},
+  南瓜子:{kcal:566,protein:33.2,fat:48.1,carb:4.9,fiber:4.9,sodium:20,unitWeight:25,cat:'零食',density:0.5,gi:15,aliases:['白瓜子','南瓜仁']},
+  西瓜子:{kcal:573,protein:32.7,fat:44.8,carb:9.7,fiber:5.4,sodium:12,unitWeight:25,cat:'零食',density:0.5,gi:15,aliases:['黑瓜子','瓜子仁']},
+  白芝麻:{kcal:536,protein:18.4,fat:39.6,carb:31.5,fiber:9.8,sodium:8,unitWeight:15,cat:'零食',density:0.55,gi:15,aliases:['芝麻','白麻']},
+  黑芝麻:{kcal:559,protein:19.1,fat:46.1,carb:24.0,fiber:14.0,sodium:8,unitWeight:15,cat:'零食',density:0.55,gi:15,aliases:['乌麻','黑脂麻']},
+  亚麻籽:{kcal:534,protein:18.3,fat:42.2,carb:28.9,fiber:27.3,sodium:30,unitWeight:15,cat:'零食',density:0.6,gi:15,aliases:['胡麻籽','壁虱胡麻']},
+  奇亚籽:{kcal:486,protein:16.5,fat:30.7,carb:42.1,fiber:34.4,sodium:16,unitWeight:15,cat:'零食',density:0.6,gi:15,aliases:['鼠尾草籽','芡欧鼠尾草籽']},
+  火麻仁:{kcal:603,protein:31.6,fat:48.0,carb:9.0,fiber:4.0,sodium:5,unitWeight:15,cat:'零食',density:0.55,gi:15,aliases:['大麻仁','线麻子']},
+  银杏:{kcal:355,protein:13.2,fat:1.3,carb:72.6,fiber:1.2,sodium:7,unitWeight:10,cat:'零食',density:0.6,gi:null,aliases:['白果','银杏仁']},
+  芡实:{kcal:351,protein:8.3,fat:0.3,carb:79.6,fiber:0.9,sodium:5,unitWeight:15,cat:'零食',density:0.6,gi:null,aliases:['鸡头米','鸡头实']},
+  原味薯片:{kcal:548,protein:7.5,fat:37.6,carb:49.2,fiber:4.4,sodium:585,unitWeight:5,cat:'零食',density:0.15,gi:54,aliases:['土豆片','炸薯片']},
+  虾条:{kcal:495,protein:5.5,fat:26.0,carb:60.0,fiber:2.0,sodium:1100,unitWeight:20,cat:'零食',density:0.15,gi:60,aliases:['虾片','鲜虾条']},
+  锅巴:{kcal:492,protein:8.5,fat:22.0,carb:64.0,fiber:3.0,sodium:1200,unitWeight:25,cat:'零食',density:0.3,gi:72,aliases:['小米锅巴','大米锅巴']},
+  爆米花:{kcal:459,protein:8.7,fat:21.0,carb:58.0,fiber:8.7,sodium:600,unitWeight:20,cat:'零食',density:0.1,gi:65,aliases:['玉米花','爆谷']},
+  米饼:{kcal:420,protein:6.0,fat:10.0,carb:76.0,fiber:1.5,sodium:450,unitWeight:8,cat:'零食',density:0.2,gi:82,aliases:['雪饼','仙贝']},
+  苏打饼干:{kcal:408,protein:8.4,fat:7.7,carb:76.2,fiber:1.7,sodium:1100,unitWeight:6,cat:'零食',density:0.4,gi:74,aliases:['咸饼干','梳打饼干']},
+  曲奇:{kcal:546,protein:6.5,fat:31.0,carb:59.0,fiber:1.5,sodium:350,unitWeight:12,cat:'零食',density:0.4,gi:65,aliases:['牛油曲奇','曲奇饼']},
+  威化饼:{kcal:502,protein:5.0,fat:24.0,carb:66.0,fiber:1.5,sodium:300,unitWeight:10,cat:'零食',density:0.3,gi:65,aliases:['威化饼干','华夫饼干']},
+  夹心饼干:{kcal:489,protein:6.0,fat:22.0,carb:67.0,fiber:1.5,sodium:330,unitWeight:12,cat:'零食',density:0.4,gi:65,aliases:['夹心饼','奶油夹心饼干']},
+  消化饼:{kcal:483,protein:7.0,fat:21.0,carb:65.0,fiber:3.5,sodium:550,unitWeight:15,cat:'零食',density:0.4,gi:62,aliases:['全麦消化饼干','消化饼干']},
+  蛋卷:{kcal:498,protein:7.5,fat:25.0,carb:61.0,fiber:1.0,sodium:280,unitWeight:10,cat:'零食',density:0.3,gi:65,aliases:['鸡蛋卷','凤凰卷']},
+  沙琪玛:{kcal:471,protein:6.5,fat:20.0,carb:66.0,fiber:1.0,sodium:200,unitWeight:45,cat:'零食',density:0.4,gi:70,aliases:['萨其马','金丝糕']},
+  桃酥:{kcal:482,protein:6.0,fat:22.0,carb:65.0,fiber:1.0,sodium:250,unitWeight:35,cat:'零食',density:0.4,gi:65,aliases:['核桃酥','宫廷桃酥']},
+  江米条:{kcal:470,protein:5.5,fat:20.0,carb:68.0,fiber:1.0,sodium:120,unitWeight:10,cat:'零食',density:0.3,gi:72,aliases:['糯米条','炸江米条']},
+  麻薯:{kcal:290,protein:3.0,fat:4.0,carb:60.0,fiber:0.5,sodium:60,unitWeight:30,cat:'零食',density:0.9,gi:80,aliases:['糯米糍','草饼']},
+  果冻:{kcal:65,protein:0.1,fat:0.1,carb:16.0,fiber:0.3,sodium:30,unitWeight:100,cat:'零食',density:1.0,gi:62,aliases:['布丁果冻','蒟蒻果冻']},
+  布丁:{kcal:127,protein:3.2,fat:4.5,carb:18.0,fiber:0,sodium:90,unitWeight:90,cat:'零食',density:1.0,gi:55,aliases:['鸡蛋布丁','焦糖布丁']},
+  棉花糖:{kcal:330,protein:1.8,fat:0,carb:81.0,fiber:0,sodium:80,unitWeight:5,cat:'零食',density:0.3,gi:80,aliases:['棉花软糖']},
+  软糖:{kcal:350,protein:2.0,fat:0.2,carb:85.0,fiber:0,sodium:40,unitWeight:5,cat:'零食',density:0.9,gi:78,aliases:['橡皮糖','QQ糖']},
+  硬糖:{kcal:394,protein:0.1,fat:0.2,carb:98.0,fiber:0,sodium:20,unitWeight:4,cat:'零食',density:0.9,gi:70,aliases:['水果糖','棒棒糖']},
+  黑巧克力:{kcal:589,protein:7.8,fat:42.6,carb:45.9,fiber:10.9,sodium:20,unitWeight:10,cat:'零食',density:0.9,gi:23,aliases:['黑巧','可可含量70%巧克力']},
+  牛奶巧克力:{kcal:535,protein:7.6,fat:29.7,carb:59.4,fiber:3.4,sodium:79,unitWeight:10,cat:'零食',density:0.9,gi:43,aliases:['奶油巧克力','牛奶巧']},
+  白巧克力:{kcal:539,protein:5.9,fat:32.1,carb:59.2,fiber:0.2,sodium:90,unitWeight:10,cat:'零食',density:0.9,gi:44,aliases:['白巧']},
+  巧克力棒:{kcal:520,protein:6.0,fat:28.0,carb:60.0,fiber:2.0,sodium:150,unitWeight:35,cat:'零食',density:0.8,gi:51,aliases:['巧克力威化棒','夹心巧克力棒']},
+  士力架:{kcal:488,protein:8.6,fat:23.9,carb:60.5,fiber:1.9,sodium:210,unitWeight:51,cat:'零食',density:0.9,gi:55,aliases:['花生夹心巧克力','Snickers']},
+  风干牛肉干:{kcal:550,protein:45.6,fat:40.0,carb:1.9,fiber:0,sodium:412,unitWeight:20,cat:'零食',density:0.6,gi:null,aliases:['牛肉干','手撕牛肉']},
+  靖江猪肉脯:{kcal:428,protein:45.0,fat:12.0,carb:36.0,fiber:0,sodium:1200,unitWeight:15,cat:'零食',density:0.7,gi:null,aliases:['猪肉脯','肉脯']},
+  鱼片干:{kcal:310,protein:55.0,fat:5.0,carb:12.0,fiber:0,sodium:1500,unitWeight:15,cat:'零食',density:0.5,gi:null,aliases:['鱼干','烤鱼片']},
+  鱿鱼丝:{kcal:313,protein:60.0,fat:3.0,carb:12.0,fiber:0,sodium:1800,unitWeight:15,cat:'零食',density:0.4,gi:null,aliases:['手撕鱿鱼丝','鱿鱼干']},
+  话梅:{kcal:200,protein:1.5,fat:0.5,carb:48.0,fiber:4.0,sodium:3500,unitWeight:8,cat:'零食',density:0.8,gi:null,aliases:['话梅干','青梅']},
+  蜜饯:{kcal:320,protein:1.0,fat:0.2,carb:80.0,fiber:2.0,sodium:1200,unitWeight:15,cat:'零食',density:0.9,gi:null,aliases:['蜜枣','糖渍果脯']},
+  果脯:{kcal:322,protein:1.2,fat:0.3,carb:80.0,fiber:2.0,sodium:200,unitWeight:15,cat:'零食',density:0.9,gi:null,aliases:['果丹皮','苹果脯']},
+  山楂片:{kcal:375,protein:0.7,fat:0.4,carb:92.0,fiber:3.0,sodium:150,unitWeight:5,cat:'零食',density:0.8,gi:null,aliases:['山楂糕','山楂饼']},
+  无核葡萄干:{kcal:344,protein:2.5,fat:0.4,carb:83.4,fiber:1.6,sodium:19,unitWeight:10,cat:'零食',density:0.9,gi:64,aliases:['葡萄干','提子干']},
+  芒果果干:{kcal:319,protein:2.5,fat:1.3,carb:78.6,fiber:2.4,sodium:200,unitWeight:15,cat:'零食',density:0.7,gi:null,aliases:['芒果干']},
+  香蕉脆片:{kcal:519,protein:2.3,fat:33.6,carb:58.4,fiber:7.7,sodium:5,unitWeight:10,cat:'零食',density:0.4,gi:null,aliases:['香蕉片','炸香蕉片']},
+  椰子片:{kcal:660,protein:6.9,fat:64.5,carb:23.7,fiber:16.3,sodium:37,unitWeight:10,cat:'零食',density:0.4,gi:null,aliases:['椰蓉片','烤椰子片']},
+  雪糕:{kcal:180,protein:3.0,fat:8.0,carb:24.0,fiber:0.2,sodium:60,unitWeight:70,cat:'零食',density:0.7,gi:61,aliases:['冰棍','奶油雪糕']},
+  冰棒:{kcal:90,protein:0.5,fat:0.5,carb:21.0,fiber:0.2,sodium:20,unitWeight:80,cat:'零食',density:0.9,gi:65,aliases:['棒冰','老冰棍']},
+  甜筒:{kcal:255,protein:4.0,fat:10.0,carb:36.0,fiber:0.5,sodium:110,unitWeight:90,cat:'零食',density:0.5,gi:65,aliases:['蛋筒','冰淇淋甜筒']},
+  慕斯:{kcal:310,protein:4.5,fat:22.0,carb:24.0,fiber:0.5,sodium:90,unitWeight:90,cat:'零食',density:0.6,gi:55,aliases:['慕斯蛋糕','慕司']},
+  芝士蛋糕:{kcal:321,protein:5.5,fat:22.0,carb:25.0,fiber:0.4,sodium:280,unitWeight:100,cat:'零食',density:0.6,gi:50,aliases:['奶酪蛋糕','起司蛋糕']},
+  提拉米苏:{kcal:283,protein:5.0,fat:18.0,carb:25.0,fiber:0.3,sodium:80,unitWeight:100,cat:'零食',density:0.6,gi:48,aliases:['提拉米苏蛋糕','Tiramisu']},
+  马卡龙:{kcal:405,protein:6.0,fat:16.0,carb:60.0,fiber:1.5,sodium:60,unitWeight:20,cat:'零食',density:0.6,gi:65,aliases:['少女的酥胸','法式马卡龙']},
+  广式月饼:{kcal:420,protein:7.0,fat:18.0,carb:58.0,fiber:1.5,sodium:280,unitWeight:80,cat:'零食',density:0.7,gi:null,aliases:['月饼','莲蓉月饼']},
+  苏式月饼:{kcal:430,protein:6.5,fat:20.0,carb:57.0,fiber:1.2,sodium:250,unitWeight:70,cat:'零食',density:0.6,gi:null,aliases:['酥皮月饼','鲜肉月饼']},
+  沙冰:{kcal:80,protein:0.7,fat:1.2,carb:16.5,fiber:0.3,sodium:25,unitWeight:250,cat:'零食',density:0.9,gi:null,aliases:['冰沙','刨冰']},
+  奶昔:{kcal:130,protein:3.2,fat:4.5,carb:19.0,fiber:0.2,sodium:60,unitWeight:300,cat:'零食',density:1.0,gi:null,aliases:['现打奶昔','香草奶昔']},
+  炸薯条:{kcal:298,protein:3.4,fat:15.0,carb:38.0,fiber:3.8,sodium:210,unitWeight:100,cat:'零食',density:0.3,gi:75,aliases:['薯条','法式薯条']},
+  甜筒冰淇淋:{kcal:127,protein:2.4,fat:5.3,carb:17.3,fiber:0,sodium:54,unitWeight:100,cat:'零食',density:0.6,gi:61,aliases:['冰淇淋','冰激凌']},
+  奶油蛋糕:{kcal:347,protein:5.0,fat:13.0,carb:52.0,fiber:0.5,sodium:250,unitWeight:100,cat:'零食',density:0.5,gi:67,aliases:['蛋糕','生日蛋糕']},
+  葡式蛋挞:{kcal:375,protein:6.0,fat:22.0,carb:37.0,fiber:0.6,sodium:180,unitWeight:60,cat:'零食',density:0.6,gi:60,aliases:['蛋挞','蛋塔']},
+  奶油泡芙:{kcal:380,protein:6.0,fat:26.0,carb:29.0,fiber:0.5,sodium:220,unitWeight:45,cat:'零食',density:0.5,gi:60,aliases:['泡芙','酥皮泡芙']},
+  黑芝麻汤圆:{kcal:311,protein:4.5,fat:9.0,carb:51.0,fiber:0.7,sodium:25,unitWeight:20,cat:'零食',density:0.9,gi:75,aliases:['汤圆','元宵']},
+  天津麻花:{kcal:527,protein:8.3,fat:31.5,carb:53.0,fiber:1.5,sodium:200,unitWeight:30,cat:'零食',density:0.4,gi:68,aliases:['麻花','炸麻花']},
+  可口可乐:{kcal:43,protein:0,fat:0,carb:10.8,fiber:0,sodium:11,unitWeight:330,cat:'零食',density:1.04,gi:63,aliases:['可乐','肥宅快乐水']},
+  块状巧克力:{kcal:586,protein:4.3,fat:40.1,carb:53.4,fiber:1.5,sodium:111,unitWeight:10,cat:'零食',density:0.9,gi:40,aliases:['巧克力','牛奶巧克力块']},
+  普通饼干:{kcal:435,protein:9.0,fat:12.7,carb:71.7,fiber:1.1,sodium:300,unitWeight:10,cat:'零食',density:0.4,gi:70,aliases:['饼干','甜饼干']},
+  可乐:{kcal:43,protein:0,fat:0,carb:10.8,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.04,gi:63,aliases:['汽水','雪碧']},
+  啤酒:{kcal:32,protein:0.4,fat:0,carb:3.1,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1,gi:null,aliases:[]},
+  奶茶:{kcal:89,protein:1.2,fat:3.5,carb:12.9,fiber:0.2,sodium:40,unitWeight:500,cat:'饮品',density:1.05,gi:null,aliases:['珍珠奶茶']},
+  咖啡:{kcal:2,protein:0.1,fat:0,carb:0.3,fiber:0,sodium:3,unitWeight:250,cat:'饮品',density:1,gi:null,aliases:['美式咖啡','黑咖啡']},
+  白开水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:250,cat:'饮品',density:1.0,gi:null,aliases:['开水','饮用水']},
+  矿泉水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:2,unitWeight:500,cat:'饮品',density:1.0,gi:null,aliases:['瓶装水','天然矿泉水']},
+  纯净水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:500,cat:'饮品',density:1.0,gi:null,aliases:['蒸馏水','净水']},
+  零度可乐:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:15,unitWeight:330,cat:'饮品',density:1.04,gi:0,aliases:['无糖可乐','零卡可乐']},
+  雪碧:{kcal:43,protein:0,fat:0,carb:10.5,fiber:0,sodium:12,unitWeight:330,cat:'饮品',density:1.04,gi:63,aliases:['柠檬汽水','Sprite']},
+  芬达:{kcal:49,protein:0,fat:0,carb:12.3,fiber:0,sodium:10,unitWeight:330,cat:'饮品',density:1.04,gi:68,aliases:['橙味汽水','Fanta']},
+  橙汁:{kcal:45,protein:0.7,fat:0.2,carb:10.4,fiber:0.2,sodium:1,unitWeight:250,cat:'饮品',density:1.04,gi:50,aliases:['鲜榨橙汁','橙子汁']},
+  苹果汁:{kcal:46,protein:0.1,fat:0.1,carb:11.3,fiber:0.2,sodium:4,unitWeight:250,cat:'饮品',density:1.04,gi:41,aliases:['鲜榨苹果汁','苹果汁饮料']},
+  葡萄汁:{kcal:60,protein:0.4,fat:0.1,carb:14.8,fiber:0.2,sodium:5,unitWeight:250,cat:'饮品',density:1.05,gi:55,aliases:['紫葡萄汁','葡萄果汁']},
+  西瓜汁:{kcal:29,protein:0.4,fat:0.1,carb:6.9,fiber:0.2,sodium:2,unitWeight:300,cat:'饮品',density:1.02,gi:60,aliases:['鲜榨西瓜汁']},
+  番茄汁:{kcal:17,protein:0.8,fat:0.1,carb:3.5,fiber:0.4,sodium:200,unitWeight:250,cat:'饮品',density:1.03,gi:38,aliases:['西红柿汁','番茄果蔬汁']},
+  运动饮料:{kcal:26,protein:0,fat:0,carb:6.4,fiber:0,sodium:45,unitWeight:600,cat:'饮品',density:1.02,gi:78,aliases:['电解质饮料','宝矿力']},
+  能量饮料:{kcal:45,protein:0.4,fat:0,carb:11.0,fiber:0,sodium:100,unitWeight:250,cat:'饮品',density:1.03,gi:70,aliases:['红牛','功能饮料']},
+  乳酸菌饮料:{kcal:65,protein:1.0,fat:0.8,carb:13.5,fiber:0,sodium:40,unitWeight:100,cat:'饮品',density:1.05,gi:null,aliases:['养乐多','乳酸菌奶']},
+  酸梅汤:{kcal:45,protein:0.1,fat:0,carb:11.0,fiber:0.1,sodium:15,unitWeight:300,cat:'饮品',density:1.02,gi:null,aliases:['乌梅汁','冰镇酸梅汤']},
+  凉茶:{kcal:35,protein:0,fat:0,carb:8.8,fiber:0,sodium:35,unitWeight:310,cat:'饮品',density:1.02,gi:null,aliases:['广东凉茶','二十四味']},
+  王老吉:{kcal:38,protein:0,fat:0,carb:9.5,fiber:0,sodium:30,unitWeight:310,cat:'饮品',density:1.02,gi:null,aliases:['罐装凉茶','王老吉凉茶']},
+  冰红茶:{kcal:35,protein:0.1,fat:0,carb:8.7,fiber:0,sodium:20,unitWeight:500,cat:'饮品',density:1.02,gi:null,aliases:['柠檬红茶','冰红茶饮料']},
+  绿茶:{kcal:30,protein:0.1,fat:0,carb:7.4,fiber:0,sodium:15,unitWeight:500,cat:'饮品',density:1.01,gi:null,aliases:['瓶装绿茶','绿茶饮料']},
+  乌龙茶:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:5,unitWeight:500,cat:'饮品',density:1.0,gi:null,aliases:['无糖乌龙茶','瓶装乌龙茶']},
+  茉莉花茶:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:2,unitWeight:500,cat:'饮品',density:1.0,gi:null,aliases:['茉莉茶','花茶']},
+  普洱茶:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:3,unitWeight:250,cat:'饮品',density:1.0,gi:null,aliases:['熟普','普洱熟茶']},
+  红茶:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:3,unitWeight:250,cat:'饮品',density:1.0,gi:null,aliases:['无糖红茶','热红茶']},
+  美式咖啡:{kcal:2,protein:0.1,fat:0,carb:0.3,fiber:0,sodium:3,unitWeight:350,cat:'饮品',density:1.0,gi:null,aliases:['Americano','黑咖啡']},
+  拿铁:{kcal:55,protein:3.0,fat:3.0,carb:4.5,fiber:0,sodium:40,unitWeight:350,cat:'饮品',density:1.02,gi:null,aliases:['拿铁咖啡','Latte']},
+  卡布奇诺:{kcal:46,protein:2.5,fat:2.5,carb:3.8,fiber:0,sodium:35,unitWeight:250,cat:'饮品',density:1.0,gi:null,aliases:['卡布','Cappuccino']},
+  摩卡:{kcal:88,protein:3.0,fat:3.5,carb:11.5,fiber:0.3,sodium:50,unitWeight:350,cat:'饮品',density:1.04,gi:null,aliases:['摩卡咖啡','Mocha']},
+  速溶咖啡:{kcal:60,protein:1.2,fat:1.8,carb:10.0,fiber:0,sodium:60,unitWeight:180,cat:'饮品',density:1.03,gi:null,aliases:['三合一咖啡','速溶三合一']},
+  无糖豆浆:{kcal:31,protein:3.0,fat:1.6,carb:1.2,fiber:1.1,sodium:3,unitWeight:300,cat:'饮品',density:1.01,gi:15,aliases:['原味豆浆','现磨豆浆']},
+  维他奶:{kcal:47,protein:2.6,fat:1.6,carb:5.5,fiber:0.4,sodium:45,unitWeight:250,cat:'饮品',density:1.03,gi:30,aliases:['豆奶','豆奶饮料']},
+  全脂牛奶:{kcal:54,protein:3.0,fat:3.2,carb:3.4,fiber:0,sodium:37,unitWeight:250,cat:'饮品',density:1.03,gi:27,aliases:['纯牛奶','牛奶']},
+  酸奶饮品:{kcal:72,protein:2.5,fat:1.8,carb:11.5,fiber:0,sodium:50,unitWeight:200,cat:'饮品',density:1.05,gi:33,aliases:['酸奶饮料','发酵乳饮品']},
+  珍珠奶茶:{kcal:95,protein:1.2,fat:3.2,carb:15.5,fiber:0.2,sodium:45,unitWeight:500,cat:'饮品',density:1.08,gi:null,aliases:['波霸奶茶','奶茶']},
+  奶盖茶:{kcal:78,protein:1.5,fat:4.2,carb:8.5,fiber:0.1,sodium:50,unitWeight:500,cat:'饮品',density:1.05,gi:null,aliases:['芝士奶盖茶','奶盖']},
+  水果茶:{kcal:42,protein:0.3,fat:0.1,carb:10.2,fiber:0.5,sodium:15,unitWeight:500,cat:'饮品',density:1.02,gi:null,aliases:['鲜果茶','水果茶饮']},
+  白酒:{kcal:298,protein:0,fat:0,carb:0.5,fiber:0,sodium:1,unitWeight:25,cat:'饮品',density:0.95,gi:null,aliases:['烧酒','二锅头']},
+  红酒:{kcal:85,protein:0.1,fat:0,carb:2.6,fiber:0,sodium:5,unitWeight:150,cat:'饮品',density:0.99,gi:null,aliases:['红葡萄酒','干红']},
+  黄酒:{kcal:66,protein:1.6,fat:0,carb:5.0,fiber:0,sodium:10,unitWeight:100,cat:'饮品',density:1.0,gi:null,aliases:['绍兴酒','花雕酒']},
+  米酒:{kcal:91,protein:1.6,fat:0,carb:13.0,fiber:0,sodium:5,unitWeight:100,cat:'饮品',density:1.0,gi:null,aliases:['醪糟汁','糯米酒']},
+  鸡尾酒:{kcal:110,protein:0.1,fat:0,carb:11.0,fiber:0,sodium:10,unitWeight:200,cat:'饮品',density:1.0,gi:null,aliases:['预调鸡尾酒','调制酒']},
+  食用油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['植物油','花生油','橄榄油','油']},
+  白砂糖:{kcal:400,protein:0,fat:0,carb:99.9,fiber:0,sodium:0,unitWeight:5,cat:'调味',density:0.85,gi:65,aliases:['糖','砂糖']},
+  番茄酱:{kcal:81,protein:4.9,fat:0.2,carb:16.9,fiber:1.5,sodium:900,unitWeight:15,cat:'调味',density:1.1,gi:null,aliases:[]},
+  沙拉酱:{kcal:725,protein:1.1,fat:78.8,carb:3.3,fiber:0,sodium:600,unitWeight:15,cat:'调味',density:0.95,gi:null,aliases:['蛋黄酱','千岛酱']},
+  酱油:{kcal:63,protein:5.6,fat:0.1,carb:10.1,fiber:0,sodium:5757,unitWeight:10,cat:'调味',density:1.15,gi:null,aliases:['生抽','老抽']},
+  大豆油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['豆油','食用油']},
+  花生油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['生油','压榨花生油']},
+  橄榄油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['特级初榨橄榄油','洋橄榄油']},
+  菜籽油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['菜油','香菜籽油']},
+  玉米油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['粟米油','玉米胚芽油']},
+  芝麻油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['香油','麻油']},
+  猪油:{kcal:897,protein:0,fat:99.6,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['荤油','大油']},
+  动物黄油:{kcal:750,protein:0.5,fat:83.0,carb:0.5,fiber:0,sodium:40,unitWeight:10,cat:'调味',density:0.91,gi:0,aliases:['黄油','牛油']},
+  植物黄油:{kcal:628,protein:0.9,fat:70.0,carb:1.0,fiber:0,sodium:600,unitWeight:10,cat:'调味',density:0.9,gi:0,aliases:['人造黄油','麦淇淋']},
+  生抽:{kcal:63,protein:5.6,fat:0.1,carb:10.1,fiber:0,sodium:6100,unitWeight:10,cat:'调味',density:1.15,gi:null,aliases:['淡酱油','鲜味生抽']},
+  老抽:{kcal:78,protein:4.5,fat:0.1,carb:14.5,fiber:0,sodium:7000,unitWeight:10,cat:'调味',density:1.17,gi:null,aliases:['红烧酱油','浓酱油']},
+  蚝油:{kcal:114,protein:3.5,fat:0.2,carb:24.0,fiber:0,sodium:4200,unitWeight:10,cat:'调味',density:1.2,gi:null,aliases:['牡蛎油','蚝油酱']},
+  醋:{kcal:31,protein:2.1,fat:0.3,carb:4.9,fiber:0,sodium:262,unitWeight:10,cat:'调味',density:1.01,gi:null,aliases:['米醋','香醋']},
+  陈醋:{kcal:114,protein:9.8,fat:0.3,carb:17.0,fiber:0,sodium:836,unitWeight:10,cat:'调味',density:1.05,gi:null,aliases:['山西老陈醋','老醋']},
+  白醋:{kcal:26,protein:0.1,fat:0,carb:6.0,fiber:0,sodium:50,unitWeight:10,cat:'调味',density:1.01,gi:null,aliases:['醋精','酿造白醋']},
+  料酒:{kcal:65,protein:0.2,fat:0,carb:5.0,fiber:0,sodium:1200,unitWeight:10,cat:'调味',density:1.0,gi:null,aliases:['黄酒(烹饪)','烹调料酒']},
+  食盐:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:39311,unitWeight:5,cat:'调味',density:1.2,gi:0,aliases:['盐','精盐']},
+  红糖:{kcal:389,protein:0.7,fat:0,carb:96.6,fiber:0,sodium:18,unitWeight:5,cat:'调味',density:0.8,gi:65,aliases:['赤砂糖','黑糖']},
+  冰糖:{kcal:397,protein:0.1,fat:0,carb:99.3,fiber:0,sodium:2,unitWeight:6,cat:'调味',density:0.9,gi:65,aliases:['多晶冰糖','老冰糖']},
+  蜂蜜:{kcal:321,protein:0.4,fat:1.9,carb:75.6,fiber:0,sodium:6,unitWeight:15,cat:'调味',density:1.2,gi:55,aliases:['蜜糖','百花蜜']},
+  辣椒酱:{kcal:110,protein:4.0,fat:6.0,carb:10.0,fiber:3.0,sodium:3300,unitWeight:15,cat:'调味',density:1.1,gi:null,aliases:['剁椒酱','辣酱']},
+  豆瓣酱:{kcal:178,protein:13.6,fat:6.8,carb:17.1,fiber:1.5,sodium:6012,unitWeight:15,cat:'调味',density:1.15,gi:null,aliases:['郫县豆瓣','豆瓣']},
+  甜面酱:{kcal:136,protein:5.5,fat:0.6,carb:28.1,fiber:1.4,sodium:2097,unitWeight:15,cat:'调味',density:1.15,gi:null,aliases:['京酱','面酱']},
+  芝麻酱:{kcal:618,protein:19.2,fat:52.7,carb:22.7,fiber:5.9,sodium:38,unitWeight:15,cat:'调味',density:1.1,gi:null,aliases:['麻酱','芝麻花生酱']},
+  花生酱:{kcal:600,protein:25.0,fat:50.0,carb:20.0,fiber:6.0,sodium:400,unitWeight:15,cat:'调味',density:1.1,gi:14,aliases:['花生酱(顺滑)','花生抹酱']},
+  蛋黄酱:{kcal:725,protein:1.1,fat:78.8,carb:3.3,fiber:0,sodium:600,unitWeight:15,cat:'调味',density:0.95,gi:0,aliases:['美乃滋','沙拉酱(蛋黄)']},
+  千岛酱:{kcal:480,protein:1.2,fat:45.0,carb:15.0,fiber:0.3,sodium:900,unitWeight:15,cat:'调味',density:0.98,gi:null,aliases:['千岛沙拉酱','沙拉酱(千岛)']},
+  蒜蓉酱:{kcal:150,protein:4.0,fat:9.0,carb:13.0,fiber:1.5,sodium:2800,unitWeight:15,cat:'调味',density:1.1,gi:null,aliases:['蒜蓉辣椒酱','蒜泥酱']},
+  沙茶酱:{kcal:520,protein:12.0,fat:45.0,carb:18.0,fiber:2.0,sodium:2500,unitWeight:15,cat:'调味',density:1.05,gi:null,aliases:['沙嗲酱','沙茶']},
+  味精:{kcal:268,protein:40.1,fat:0.2,carb:26.5,fiber:0,sodium:8160,unitWeight:2,cat:'调味',density:1.1,gi:null,aliases:['谷氨酸钠','味素']},
+  鸡精:{kcal:210,protein:11.0,fat:3.0,carb:34.0,fiber:0,sodium:20000,unitWeight:3,cat:'调味',density:0.8,gi:null,aliases:['鸡粉','鸡精调味料']},
+  胡椒粉:{kcal:357,protein:11.0,fat:3.3,carb:64.0,fiber:26.0,sodium:20,unitWeight:1,cat:'调味',density:0.5,gi:null,aliases:['黑胡椒','白胡椒粉']},
+  五香粉:{kcal:348,protein:9.0,fat:8.0,carb:60.0,fiber:20.0,sodium:30,unitWeight:1,cat:'调味',density:0.5,gi:null,aliases:['十三香','混合香料']},
+  咖喱粉:{kcal:415,protein:14.0,fat:14.0,carb:58.0,fiber:20.0,sodium:50,unitWeight:3,cat:'调味',density:0.5,gi:null,aliases:['姜黄粉','咖喱']},
+  芥末:{kcal:120,protein:5.0,fat:5.0,carb:14.0,fiber:3.0,sodium:1200,unitWeight:5,cat:'调味',density:1.0,gi:null,aliases:['芥末酱','青芥辣']},
+  花椒油:{kcal:880,protein:0,fat:97.5,carb:1.0,fiber:0,sodium:5,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['藤椒油','麻油(花椒)']},
+  沙拉:{kcal:90,protein:2.5,fat:6.0,carb:7.0,fiber:2.0,sodium:300,unitWeight:200,cat:'菜肴',density:0.5,gi:null,aliases:['蔬菜沙拉','轻食沙拉']},
+  麻辣烫:{kcal:130,protein:6.0,fat:7.0,carb:11.0,fiber:1.5,sodium:900,unitWeight:500,cat:'菜肴',density:0.95,gi:null,aliases:['冒菜']},
+  火锅:{kcal:150,protein:8.0,fat:10.0,carb:6.0,fiber:1.2,sodium:800,unitWeight:400,cat:'菜肴',density:0.9,gi:null,aliases:['涮火锅']},
+  汉堡:{kcal:250,protein:11.0,fat:11.0,carb:27.0,fiber:1.5,sodium:500,unitWeight:200,cat:'菜肴',density:0.6,gi:66,aliases:['汉堡包']},
+  披萨:{kcal:268,protein:11.0,fat:10.0,carb:33.0,fiber:2.0,sodium:600,unitWeight:120,cat:'菜肴',density:0.7,gi:60,aliases:['比萨']},
+  薯条:{kcal:298,protein:3.4,fat:15.0,carb:38.0,fiber:3.8,sodium:210,unitWeight:100,cat:'菜肴',density:0.3,gi:75,aliases:['炸薯条']},
+  寿司:{kcal:150,protein:5.5,fat:2.5,carb:27.0,fiber:0.5,sodium:400,unitWeight:30,cat:'菜肴',density:0.9,gi:null,aliases:[]},
+  宫保鸡丁:{kcal:215,protein:14.0,fat:13.0,carb:10.5,fiber:2.0,sodium:850,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['宫爆鸡丁','花生鸡丁']},
+  鱼香肉丝:{kcal:195,protein:11.0,fat:12.5,carb:10.0,fiber:1.8,sodium:800,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['鱼香猪肉丝']},
+  麻婆豆腐:{kcal:135,protein:8.5,fat:9.0,carb:5.5,fiber:1.2,sodium:750,unitWeight:200,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣豆腐','陈麻婆豆腐']},
+  川味回锅肉:{kcal:380,protein:11.0,fat:34.0,carb:7.0,fiber:1.8,sodium:780,unitWeight:180,cat:'菜肴',density:0.85,gi:null,aliases:['回锅肉','熬锅肉']},
+  东坡肉:{kcal:460,protein:9.5,fat:44.0,carb:6.0,fiber:0.3,sodium:600,unitWeight:150,cat:'菜肴',density:0.85,gi:null,aliases:['红烧肉','红烧五花肉']},
+  糖醋里脊:{kcal:245,protein:12.0,fat:12.0,carb:22.0,fiber:0.5,sodium:520,unitWeight:180,cat:'菜肴',density:0.8,gi:null,aliases:['糖醋肉','咕噜肉']},
+  糖醋小排:{kcal:300,protein:14.0,fat:18.0,carb:20.0,fiber:0.3,sodium:600,unitWeight:180,cat:'菜肴',density:0.85,gi:null,aliases:['糖醋排骨','酸甜排骨']},
+  京酱肉丝:{kcal:230,protein:14.5,fat:14.5,carb:10.5,fiber:1.0,sodium:850,unitWeight:180,cat:'菜肴',density:0.8,gi:null,aliases:['甜面酱肉丝','京酱猪肉丝']},
+  木须肉:{kcal:145,protein:10.5,fat:9.5,carb:4.5,fiber:1.5,sodium:650,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['木樨肉','苜蓿肉']},
+  青椒肉丝:{kcal:130,protein:9.0,fat:8.0,carb:4.5,fiber:1.4,sodium:600,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['尖椒炒肉丝','青椒炒肉']},
+  蒜苔炒肉:{kcal:140,protein:8.5,fat:8.5,carb:7.0,fiber:2.2,sodium:620,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['蒜薹炒肉','蒜苗炒肉']},
+  土豆丝炒肉:{kcal:150,protein:7.0,fat:8.0,carb:13.0,fiber:1.8,sodium:580,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['肉炒土豆丝','洋芋丝炒肉']},
+  西红柿炒蛋:{kcal:105,protein:5.5,fat:7.0,carb:4.5,fiber:0.8,sodium:450,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['番茄炒蛋','西红柿炒鸡蛋']},
+  韭菜炒蛋:{kcal:115,protein:6.0,fat:8.0,carb:3.5,fiber:1.2,sodium:480,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['韭菜炒鸡蛋','韭黄炒蛋']},
+  蒸蛋羹:{kcal:78,protein:6.5,fat:5.0,carb:1.8,fiber:0,sodium:400,unitWeight:180,cat:'菜肴',density:1.0,gi:null,aliases:['鸡蛋羹','水蒸蛋']},
+  红烧茄子:{kcal:155,protein:2.5,fat:11.0,carb:11.0,fiber:2.2,sodium:650,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['烧茄子','家常茄子']},
+  地三鲜:{kcal:150,protein:2.8,fat:9.5,carb:13.5,fiber:2.2,sodium:600,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['东北地三鲜','三鲜菜']},
+  干煸豆角:{kcal:145,protein:4.0,fat:9.5,carb:10.0,fiber:3.0,sodium:650,unitWeight:180,cat:'菜肴',density:0.75,gi:null,aliases:['干煸四季豆','干煸豇豆']},
+  蒜蓉西兰花:{kcal:72,protein:3.5,fat:4.5,carb:4.5,fiber:1.8,sodium:420,unitWeight:200,cat:'菜肴',density:0.6,gi:null,aliases:['蒜香西兰花','清炒西兰花']},
+  清炒时蔬:{kcal:65,protein:2.2,fat:4.5,carb:4.0,fiber:1.6,sodium:400,unitWeight:200,cat:'菜肴',density:0.6,gi:null,aliases:['清炒蔬菜','素炒青菜']},
+  上汤娃娃菜:{kcal:58,protein:2.8,fat:3.2,carb:4.5,fiber:1.2,sodium:520,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['娃娃菜上汤','高汤娃娃菜']},
+  醋溜白菜:{kcal:70,protein:1.8,fat:4.5,carb:5.5,fiber:1.2,sodium:520,unitWeight:200,cat:'菜肴',density:0.75,gi:null,aliases:['醋熘白菜','糖醋白菜']},
+  手撕包菜:{kcal:85,protein:2.0,fat:6.0,carb:6.0,fiber:1.5,sodium:550,unitWeight:180,cat:'菜肴',density:0.6,gi:null,aliases:['手撕圆白菜','炝炒包菜']},
+  酸辣土豆丝:{kcal:105,protein:2.2,fat:5.0,carb:13.5,fiber:1.6,sodium:550,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['醋溜土豆丝','炒土豆丝']},
+  清蒸鱼:{kcal:105,protein:17.0,fat:3.5,carb:1.5,fiber:0.2,sodium:480,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['蒸鱼','清蒸鲈鱼']},
+  红烧鱼:{kcal:145,protein:15.5,fat:7.5,carb:4.5,fiber:0.3,sodium:650,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['烧鱼','家常烧鱼']},
+  水煮鱼:{kcal:180,protein:13.0,fat:12.5,carb:3.5,fiber:1.0,sodium:800,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣水煮鱼','水煮鱼片']},
+  酸菜鱼:{kcal:115,protein:12.0,fat:6.0,carb:3.0,fiber:1.2,sodium:750,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['酸菜鱼片','老坛酸菜鱼']},
+  糖醋鱼:{kcal:175,protein:13.0,fat:7.0,carb:14.5,fiber:0.3,sodium:600,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['糖醋鲤鱼','松鼠鱼']},
+  香煎三文鱼:{kcal:210,protein:21.0,fat:13.0,carb:0.5,fiber:0,sodium:420,unitWeight:150,cat:'菜肴',density:1.0,gi:null,aliases:['煎三文鱼','香煎鲑鱼']},
+  白灼虾:{kcal:95,protein:18.5,fat:1.2,carb:2.0,fiber:0,sodium:400,unitWeight:150,cat:'菜肴',density:0.95,gi:null,aliases:['水煮虾','灼虾']},
+  油焖大虾:{kcal:160,protein:16.5,fat:8.5,carb:4.5,fiber:0.2,sodium:650,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['油焖虾','番茄大虾']},
+  蒜蓉粉丝扇贝:{kcal:110,protein:9.5,fat:3.0,carb:12.0,fiber:0.4,sodium:600,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['粉丝蒸扇贝','蒜蓉扇贝']},
+  辣炒蛤蜊:{kcal:90,protein:10.5,fat:3.5,carb:4.0,fiber:0.5,sodium:750,unitWeight:200,cat:'菜肴',density:0.9,gi:null,aliases:['爆炒花蛤','辣炒花甲']},
+  白切鸡:{kcal:180,protein:20.0,fat:11.0,carb:0.5,fiber:0,sodium:420,unitWeight:150,cat:'菜肴',density:1.0,gi:null,aliases:['白斩鸡','清远白切鸡']},
+  口水鸡:{kcal:200,protein:17.0,fat:13.5,carb:3.0,fiber:1.0,sodium:800,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['麻辣口水鸡','川味口水鸡']},
+  大盘鸡:{kcal:165,protein:12.0,fat:9.0,carb:11.0,fiber:1.5,sodium:700,unitWeight:300,cat:'菜肴',density:0.85,gi:null,aliases:['新疆大盘鸡','土豆烧鸡']},
+  黄焖鸡:{kcal:155,protein:13.5,fat:9.0,carb:5.5,fiber:0.8,sodium:680,unitWeight:250,cat:'菜肴',density:0.85,gi:null,aliases:['黄焖鸡块','香菇焖鸡']},
+  可乐鸡翅:{kcal:215,protein:15.5,fat:12.0,carb:11.0,fiber:0.1,sodium:620,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['可乐烧鸡翅','汽水鸡翅']},
+  炸鸡翅:{kcal:280,protein:18.0,fat:18.0,carb:11.0,fiber:0.4,sodium:750,unitWeight:60,cat:'菜肴',density:0.6,gi:null,aliases:['脆皮鸡翅','炸翅中']},
+  烤鸡腿:{kcal:215,protein:19.5,fat:14.0,carb:1.5,fiber:0,sodium:620,unitWeight:120,cat:'菜肴',density:1.0,gi:null,aliases:['烤鸡大腿','奥尔良烤鸡腿']},
+  北京烤鸭:{kcal:436,protein:16.6,fat:38.4,carb:6.0,fiber:0.2,sodium:780,unitWeight:100,cat:'菜肴',density:0.9,gi:null,aliases:['烤鸭','挂炉烤鸭']},
+  孜然羊肉:{kcal:230,protein:18.0,fat:15.0,carb:4.0,fiber:1.0,sodium:700,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['炒羊肉','孜然羊柳']},
+  烤羊肉串:{kcal:235,protein:20.0,fat:15.5,carb:3.0,fiber:0.5,sodium:750,unitWeight:25,cat:'菜肴',density:1.0,gi:null,aliases:['羊肉串','新疆羊肉串']},
+  番茄牛腩:{kcal:135,protein:12.5,fat:7.0,carb:5.5,fiber:1.2,sodium:620,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['西红柿炖牛腩','牛腩煲']},
+  黑椒牛柳:{kcal:175,protein:17.0,fat:9.5,carb:5.0,fiber:0.8,sodium:750,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['黑胡椒牛柳','铁板牛柳']},
+  水煮牛肉:{kcal:190,protein:14.0,fat:13.0,carb:3.5,fiber:1.2,sodium:850,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['川味水煮牛肉','麻辣牛肉片']},
+  毛血旺:{kcal:170,protein:10.0,fat:12.0,carb:6.0,fiber:1.5,sodium:900,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['重庆毛血旺','血旺']},
+  麻辣香锅:{kcal:210,protein:8.0,fat:15.0,carb:11.0,fiber:2.0,sodium:950,unitWeight:300,cat:'菜肴',density:0.8,gi:null,aliases:['香锅','麻辣干锅']},
+  麻辣烫自选:{kcal:130,protein:6.0,fat:7.0,carb:11.0,fiber:1.5,sodium:900,unitWeight:500,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣烫','冒菜','麻辣烫串']},
+  清汤火锅:{kcal:110,protein:7.5,fat:6.0,carb:5.5,fiber:1.2,sodium:600,unitWeight:400,cat:'菜肴',density:0.95,gi:null,aliases:['涮火锅','清汤涮锅']},
+  麻辣火锅:{kcal:175,protein:8.0,fat:13.0,carb:5.5,fiber:1.4,sodium:950,unitWeight:400,cat:'菜肴',density:0.95,gi:null,aliases:['重庆火锅','红汤火锅']},
+  酸菜白肉:{kcal:190,protein:9.5,fat:15.0,carb:4.0,fiber:1.2,sodium:800,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['东北酸菜白肉','汆白肉']},
+  猪肉炖粉条:{kcal:220,protein:9.0,fat:14.0,carb:15.5,fiber:0.8,sodium:650,unitWeight:300,cat:'菜肴',density:0.9,gi:null,aliases:['东北炖粉条','五花肉炖粉条']},
+  小鸡炖蘑菇:{kcal:140,protein:13.0,fat:8.0,carb:4.0,fiber:1.5,sodium:620,unitWeight:300,cat:'菜肴',density:0.9,gi:null,aliases:['东北小鸡炖蘑菇','蘑菇炖鸡']},
+  蚂蚁上树:{kcal:210,protein:7.0,fat:11.0,carb:21.0,fiber:1.0,sodium:700,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['肉末粉丝','粉丝炒肉末']},
+  干锅花菜:{kcal:125,protein:4.0,fat:8.5,carb:8.0,fiber:2.2,sodium:680,unitWeight:200,cat:'菜肴',density:0.7,gi:null,aliases:['干锅菜花','腊肉花菜']},
+  干锅土豆片:{kcal:165,protein:3.0,fat:9.5,carb:17.5,fiber:2.0,sodium:680,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['干锅洋芋片','香辣土豆片']},
+  什锦炒饭:{kcal:190,protein:6.0,fat:6.5,carb:26.0,fiber:1.0,sodium:550,unitWeight:300,cat:'菜肴',density:0.78,gi:null,aliases:['扬州炒饭','扬州蛋炒饭','什锦蛋炒饭']},
+  干炒河粉:{kcal:195,protein:6.5,fat:8.0,carb:24.0,fiber:1.2,sodium:700,unitWeight:300,cat:'菜肴',density:0.8,gi:null,aliases:['炒河粉','干炒牛河','炒米粉']},
+  炒饭:{kcal:185,protein:5.5,fat:6.5,carb:26.0,fiber:0.8,sodium:520,unitWeight:300,cat:'菜肴',density:0.78,gi:null,aliases:['家常炒饭','鸡蛋炒饭']},
+  清炒青菜:{kcal:60,protein:2.0,fat:4.0,carb:3.5,fiber:1.5,sodium:380,unitWeight:200,cat:'菜肴',density:0.6,gi:null,aliases:['炒青菜','清炒时菜']},
+  凉拌黄瓜:{kcal:42,protein:1.2,fat:2.5,carb:3.5,fiber:0.8,sodium:450,unitWeight:150,cat:'菜肴',density:0.85,gi:null,aliases:['拍黄瓜','蒜泥黄瓜']},
+  凉拌木耳:{kcal:75,protein:2.0,fat:4.5,carb:7.0,fiber:4.0,sodium:520,unitWeight:150,cat:'菜肴',density:0.85,gi:null,aliases:['拌木耳','醋拌黑木耳']},
+  皮蛋豆腐:{kcal:105,protein:8.0,fat:6.5,carb:3.5,fiber:0.5,sodium:600,unitWeight:200,cat:'菜肴',density:0.95,gi:null,aliases:['凉拌皮蛋豆腐','松花蛋豆腐']},
+
+};
+
+const CATS = ['全部','主食','肉类','水产','蛋奶豆','蔬菜','水果','零食','饮品','调味','菜肴'];
+const DAILY_KCAL = 2000;
+const LS_KEY = 'food_scale_records_v1';
+
+/* ==========================================================================
+   血糖生成指数（GI）与血糖负荷（GL）
+
+   GI 分级采用国际通用标准（Atkinson 等《International Tables of GI》2021、
+   《中国食物成分表》2004 附录）：
+     GI ≤ 55  低 GI   🟢  升糖平缓
+     56 ~ 69  中 GI   🟡
+     GI ≥ 70  高 GI   🔴  升糖快
+     GI = 0   无碳水，不引起血糖反应（肉、蛋、纯油等）
+
+   ⚠️ 两个必须知道的局限：
+   1) GI 是按「含 50g 可利用碳水」的份量测的，和你实际吃的量无关。
+      所以低 GI 食物吃很多，血糖影响也可能很大 —— 这时要看 GL。
+   2) GI 受品种、成熟度、烹饪方式影响很大（煮烂的粥 GI 远高于硬饭）。
+      下表是典型值，只能作为参考。
+
+   GL（血糖负荷）= GI × 该份食物可利用碳水(g) ÷ 100，它同时考虑了「质」和「量」：
+     GL ≤ 10   低负荷  🟢
+     11 ~ 19   中负荷  🟡
+     GL ≥ 20   高负荷  🔴
+   ========================================================================== */
+const GI_LEVELS = {
+  low:  { max: 55,       label: '低 GI',  icon: '🟢', color: '#16a34a', bg: '#dcfce7' },
+  mid:  { min: 56, max: 69, label: '中 GI', icon: '🟡', color: '#b45309', bg: '#fef3c7' },
+  high: { min: 70,       label: '高 GI',  icon: '🔴', color: '#b91c1c', bg: '#fee2e2' },
+  none: { label: '无碳水', icon: '⚪', color: '#4b5563', bg: '#f1f2f4' },
+  unknown: { label: '暂无数据', icon: '❔', color: '#6b7280', bg: '#f6f7f9' },
+};
+
+/** GI 数值 → 分级 key */
+function giLevel(gi) {
+  if (gi === null || gi === undefined) return 'unknown';
+  if (gi === 0) return 'none';
+  if (gi <= 55) return 'low';
+  if (gi <= 69) return 'mid';
+  return 'high';
+}
+
+/** 取 GI 描述对象 */
+function giInfo(gi) {
+  const k = giLevel(gi);
+  return Object.assign({ key: k, gi: gi }, GI_LEVELS[k]);
+}
+
+/**
+ * 血糖负荷 GL = GI × 可利用碳水 ÷ 100
+ * 可利用碳水 = 总碳水 − 膳食纤维（粗略近似，膳食纤维基本不升糖）
+ * 返回 null 表示该食物没有 GI 数据，无法计算
+ */
+function glycemicLoad(key, grams) {
+  const f = FOODS[key];
+  if (!f) return null;
+  if (f.gi === null || f.gi === undefined) return null;
+  const r = (num(grams) > 0 ? num(grams) : 0) / 100;
+  const availCarb = Math.max(0, (f.carb || 0) - (f.fiber || 0)) * r;
+  return r1(f.gi * availCarb / 100);
+}
+
+/** GL 分级 */
+function glLevel(gl) {
+  if (gl === null || gl === undefined) return 'unknown';
+  if (gl <= 10) return 'low';
+  if (gl <= 19) return 'mid';
+  return 'high';
+}
+const GL_LABEL = {
+  low:  { label: '低负荷', icon: '🟢' },
+  mid:  { label: '中负荷', icon: '🟡' },
+  high: { label: '高负荷', icon: '🔴' },
+  unknown: { label: '—', icon: '' },
+};
+
+/* ---------- 状态 ---------- */
+let picked = [];        // [{key, grams}]
+let curCat = '全部';
+let keyword = '';
+let curGi = 'all';      // all | low | mid | high
+
+/* ---------- 工具 ---------- */
+const $ = (id) => document.getElementById(id);
+const num = (v) => (isFinite(v) ? v : 0);
+const r1 = (v) => Math.round(v * 10) / 10;
+
+/** 按 100g 数据算实际营养。克重会先夹到 >=0，避免负数克重算出负热量 */
+function calc(key, grams) {
+  const f = FOODS[key];
+  if (!f) return {kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0};
+  const g = num(grams);
+  const r = (g > 0 ? g : 0) / 100;
+  return {
+    kcal: Math.round(f.kcal * r),
+    protein: r1(f.protein * r),
+    fat: r1(f.fat * r),
+    carb: r1(f.carb * r),
+    fiber: r1(f.fiber * r),
+    sodium: Math.round(f.sodium * r),
+  };
+}
+
+/** 三大营养素供能比，误差补给最大项，保证和为 100 且无负数 */
+function ratio(n) {
+  const p = n.protein * 4, f = n.fat * 9, c = n.carb * 4;
+  const t = p + f + c;
+  if (t <= 0) return {protein:0, fat:0, carb:0};
+  const o = {protein: Math.round(p/t*100), fat: Math.round(f/t*100), carb: Math.round(c/t*100)};
+  const diff = 100 - (o.protein + o.fat + o.carb);
+  if (diff !== 0) {
+    const k = ['protein','fat','carb'].reduce((a,b) => o[b] > o[a] ? b : a);
+    o[k] = Math.max(0, o[k] + diff);
+  }
+  return o;
+}
+
+/** 搜索：关键词匹配名称或别名 */
+function search(kw) {
+  const q = String(kw||'').trim().toLowerCase();
+  return Object.keys(FOODS).filter((k) => {
+    if (!q) return true;
+    if (k.toLowerCase().includes(q)) return true;
+    return (FOODS[k].aliases||[]).some((a) => a.toLowerCase().includes(q));
+  });
+}
+
+/* ---------- 渲染：食物网格 ---------- */
+function renderCats() {
+  $('cats').innerHTML = CATS.map((c) =>
+    `<button data-cat="${c}" class="${c===curCat?'on':''}">${c}</button>`
+  ).join('');
+}
+
+function renderGiFilter() {
+  const opts = [['all','全部 GI'],['low','🟢 低 GI'],['mid','🟡 中 GI'],['high','🔴 高 GI']];
+  $('giFilter').innerHTML = opts.map(([v,t]) =>
+    `<button data-gi="${v}" class="${v===curGi?'on':''}">${t}</button>`
+  ).join('');
+}
+
+function renderGrid() {
+  let keys = search(keyword);
+  if (curCat !== '全部') keys = keys.filter((k) => FOODS[k].cat === curCat);
+  if (curGi !== 'all') keys = keys.filter((k) => giLevel(FOODS[k].gi) === curGi);
+
+  const g = $('grid');
+  if (!keys.length) { g.innerHTML = ''; $('emptyTip').classList.remove('hide'); return; }
+  $('emptyTip').classList.add('hide');
+
+  g.innerHTML = keys.map((k) => {
+    const f = FOODS[k];
+    const info = giInfo(f.gi);
+    // GI 未知时不显示角标，避免误导
+    const badge = info.key === 'unknown'
+      ? ''
+      : `<span class="gi-badge" style="color:${info.color};background:${info.bg}">${info.icon}${info.gi === 0 ? '无碳水' : 'GI ' + info.gi}</span>`;
+    return `<button class="fd" data-add="${k}">
+      <div class="n">${k}</div>
+      <div class="k">${f.kcal} kcal/100g</div>
+      ${badge}
+    </button>`;
+  }).join('');
+}
+
+/* ---------- 渲染：已选清单 ---------- */
+function renderPicked() {
+  const card = $('pickedCard'), list = $('pickedList');
+
+  if (!picked.length) {
+    card.classList.add('hide');
+    $('totalBox').classList.add('hide');
+    $('nutriCard').classList.add('hide');
+    $('footCount').textContent = '未选择';
+    return;
+  }
+  card.classList.remove('hide');
+  $('pickedCount').textContent = picked.length + ' 种';
+
+  list.innerHTML = picked.map((it, i) => {
+    const f = FOODS[it.key];
+    const n = calc(it.key, it.grams);
+    const uw = f.unitWeight;
+    const ginfo = giInfo(f.gi);
+    const gl = glycemicLoad(it.key, it.grams);
+    const glLv = GL_LABEL[glLevel(gl)];
+
+    // GI 标识：无数据的显示灰色"暂无"，无碳水的说明不会升糖
+    let giTag;
+    if (ginfo.key === 'unknown') {
+      giTag = `<span class="gi-tag" style="color:${ginfo.color};background:${ginfo.bg}">${ginfo.icon} ${ginfo.label}</span>`;
+    } else if (ginfo.key === 'none') {
+      giTag = `<span class="gi-tag" style="color:${ginfo.color};background:${ginfo.bg}">${ginfo.icon} 几乎不含碳水</span>`;
+    } else {
+      giTag = `<span class="gi-tag" style="color:${ginfo.color};background:${ginfo.bg}">${ginfo.icon} ${ginfo.label} ${ginfo.gi}</span>`;
+    }
+
+    const glTag = (gl !== null && gl > 0)
+      ? `<span class="gi-tag" style="color:#4b5563;background:#f1f2f4">血糖负荷 ${gl} · ${glLv.label}</span>`
+      : '';
+
+    return `<div class="item">
+      <div class="item-top">
+        <span class="item-name">${it.key}</span>
+        <span class="item-kcal">${n.kcal}<small>千卡</small></span>
+      </div>
+      <div class="gi-row">${giTag}${glTag}</div>
+      <div class="item-ctrl">
+        <button class="step" data-dec="${i}">−</button>
+        <input class="gin" data-gin="${i}" type="number" inputmode="decimal" value="${it.grams}" min="0" step="10">
+        <span class="unit">克</span>
+        <button class="step" data-inc="${i}">＋</button>
+        ${uw && uw !== 100 ? `<button class="quick" data-uw="${i}">1份 ${uw}g</button>` : ''}
+        <button class="quick" data-q="${i}" data-g="100">100g</button>
+        <button class="rm" data-rm="${i}">移除</button>
+      </div>
+      <div class="macros">
+        <span>蛋白 <b>${n.protein}</b>g</span>
+        <span>脂肪 <b>${n.fat}</b>g</span>
+        <span>碳水 <b>${n.carb}</b>g</span>
+        <span>纤维 <b>${n.fiber}</b>g</span>
+        <span>钠 <b>${n.sodium}</b>mg</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 合计
+  const tot = {kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0};
+  let grams = 0;
+  picked.forEach((it) => {
+    const n = calc(it.key, it.grams);
+    tot.kcal += n.kcal; tot.protein += n.protein; tot.fat += n.fat;
+    tot.carb += n.carb; tot.fiber += n.fiber; tot.sodium += n.sodium;
+    grams += num(it.grams);
+  });
+  tot.protein = r1(tot.protein); tot.fat = r1(tot.fat);
+  tot.carb = r1(tot.carb); tot.fiber = r1(tot.fiber); tot.sodium = Math.round(tot.sodium);
+
+  $('footCount').textContent = picked.length + ' 种 · ' + Math.round(grams) + 'g';
+
+  const rt = ratio(tot);
+  $('totalBox').classList.remove('hide');
+  $('tKcal').innerHTML = tot.kcal + '<small>千卡</small>';
+  $('tMeta').textContent = `共 ${Math.round(grams)} 克 · 占每日推荐 ${Math.round(tot.kcal/DAILY_KCAL*100)}%`;
+  $('tBar').innerHTML =
+    `<i style="width:${rt.protein}%;background:#93c5fd"></i>` +
+    `<i style="width:${rt.fat}%;background:#fcd34d"></i>` +
+    `<i style="width:${rt.carb}%;background:#c4b5fd"></i>`;
+  $('lp').textContent = rt.protein + '%';
+  $('lf').textContent = rt.fat + '%';
+  $('lc').textContent = rt.carb + '%';
+
+  $('nutriCard').classList.remove('hide');
+  $('nKcal').textContent = tot.kcal + ' 千卡';
+  $('nP').textContent = tot.protein + ' g';
+  $('nF').textContent = tot.fat + ' g';
+  $('nC').textContent = tot.carb + ' g';
+  $('nFib').textContent = tot.fiber + ' g';
+  $('nNa').textContent = tot.sodium + ' mg';
+  $('nPct').textContent = Math.round(tot.kcal/DAILY_KCAL*100) + '%（按 2000 千卡计）';
+
+  renderGlycemicSummary();
+}
+
+/**
+ * 餐食整体的血糖影响汇总
+ * 只用「有 GI 数据」的食物算 GL，并如实说明覆盖情况，避免以偏概全
+ */
+function renderGlycemicSummary() {
+  const box = $('giSummary');
+  if (!box) return;
+
+  let totalGl = 0, covered = 0, unknown = 0, highCount = 0;
+  const known = [];
+
+  picked.forEach((it) => {
+    const gl = glycemicLoad(it.key, it.grams);
+    if (gl === null) { unknown++; return; }
+    covered++;
+    totalGl += gl;
+    known.push({key: it.key, gi: FOODS[it.key].gi, gl});
+    if (giLevel(FOODS[it.key].gi) === 'high' && num(it.grams) > 0) highCount++;
+  });
+
+  if (!picked.length) { box.classList.add('hide'); return; }
+  box.classList.remove('hide');
+
+  totalGl = r1(totalGl);
+  const lv = glLevel(totalGl);
+
+  // 已知食物的加权平均 GI（按可利用碳水加权，比简单平均更合理）
+  let wSum = 0, cSum = 0;
+  known.forEach((k) => {
+    const f = FOODS[k.key];
+    const avail = Math.max(0, f.carb - f.fiber) * (num(picked.find(p=>p.key===k.key).grams)/100);
+    wSum += f.gi * avail; cSum += avail;
+  });
+  const avgGi = cSum > 0 ? Math.round(wSum / cSum) : null;
+  const avgInfo = avgGi !== null ? giInfo(avgGi) : null;
+
+  let html = '';
+  if (covered === 0) {
+    html = `<div class="muted">所选食物都没有 GI 数据（多为肉类、蛋类、油脂或复合菜），
+            无法估算升糖影响。这类食物通常不含或极少含碳水，对血糖影响很小。</div>`;
+  } else {
+    const barColor = lv === 'high' ? '#ef4444' : (lv === 'mid' ? '#f59e0b' : '#16a34a');
+    const barPct = Math.min(100, Math.round(totalGl / 30 * 100)); // 30 作为满格参考
+    html = `
+      <div class="gi-sum-top">
+        <div>
+          <div class="gi-sum-gl">${totalGl}</div>
+          <div class="muted" style="font-size:12px">血糖负荷 (GL)</div>
+        </div>
+        <div style="text-align:right">
+          <div class="gi-sum-lv" style="color:${barColor}">${GL_LABEL[lv].icon} ${GL_LABEL[lv].label}</div>
+          ${avgGi !== null ? `<div class="muted" style="font-size:12px">加权平均 GI ${avgGi} · ${avgInfo.label}</div>` : ''}
+        </div>
+      </div>
+      <div class="gi-sum-bar"><i style="width:${barPct}%;background:${barColor}"></i></div>
+      <div class="muted" style="font-size:12px;margin-top:9px;line-height:1.55">
+        ${highCount > 0 ? `本节有 <b style="color:#b91c1c">${highCount} 种高 GI 食物</b>。<br>` : ''}
+        ${unknown > 0 ? `另有 ${unknown} 种食物没有 GI 数据，未计入上述负荷。<br>` : ''}
+        GL ≤ 10 为低负荷，11–19 中负荷，≥ 20 高负荷。一餐 GL 控制在 20 以内较理想。
+      </div>`;
+  }
+  $('giSummaryBody').innerHTML = html;
+}
+
+/* ---------- 事件：食物网格 ---------- */
+$('cats').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-cat]');
+  if (!b) return;
+  curCat = b.dataset.cat;
+  renderCats(); renderGrid();
+});
+
+$('giFilter').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-gi]');
+  if (!b) return;
+  curGi = b.dataset.gi;
+  renderGiFilter(); renderGrid();
+});
+
+$('grid').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-add]');
+  if (!b) return;
+  const key = b.dataset.add;
+  const exist = picked.find((p) => p.key === key);
+  if (exist) exist.grams = num(exist.grams) + FOODS[key].unitWeight;
+  else picked.push({key, grams: FOODS[key].unitWeight});
+  renderPicked();
+});
+
+$('search').addEventListener('input', (e) => {
+  keyword = e.target.value;
+  $('clearX').classList.toggle('show', !!keyword);
+  renderGrid();
+});
+
+$('clearX').addEventListener('click', () => {
+  keyword = ''; $('search').value = '';
+  $('clearX').classList.remove('show');
+  renderGrid(); $('search').focus();
+});
+
+/* ---------- 事件：已选清单（事件委托） ---------- */
+$('pickedList').addEventListener('click', (e) => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  const d = t.dataset;
+
+  if (d.dec !== undefined) {
+    const i = +d.dec;
+    picked[i].grams = Math.max(0, num(picked[i].grams) - 10);
+    renderPicked();
+  } else if (d.inc !== undefined) {
+    const i = +d.inc;
+    picked[i].grams = num(picked[i].grams) + 10;
+    renderPicked();
+  } else if (d.uw !== undefined) {
+    const i = +d.uw; picked[i].grams = FOODS[picked[i].key].unitWeight; renderPicked();
+  } else if (d.q !== undefined) {
+    const i = +d.q; picked[i].grams = +d.g; renderPicked();
+  } else if (d.rm !== undefined) {
+    picked.splice(+d.rm, 1); renderPicked();
+  }
+});
+
+// 输入克重：让用户能自由清空重输，不强制回填 0
+$('pickedList').addEventListener('input', (e) => {
+  const inp = e.target.closest('[data-gin]');
+  if (!inp) return;
+  const i = +inp.dataset.gin;
+  const raw = inp.value;
+  picked[i].grams = raw === '' ? 0 : Math.max(0, num(parseFloat(raw)));
+  // 只更新数字部分，避免整块重绘导致输入框失焦
+  updateTotalsOnly();
+});
+
+$('pickedList').addEventListener('blur', (e) => {
+  const inp = e.target.closest('[data-gin]');
+  if (!inp) return;
+  const i = +inp.dataset.gin;
+  inp.value = picked[i].grams;   // 失焦时归一显示
+  renderPicked();
+}, true);
+
+/** 输入过程中只刷新汇总，不重绘列表（防止光标跳动） */
+function updateTotalsOnly() {
+  const it = $('pickedList');
+  // 更新每行的热量与营养素
+  picked.forEach((p, i) => {
+    const n = calc(p.key, p.grams);
+    const row = it.children[i];
+    if (!row) return;
+    const kc = row.querySelector('.item-kcal');
+    if (kc) kc.innerHTML = n.kcal + '<small>千卡</small>';
+    const m = row.querySelectorAll('.macros b');
+    if (m.length >= 5) {
+      m[0].textContent = n.protein; m[1].textContent = n.fat;
+      m[2].textContent = n.carb; m[3].textContent = n.fiber; m[4].textContent = n.sodium;
+    }
+    // GI 标签是静态的（不随克重变），但血糖负荷会变，这里同步刷新 GL 文案
+    const tags = row.querySelectorAll('.gi-tag');
+    const gl = glycemicLoad(p.key, p.grams);
+    if (tags.length >= 2 && gl !== null && gl > 0) {
+      tags[1].textContent = `血糖负荷 ${gl} · ${GL_LABEL[glLevel(gl)].label}`;
+    }
+  });
+
+  const tot = {kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0};
+  let grams = 0;
+  picked.forEach((p) => {
+    const n = calc(p.key, p.grams);
+    tot.kcal += n.kcal; tot.protein += n.protein; tot.fat += n.fat;
+    tot.carb += n.carb; tot.fiber += n.fiber; tot.sodium += n.sodium;
+    grams += num(p.grams);
+  });
+  tot.protein = r1(tot.protein); tot.fat = r1(tot.fat);
+  tot.carb = r1(tot.carb); tot.fiber = r1(tot.fiber); tot.sodium = Math.round(tot.sodium);
+
+  const rt = ratio(tot);
+  $('footCount').textContent = picked.length + ' 种 · ' + Math.round(grams) + 'g';
+  $('tKcal').innerHTML = tot.kcal + '<small>千卡</small>';
+  $('tMeta').textContent = `共 ${Math.round(grams)} 克 · 占每日推荐 ${Math.round(tot.kcal/DAILY_KCAL*100)}%`;
+  $('tBar').innerHTML =
+    `<i style="width:${rt.protein}%;background:#93c5fd"></i>` +
+    `<i style="width:${rt.fat}%;background:#fcd34d"></i>` +
+    `<i style="width:${rt.carb}%;background:#c4b5fd"></i>`;
+  $('lp').textContent = rt.protein + '%';
+  $('lf').textContent = rt.fat + '%';
+  $('lc').textContent = rt.carb + '%';
+  $('nKcal').textContent = tot.kcal + ' 千卡';
+  $('nP').textContent = tot.protein + ' g';
+  $('nF').textContent = tot.fat + ' g';
+  $('nC').textContent = tot.carb + ' g';
+  $('nFib').textContent = tot.fiber + ' g';
+  $('nNa').textContent = tot.sodium + ' mg';
+  $('nPct').textContent = Math.round(tot.kcal/DAILY_KCAL*100) + '%（按 2000 千卡计）';
+
+  renderGlycemicSummary();
+}
+
+/* ---------- 存储 ---------- */
+function loadRecords() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch (e) { return []; }
+}
+function saveRecords(rs) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(rs)); }
+  catch (e) { alert('保存失败：浏览器存储可能已满或被禁用'); }
+}
+function todayStr() {
+  const d = new Date();
+  const p = (n) => (n < 10 ? '0' + n : '' + n);
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+}
+function fmtTime(ts) {
+  const d = new Date(ts);
+  const p = (n) => (n < 10 ? '0' + n : '' + n);
+  return p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+/* ---------- 保存到今日 ---------- */
+$('btnSave').addEventListener('click', () => {
+  if (!picked.length) { alert('还没有选择食物'); return; }
+  const items = picked.map((p) => {
+    const n = calc(p.key, p.grams);
+    return {name:p.key, grams:num(p.grams), ...n};
+  }).filter((it) => it.grams > 0);
+
+  if (!items.length) { alert('请先填写重量（要大于 0）'); return; }
+
+  const sum = items.reduce((a,it) => ({
+    kcal:a.kcal+it.kcal, protein:a.protein+it.protein, fat:a.fat+it.fat,
+    carb:a.carb+it.carb, fiber:a.fiber+it.fiber, sodium:a.sodium+it.sodium,
+  }), {kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0});
+  sum.protein = r1(sum.protein); sum.fat = r1(sum.fat);
+  sum.carb = r1(sum.carb); sum.fiber = r1(sum.fiber); sum.sodium = Math.round(sum.sodium);
+
+  const rs = loadRecords();
+  rs.push({id: Date.now() + '' + Math.floor(Math.random()*1000), date: todayStr(), ts: Date.now(), items, sum});
+  saveRecords(rs);
+
+  picked = [];
+  renderPicked();
+  renderToday();
+  alert('已保存到今日记录');
+});
+
+$('btnReset').addEventListener('click', () => {
+  if (!picked.length) return;
+  if (confirm('确定清空本次选择吗？')) { picked = []; renderPicked(); }
+});
+
+/* ---------- 今日页 ---------- */
+function renderToday() {
+  const today = todayStr();
+  const rs = loadRecords().filter((r) => r.date === today);
+
+  let sum = {kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0};
+  rs.forEach((r) => {
+    sum.kcal += r.sum.kcal; sum.protein += r.sum.protein; sum.fat += r.sum.fat;
+    sum.carb += r.sum.carb; sum.fiber += r.sum.fiber; sum.sodium += r.sum.sodium;
+  });
+  sum.protein = r1(sum.protein); sum.fat = r1(sum.fat);
+  sum.carb = r1(sum.carb); sum.fiber = r1(sum.fiber); sum.sodium = Math.round(sum.sodium);
+
+  const rt = ratio(sum);
+  $('dKcal').innerHTML = sum.kcal + '<small>千卡</small>';
+  $('dMeta').textContent = rs.length
+    ? `${rs.length} 条记录 · 占每日推荐 ${Math.round(sum.kcal/DAILY_KCAL*100)}%`
+    : '今天还没有记录';
+  $('dBar').innerHTML =
+    `<i style="width:${rt.protein}%;background:#93c5fd"></i>` +
+    `<i style="width:${rt.fat}%;background:#fcd34d"></i>` +
+    `<i style="width:${rt.carb}%;background:#c4b5fd"></i>`;
+  $('dp').textContent = rt.protein + '%';
+  $('df').textContent = rt.fat + '%';
+  $('dc').textContent = rt.carb + '%';
+
+  $('dP').textContent = sum.protein + ' g';
+  $('dF').textContent = sum.fat + ' g';
+  $('dC').textContent = sum.carb + ' g';
+  $('dFib').textContent = sum.fiber + ' g';
+  $('dNa').textContent = sum.sodium + ' mg';
+
+  $('dCount').textContent = rs.length + ' 条';
+
+  $('todayList').innerHTML = rs.length ? rs.slice().reverse().map((r) => `
+    <div class="item">
+      <div class="item-top">
+        <span class="item-name">${fmtTime(r.ts)}</span>
+        <span class="item-kcal">${r.sum.kcal}<small>千卡</small></span>
+      </div>
+      <div class="macros" style="border-top:0;padding-top:8px">
+        ${r.items.map((it) => `<span>${it.name} <b>${it.grams}</b>g</span>`).join('')}
+      </div>
+      <div style="margin-top:7px">
+        <button class="rm" data-del="${r.id}" style="margin-left:0">删除这条</button>
+      </div>
+    </div>`).join('') : '<div class="empty-tip">还没有记录，去「记录」页添加吧</div>';
+}
+
+$('todayList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-del]');
+  if (!b) return;
+  if (!confirm('删除这条记录？')) return;
+  saveRecords(loadRecords().filter((r) => r.id !== b.dataset.del));
+  renderToday();
+});
+
+$('btnClearDay').addEventListener('click', () => {
+  const today = todayStr();
+  if (!loadRecords().some((r) => r.date === today)) { alert('今天还没有记录'); return; }
+  if (!confirm('清空今天的全部记录？')) return;
+  saveRecords(loadRecords().filter((r) => r.date !== today));
+  renderToday();
+});
+
+$('btnExport').addEventListener('click', () => {
+  const rs = loadRecords();
+  if (!rs.length) { alert('还没有任何记录'); return; }
+  const rows = [['日期','时间','食物','克重(g)','热量(kcal)','蛋白质(g)','脂肪(g)','碳水(g)','纤维(g)','钠(mg)']];
+  rs.forEach((r) => r.items.forEach((it) => {
+    rows.push([r.date, fmtTime(r.ts), it.name, it.grams, it.kcal, it.protein, it.fat, it.carb, it.fiber, it.sodium]);
+  }));
+  const csv = '\uFEFF' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'food-records-' + todayStr() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ---------- 切换标签 ---------- */
+// 三个标签统一走 showTab（定义在拍照测重段），避免状态不一致
+$('tabAdd').addEventListener('click', () => showTab('add'));
+$('tabToday').addEventListener('click', () => showTab('today'));
+
+/* ==========================================================================
+   拍照测重：参照物标定 + 框选面积 + 厚度 = 体积 × 密度 = 重量
+
+   原理：
+     1) 画面里放一个已知真实尺寸的参照物（硬币直径 25mm 等）
+     2) 用户拖动手柄量出它在照片里占多少像素 → 得到 mmPerPx
+     3) 用户框出食物俯视轮廓（矩形）→ 像素面积 → 真实面积(cm²)
+     4) 乘用户填的厚度(cm) → 体积(cm³ = ml)
+     5) 乘该食物密度(g/ml) → 重量(g)
+   ========================================================================== */
+
+/** 参照物：name 显示名，mm 真实尺寸，how 量哪里 */
+const REF_OBJECTS = [
+  { id:'coin1',  name:'1 元硬币',      mm:25,   how:'直径' },
+  { id:'coin5',  name:'5 角硬币',      mm:20.5, how:'直径' },
+  { id:'card',   name:'银行卡/身份证', mm:85.6, how:'长边' },
+  { id:'a4long', name:'A4 纸长边',     mm:297,  how:'长边' },
+  { id:'a4short',name:'A4 纸短边',     mm:210,  how:'短边' },
+  { id:'chop',   name:'筷子',          mm:240,  how:'长度' },
+  { id:'bowl',   name:'标准饭碗口径',  mm:110,  how:'口径' },
+  { id:'plate',  name:'标准餐盘直径',  mm:230,  how:'直径' },
+];
+
+/** 常见厚度预设（cm），帮用户快速填 */
+const THICKNESS_PRESETS = [
+  { label:'薄薄一层 0.5', v:0.5 },
+  { label:'铺平 1.5',     v:1.5 },
+  { label:'一小堆 3',     v:3 },
+  { label:'半碗 5',       v:5 },
+  { label:'堆很高 8',     v:8 },
+];
+
+let photoState = {
+  img: null,            // Image 对象
+  ref: 'coin1',         // 当前参照物 id
+  calib: null,          // {x1,y1,x2,y2} 画布显示坐标
+  area: null,           // {x1,y1,x2,y2}
+  mmPerPx: null,        // 标定结果
+  mode: null,           // 'calib' | 'area'
+  drag: null,           // {which, ...}
+  foodKey: null,
+  heightCm: 3,
+};
+
+/** 画布显示坐标 → 图片原始像素坐标（因为 canvas 会被 CSS 缩放到容器宽度） */
+function canvasScale(cv) {
+  const rect = cv.getBoundingClientRect();
+  const sx = cv.width / (rect.width || cv.width);
+  const sy = cv.height / (rect.height || cv.height);
+  return { sx, sy, rect };
+}
+
+/** 取指针在 canvas 原始像素坐标系里的位置 */
+function pointerPos(cv, e) {
+  const r = cv.getBoundingClientRect();
+  const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+  const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+  const x = (clientX - r.left) * (cv.width  / (r.width  || cv.width));
+  const y = (clientY - r.top ) * (cv.height / (r.height || cv.height));
+  return { x, y };
+}
+
+/** 两点距离（像素） */
+function pxDist(a, b) { return Math.hypot(a.x2 - a.x1, b ? b.y2 - b.y1 : 0); }
+function dist(x1,y1,x2,y2){ return Math.hypot(x2-x1, y2-y1); }
+
+/* ---------- 载入照片 ---------- */
+$('btnPickPhoto').addEventListener('click', () => $('photoInput').click());
+
+$('photoInput').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!/^image\//.test(file.type)) { alert('请选择图片文件'); return; }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // 限制最长边，避免超大图拖慢 canvas
+      const MAX = 1400;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (Math.max(w, h) > MAX) {
+        const k = MAX / Math.max(w, h);
+        w = Math.round(w * k); h = Math.round(h * k);
+      }
+      photoState.img = img;
+      photoState.imgW = w;
+      photoState.imgH = h;
+
+      // 默认标定线：放在图片中部偏上一条水平线，约占宽度 35%
+      const cy = Math.round(h * 0.22);
+      photoState.calib = { x1: Math.round(w*0.32), y1: cy, x2: Math.round(w*0.68), y2: cy };
+      photoState.area  = { x1: Math.round(w*0.15), y1: Math.round(h*0.4),
+                           x2: Math.round(w*0.85), y2: Math.round(h*0.85) };
+      photoState.mmPerPx = null;
+      photoState.foodKey = null;
+
+      $('calibCard').classList.remove('hide');
+      $('areaCard').classList.remove('hide');
+      $('heightCard').classList.remove('hide');
+      $('pickFoodCard').classList.remove('hide');
+      $('photoResult').classList.add('hide');
+      $('photoDetail').classList.add('hide');
+
+      setupCanvas('calibCanvas');
+      setupCanvas('areaCanvas');
+      renderRefPicker();
+      renderThicknessPresets();
+      renderPhotoGrid();
+      updateCalib();
+      updateArea();
+      $('calibCard').scrollIntoView({ behavior:'smooth', block:'start' });
+    };
+    img.onerror = () => alert('图片读取失败，换一张试试');
+    img.src = reader.result;
+  };
+  reader.onerror = () => alert('文件读取失败');
+  reader.readAsDataURL(file);
+});
+
+/** 初始化某个 canvas 的尺寸并绘制 */
+function setupCanvas(id) {
+  const cv = $(id);
+  const w = photoState.imgW, h = photoState.imgH;
+  cv.width = w; cv.height = h;
+  cv.style.aspectRatio = w + ' / ' + h;
+  drawCanvas(id);
+}
+
+/* ---------- 绘制 ---------- */
+function drawCanvas(id) {
+  const cv = $(id);
+  const ctx = cv.getContext('2d');
+  if (!ctx || !photoState.img) return;
+  const w = cv.width, h = cv.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(photoState.img, 0, 0, w, h);
+
+  // 半透明遮罩突出选中区域
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+
+  const lineW = Math.max(2, Math.round(w / 320));
+  const handleR = Math.max(9, Math.round(w / 62));
+
+  if (id === 'calibCanvas' && photoState.calib) {
+    const c = photoState.calib;
+    // 清晰显示参照物所在带
+    ctx.save();
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(photoState.img, 0, 0, w, h);
+    ctx.restore();
+
+    // 线
+    ctx.save();
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = lineW;
+    ctx.beginPath();
+    ctx.moveTo(c.x1, c.y1); ctx.lineTo(c.x2, c.y2);
+    ctx.stroke();
+    // 两端手柄
+    [[c.x1,c.y1],[c.x2,c.y2]].forEach(([x,y]) => {
+      ctx.beginPath(); ctx.arc(x, y, handleR, 0, Math.PI*2);
+      ctx.fillStyle = '#facc15'; ctx.fill();
+      ctx.lineWidth = lineW; ctx.strokeStyle = '#1f2328'; ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  if (id === 'areaCanvas' && photoState.area) {
+    const a = photoState.area;
+    const x = Math.min(a.x1,a.x2), y = Math.min(a.y1,a.y2);
+    const bw = Math.abs(a.x2-a.x1), bh = Math.abs(a.y2-a.y1);
+
+    ctx.save();
+    ctx.clearRect(x, y, bw, bh);            // 选中区域显示原图
+    ctx.drawImage(photoState.img, x, y, bw, bh, x, y, bw, bh);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = lineW;
+    ctx.strokeRect(x, y, bw, bh);
+    // 四角手柄
+    [[x,y],[x+bw,y],[x,y+bh],[x+bw,y+bh]].forEach(([hx,hy]) => {
+      ctx.beginPath(); ctx.arc(hx, hy, handleR, 0, Math.PI*2);
+      ctx.fillStyle = '#22c55e'; ctx.fill();
+      ctx.lineWidth = lineW; ctx.strokeStyle = '#fff'; ctx.stroke();
+    });
+    ctx.restore();
+  }
+}
+
+/* ---------- 参照物选择 ---------- */
+function renderRefPicker() {
+  $('refPicker').innerHTML = REF_OBJECTS.map((r) =>
+    `<button class="ref-chip ${r.id===photoState.ref?'on':''}" data-ref="${r.id}">${r.name} · ${r.mm}mm</button>`
+  ).join('');
+}
+$('refPicker').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ref]');
+  if (!b) return;
+  photoState.ref = b.dataset.ref;
+  renderRefPicker(); updateCalib();
+});
+
+/* ---------- 厚度预设 ---------- */
+function renderThicknessPresets() {
+  $('thicknessPresets').innerHTML = THICKNESS_PRESETS.map((p) =>
+    `<button class="ref-chip ${Math.abs(p.v-photoState.heightCm)<0.01?'on':''}" data-th="${p.v}">${p.label} cm</button>`
+  ).join('');
+}
+$('thicknessPresets').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-th]');
+  if (!b) return;
+  photoState.heightCm = parseFloat(b.dataset.th);
+  $('heightInput').value = photoState.heightCm;
+  renderThicknessPresets(); recompute();
+});
+$('heightInput').addEventListener('input', (e) => {
+  const v = parseFloat(e.target.value);
+  photoState.heightCm = isFinite(v) && v > 0 ? v : 0;
+  renderThicknessPresets(); recompute();
+});
+
+/* ---------- 标定计算 ---------- */
+function updateCalib() {
+  const c = photoState.calib;
+  const ref = REF_OBJECTS.find((r) => r.id === photoState.ref);
+  if (!c || !ref) return;
+
+  const px = dist(c.x1, c.y1, c.x2, c.y2);
+  const el = $('calibReadout');
+
+  if (px < 5) {
+    el.className = 'measure-line';
+    el.textContent = '参照物标定线太短，请拖长一点';
+    photoState.mmPerPx = null;
+    recompute(); return;
+  }
+
+  photoState.mmPerPx = ref.mm / px;
+  el.className = 'measure-line ok';
+  el.textContent = `标定成功：${ref.name} 在照片里长 ${px.toFixed(0)} 像素 → 1 像素 = ${photoState.mmPerPx.toFixed(3)} mm`;
+  recompute();
+}
+
+/* ---------- 面积计算 ---------- */
+function updateArea() {
+  const a = photoState.area;
+  const el = $('areaReadout');
+  if (!a || !photoState.mmPerPx) {
+    el.className = 'measure-line';
+    el.textContent = '请先完成参照物标定';
+    recompute(); return;
+  }
+  const bwPx = Math.abs(a.x2 - a.x1), bhPx = Math.abs(a.y2 - a.y1);
+  const bwMm = bwPx * photoState.mmPerPx, bhMm = bhPx * photoState.mmPerPx;
+  const areaCm2 = (bwMm / 10) * (bhMm / 10);
+
+  el.className = 'measure-line ok';
+  el.textContent = `框选区域：${(bwMm/10).toFixed(1)} × ${(bhMm/10).toFixed(1)} cm → 面积 ${areaCm2.toFixed(1)} cm²`;
+  recompute();
+}
+
+/** 核心：体积 × 密度 = 重量 */
+function computeWeight() {
+  const a = photoState.area;
+  const key = photoState.foodKey;
+  if (!a || !photoState.mmPerPx || !key) return null;
+
+  const bwPx = Math.abs(a.x2 - a.x1), bhPx = Math.abs(a.y2 - a.y1);
+  const bwCm = bwPx * photoState.mmPerPx / 10;
+  const bhCm = bhPx * photoState.mmPerPx / 10;
+  const areaCm2 = bwCm * bhCm;
+
+  const f = FOODS[key];
+  const hCm = photoState.heightCm;
+  const volumeMl = areaCm2 * hCm;         // cm³ = ml
+  const grams = volumeMl * f.density;
+
+  return {
+    key, food: f, bwCm, bhCm, areaCm2, hCm, volumeMl, grams,
+    density: f.density,
+  };
+}
+
+/** 重量区间：厚度和边缘判断都会偏，给 ±30% */
+function weightRange(g) {
+  return { lo: Math.round(g * 0.7), hi: Math.round(g * 1.3) };
+}
+
+function recompute() {
+  const r = computeWeight();
+  const box = $('photoResult'), det = $('photoDetail');
+
+  if (!r) {
+    box.classList.add('hide'); det.classList.add('hide');
+    return;
+  }
+
+  const rng = weightRange(r.grams);
+  box.classList.remove('hide');
+  $('prWeight').innerHTML = Math.round(r.grams) + '<small>克</small>';
+  $('prMeta').textContent =
+    `${r.key} · 约 ${rng.lo}–${rng.hi} 克 · ${r.volumeMl.toFixed(0)} ml`;
+
+  det.classList.remove('hide');
+  $('prTable').innerHTML = `
+    <tr><td>参照物比例</td><td>1 px = ${photoState.mmPerPx.toFixed(3)} mm</td></tr>
+    <tr><td>俯视尺寸</td><td>${r.bwCm.toFixed(1)} × ${r.bhCm.toFixed(1)} cm</td></tr>
+    <tr><td>俯视面积</td><td>${r.areaCm2.toFixed(1)} cm²</td></tr>
+    <tr><td>你填的厚度</td><td>${r.hCm} cm</td></tr>
+    <tr><td>推算体积</td><td>${r.volumeMl.toFixed(0)} ml</td></tr>
+    <tr><td>${r.key} 密度</td><td>${r.density} g/ml</td></tr>
+    <tr><td><b>推算重量</b></td><td>${Math.round(r.grams)} g</td></tr>
+    <tr><td>合理区间</td><td>${rng.lo} – ${rng.hi} g</td></tr>`;
+
+  $('prNote').innerHTML =
+    `厚度从 3cm 改成 5cm，重量就变 67% —— <b>填准厚度比框准面积更重要</b>。` +
+    `如果食物堆得高低不平，建议按「平均厚度」填，或分成两块分别测量。`;
+}
+
+/* ---------- 拖动交互 ---------- */
+function bindDrag(canvasId, kind) {
+  const cv = $(canvasId);
+
+  function hitTest(pos) {
+    const w = cv.width;
+    const grab = Math.max(26, w / 22);   // 手柄命中半径（放宽一点好点）
+    if (kind === 'calib') {
+      const c = photoState.calib;
+      if (!c) return null;
+      if (dist(pos.x,pos.y,c.x1,c.y1) < grab) return 'p1';
+      if (dist(pos.x,pos.y,c.x2,c.y2) < grab) return 'p2';
+      return null;
+    } else {
+      const a = photoState.area;
+      if (!a) return null;
+      const x = Math.min(a.x1,a.x2), y = Math.min(a.y1,a.y2);
+      const bw = Math.abs(a.x2-a.x1), bh = Math.abs(a.y2-a.y1);
+      const corners = { tl:[x,y], tr:[x+bw,y], bl:[x,y+bh], br:[x+bw,y+bh] };
+      for (const k in corners) {
+        if (dist(pos.x,pos.y,corners[k][0],corners[k][1]) < grab) return k;
+      }
+      return null;
+    }
+  }
+
+  function onDown(e) {
+    if (!photoState.img) return;
+    const pos = pointerPos(cv, e);
+    const which = hitTest(pos);
+    if (!which) return;
+    photoState.drag = { which, kind, cv };
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    const d = photoState.drag;
+    if (!d || d.cv !== cv) return;
+    const pos = pointerPos(cv, e);
+    const x = Math.max(0, Math.min(cv.width, pos.x));
+    const y = Math.max(0, Math.min(cv.height, pos.y));
+
+    if (kind === 'calib') {
+      const c = photoState.calib;
+      if (d.which === 'p1') { c.x1 = x; c.y1 = y; } else { c.x2 = x; c.y2 = y; }
+    } else {
+      const a = photoState.area;
+      if (d.which === 'tl') { a.x1 = x; a.y1 = y; }
+      else if (d.which === 'tr') { a.x2 = x; a.y1 = y; }
+      else if (d.which === 'bl') { a.x1 = x; a.y2 = y; }
+      else { a.x2 = x; a.y2 = y; }
+    }
+    drawCanvas(canvasId);
+    if (kind === 'calib') updateCalib(); else updateArea();
+    e.preventDefault();
+  }
+
+  function onUp() { photoState.drag = null; }
+
+  cv.addEventListener('mousedown', onDown);
+  cv.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+  cv.addEventListener('touchstart', onDown, { passive:false });
+  cv.addEventListener('touchmove', onMove, { passive:false });
+  cv.addEventListener('touchend', onUp);
+}
+
+/* ---------- 食物选择（拍照页） ---------- */
+function renderPhotoGrid() {
+  const kw = ($('photoSearch').value || '').trim().toLowerCase();
+  let keys = Object.keys(FOODS);
+  if (kw) {
+    keys = keys.filter((k) =>
+      k.toLowerCase().includes(kw) ||
+      (FOODS[k].aliases||[]).some((a) => a.toLowerCase().includes(kw))
+    );
+  }
+  keys = keys.slice(0, 60);
+  $('photoGrid').innerHTML = keys.map((k) => {
+    const f = FOODS[k];
+    return `<button class="fd ${photoState.foodKey===k?'on':''}" data-pick="${k}">
+      <div class="n">${k}</div>
+      <div class="k">${f.density} g/ml</div>
+    </button>`;
+  }).join('');
+}
+$('photoSearch').addEventListener('input', renderPhotoGrid);
+$('photoGrid').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-pick]');
+  if (!b) return;
+  photoState.foodKey = b.dataset.pick;
+  renderPhotoGrid(); recompute();
+});
+
+/* ---------- 接受结果 ---------- */
+$('btnPrRetry').addEventListener('click', () => {
+  $('calibCard').scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+$('btnPrAccept').addEventListener('click', () => {
+  const r = computeWeight();
+  if (!r) { alert('还没算出来，请完成标定、框选、填厚度、选食物'); return; }
+
+  const exist = picked.find((p) => p.key === r.key);
+  const g = Math.round(r.grams);
+  if (exist) exist.grams = num(exist.grams) + g;
+  else picked.push({ key: r.key, grams: g });
+
+  renderPicked();
+  alert(`已加入记录：${r.key} ${g} 克\n（区间 ${weightRange(r.grams).lo}–${weightRange(r.grams).hi} 克，可在“记录”页手动微调）`);
+  $('tabAdd').click();
+});
+
+/* ---------- 标签切换（拍照页） ---------- */
+function showTab(which) {
+  const isAdd = which === 'add', isPhoto = which === 'photo', isToday = which === 'today';
+  $('tabAdd').classList.toggle('on', isAdd);
+  $('tabPhoto').classList.toggle('on', isPhoto);
+  $('tabToday').classList.toggle('on', isToday);
+  $('viewAdd').classList.toggle('hide', !isAdd);
+  $('viewPhoto').classList.toggle('hide', !isPhoto);
+  $('viewToday').classList.toggle('hide', !isToday);
+  document.querySelector('.footbar').style.display = (isPhoto || isToday) ? 'none' : '';
+  if (isToday) renderToday();
+}
+$('tabPhoto').addEventListener('click', () => showTab('photo'));
+
+/* ---------- 启动 ---------- */
+bindDrag('calibCanvas', 'calib');
+bindDrag('areaCanvas', 'area');
+$('dbCount').textContent = Object.keys(FOODS).length + ' 种食物';
+renderCats();
+renderGiFilter();
+renderGrid();
+renderPicked();
+renderToday();
+$('search').focus();
+</script>
+</body>
+</html>
