@@ -88,6 +88,38 @@ h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.5px}
   font-weight:600;white-space:nowrap;
 }
 
+/* ===== 成品菜配料拆分 ===== */
+.comp-panel{
+  margin-top:14px;padding:14px;border-radius:12px;
+  background:#f8fafc;border:1.5px solid var(--line);
+}
+.comp-row{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 4px;border-bottom:1px solid #eef1f4;font-size:13.5px;
+}
+.comp-row:last-of-type{border-bottom:none}
+.comp-row.comp-off{opacity:.42}
+.comp-check{display:flex;align-items:center;flex-shrink:0}
+.comp-check input{width:16px;height:16px;cursor:pointer;accent-color:var(--brand)}
+.comp-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.comp-grams{
+  width:64px;height:32px;text-align:center;font-size:13.5px;font-family:inherit;
+  border:1.5px solid var(--line);border-radius:7px;background:#fff;outline:none;flex-shrink:0;
+}
+.comp-grams:focus{border-color:var(--brand)}
+.comp-unit{font-size:12px;color:var(--sub);flex-shrink:0}
+.comp-kcal{
+  font-size:12.5px;color:var(--brand-dark);font-weight:600;
+  min-width:72px;text-align:right;flex-shrink:0;
+}
+.comp-sum{
+  margin-top:10px;padding:11px 6px 0;border-top:1px solid #e2e8ee;
+  font-size:13.5px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.comp-sum b{color:var(--brand-dark);font-size:16px}
+.comp-warn{color:#b45309;font-size:12px}
+.comp-hint{margin-top:7px;font-size:11.5px;color:var(--sub);line-height:1.5}
+
 /* 升糖汇总 */
 .gi-sum-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .gi-sum-gl{font-size:34px;font-weight:800;line-height:1;color:var(--text)}
@@ -804,8 +836,25 @@ const FOODS = {
 云南米干:{kcal:118,protein:2.8,fat:1.8,carb:23.4,fiber:0.6,sodium:540,unitWeight:350,cat:'主食',density:0.88,gi:61,aliases:['米干','云南米干']},
 云南饵丝:{kcal:126,protein:2.6,fat:1.6,carb:26.2,fiber:0.6,sodium:520,unitWeight:350,cat:'主食',density:0.88,gi:61,aliases:['饵丝','云南饵丝']},
 烤饵块:{kcal:168,protein:3.2,fat:4.2,carb:29.6,fiber:2.2,sodium:560,unitWeight:150,cat:'主食',density:0.6,gi:null,aliases:['饵块','烤饵块','云南饵块']},
-腊味煲仔饭:{kcal:172,protein:6.8,fat:5.4,carb:24.2,fiber:1.2,sodium:640,unitWeight:450,cat:'主食',density:0.85,gi:null,aliases:['腊味煲仔饭','腊味饭','瓦煲饭']},
-海南鸡饭:{kcal:166,protein:8.4,fat:5.8,carb:20.2,fiber:1.2,sodium:580,unitWeight:450,cat:'主食',density:0.85,gi:null,aliases:['海南鸡饭','文昌鸡饭']},
+  腊味煲仔饭:{kcal:224,protein:6.1,fat:14.5,carb:17.4,fiber:0.3,sodium:502,unitWeight:445,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'腊肠',grams:60,ref:'腊肠'},
+      {name:'腊肉',grams:50,ref:'腊肉'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'生抽',grams:15,ref:'生抽'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['煲仔饭一份','腊味煲仔饭一份','广式煲仔饭']},
+  海南鸡饭:{kcal:111,protein:6.6,fat:4.3,carb:11.3,fiber:0.2,sodium:183,unitWeight:610,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'鸡油饭',grams:250,ref:'米饭'},
+      {name:'白切鸡',grams:150,ref:'粤式白切鸡'},
+      {name:'黄瓜',grams:50,ref:'黄瓜'},
+      {name:'姜蓉',grams:10,ref:'生姜'},
+      {name:'鸡汤',grams:150,ref:'猪骨汤'}
+    ],
+    aliases:['海南鸡饭一份','文昌鸡饭']},
 潮汕猪脚饭:{kcal:198,protein:8.6,fat:9.4,carb:20.4,fiber:1.0,sodium:720,unitWeight:450,cat:'主食',density:0.85,gi:null,aliases:['猪脚饭','潮汕猪脚饭']},
 广东烧腊饭:{kcal:186,protein:9.2,fat:7.6,carb:21.0,fiber:1.0,sodium:700,unitWeight:450,cat:'主食',density:0.85,gi:null,aliases:['烧腊饭','广东烧腊饭','烧味饭']},
 台式卤肉饭:{kcal:174,protein:6.4,fat:7.2,carb:20.8,fiber:0.9,sodium:680,unitWeight:400,cat:'主食',density:0.85,gi:null,aliases:['卤肉饭','台式卤肉饭']},
@@ -840,6 +889,821 @@ const FOODS = {
   水晶饺:{kcal:180,protein:6.0,fat:4.0,carb:30.0,fiber:0.6,sodium:480,unitWeight:22,cat:'主食',density:0.8,gi:null,aliases:['水晶虾饺','澄面饺']},
   芋饺:{kcal:195,protein:5.5,fat:5.5,carb:32.0,fiber:1.2,sodium:500,unitWeight:25,cat:'主食',density:0.78,gi:null,aliases:['芋头饺','客家芋饺']},
   叉烧包:{kcal:250,protein:9.0,fat:7.5,carb:36.0,fiber:1.2,sodium:420,unitWeight:70,cat:'主食',density:0.55,gi:null,aliases:['蜜汁叉烧包','广式叉烧包']},
+  麻辣米线:{kcal:90,protein:2.7,fat:5.6,carb:7.5,fiber:0.2,sodium:406,unitWeight:555,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'豆芽',grams:40,ref:'黄豆芽'},
+      {name:'油麦菜',grams:40,ref:'油麦菜'},
+      {name:'辣椒油',grams:12,ref:'红油辣椒油'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:300,ref:'猪骨汤'},
+      {name:'盐',grams:3,ref:'食盐'}
+    ],
+    aliases:['米线','麻辣米线一份','素米线','红油米线']},
+  素米线:{kcal:73,protein:2.7,fat:3.6,carb:7.7,fiber:0.2,sodium:408,unitWeight:540,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'豆芽',grams:40,ref:'黄豆芽'},
+      {name:'油麦菜',grams:40,ref:'油麦菜'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:300,ref:'猪骨汤'},
+      {name:'盐',grams:3,ref:'食盐'}
+    ],
+    aliases:['素米线一份','清汤米线']},
+  酸菜米线:{kcal:72,protein:2.6,fat:3.5,carb:7.7,fiber:0.3,sodium:344,unitWeight:550,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'酸菜',grams:60,ref:'酸菜'},
+      {name:'豆芽',grams:30,ref:'黄豆芽'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['酸菜米线一份']},
+  砂锅米线:{kcal:92,protein:4.9,fat:4.6,carb:8,fiber:0.2,sodium:185,unitWeight:590,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'豆腐皮',grams:30,ref:'豆腐皮'},
+      {name:'豆芽',grams:40,ref:'黄豆芽'},
+      {name:'油麦菜',grams:40,ref:'油麦菜'},
+      {name:'食用油',grams:10,ref:'食用油'},
+      {name:'汤底',grams:320,ref:'猪骨汤'}
+    ],
+    aliases:['砂锅米线一份','砂锅粉']},
+  小锅米线:{kcal:78,protein:3.4,fat:3.8,carb:7.7,fiber:0.2,sodium:272,unitWeight:535,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'猪肉末',grams:25,ref:'猪瘦肉'},
+      {name:'韭菜',grams:20,ref:'韭菜'},
+      {name:'酸菜',grams:30,ref:'酸菜'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['云南小锅米线','小锅米线一份']},
+  过桥米线:{kcal:83,protein:5.9,fat:3.6,carb:6.7,fiber:0.2,sodium:220,unitWeight:695,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'鸡胸肉',grams:40,ref:'鸡胸肉'},
+      {name:'火腿',grams:15,ref:'火腿'},
+      {name:'豆腐皮',grams:20,ref:'豆腐皮'},
+      {name:'鹌鹑蛋',grams:20,ref:'鹌鹑蛋'},
+      {name:'豆芽',grams:30,ref:'黄豆芽'},
+      {name:'韭菜',grams:20,ref:'韭菜'},
+      {name:'高汤',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['过桥米线一份','云南过桥米线']},
+  番茄米线:{kcal:77,protein:3.3,fat:3.8,carb:7.4,fiber:0.2,sodium:177,unitWeight:600,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'番茄',grams:100,ref:'番茄'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['番茄米线一份','西红柿米线']},
+  酸辣米线:{kcal:78,protein:2.8,fat:4,carb:7.9,fiber:0.3,sodium:195,unitWeight:530,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'酸笋',grams:30,ref:'竹笋'},
+      {name:'辣椒油',grams:10,ref:'红油辣椒油'},
+      {name:'豆芽',grams:40,ref:'黄豆芽'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['酸辣米线一份']},
+  牛肉米线:{kcal:67,protein:4.4,fat:2.2,carb:7.2,fiber:0.1,sodium:207,unitWeight:570,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'牛肉',grams:50,ref:'牛里脊'},
+      {name:'香菜',grams:10,ref:'香菜'},
+      {name:'葱花',grams:10,ref:'小葱'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['牛肉米线一份']},
+  肥肠米线:{kcal:90,protein:3.1,fat:5.6,carb:7,fiber:0.1,sodium:223,unitWeight:560,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'猪大肠',grams:50,ref:'猪大肠'},
+      {name:'辣椒油',grams:10,ref:'红油辣椒油'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['肥肠米线一份','肥肠粉']},
+  三鲜米线:{kcal:69,protein:4.5,fat:2.7,carb:6.8,fiber:0.1,sodium:206,unitWeight:615,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'虾仁',grams:30,ref:'虾'},
+      {name:'猪瘦肉',grams:25,ref:'猪瘦肉'},
+      {name:'鹌鹑蛋',grams:20,ref:'鹌鹑蛋'},
+      {name:'青菜',grams:40,ref:'小白菜'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['三鲜米线一份']},
+  鸡丝米线:{kcal:70,protein:4.7,fat:2.2,carb:7.5,fiber:0.1,sodium:193,unitWeight:530,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'米线',grams:150,ref:'米粉'},
+      {name:'鸡胸肉',grams:50,ref:'鸡胸肉'},
+      {name:'黄瓜',grams:30,ref:'黄瓜'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['鸡丝米线一份']},
+  凉拌米线:{kcal:142,protein:2.7,fat:5.9,carb:19.8,fiber:0.5,sodium:275,unitWeight:250,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米线',grams:180,ref:'米粉'},
+      {name:'黄瓜',grams:40,ref:'黄瓜'},
+      {name:'花生米',grams:10,ref:'花生'},
+      {name:'辣椒油',grams:10,ref:'红油辣椒油'},
+      {name:'生抽',grams:10,ref:'生抽'}
+    ],
+    aliases:['凉米线','凉拌米线一份']},
+  炒米线:{kcal:131,protein:4.1,fat:5.6,carb:16.2,fiber:0.5,sodium:231,unitWeight:310,cat:'主食',density:0.8,gi:null,
+    components:[
+      {name:'米线',grams:180,ref:'米粉'},
+      {name:'豆芽',grams:40,ref:'黄豆芽'},
+      {name:'韭菜',grams:20,ref:'韭菜'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:10,ref:'生抽'}
+    ],
+    aliases:['炒米线一份','炒粉']},
+  螺蛳粉一份:{kcal:105,protein:4.5,fat:5.7,carb:9.3,fiber:0.9,sodium:202,unitWeight:600,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米粉',grams:160,ref:'米粉'},
+      {name:'酸笋',grams:40,ref:'竹笋'},
+      {name:'花生米',grams:15,ref:'花生'},
+      {name:'腐竹',grams:15,ref:'腐竹'},
+      {name:'辣椒油',grams:12,ref:'红油辣椒油'},
+      {name:'木耳',grams:10,ref:'木耳'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['螺蛳粉一碗','柳州螺蛳粉一份','螺蛳粉套餐']},
+  桂林米粉一份:{kcal:116,protein:5.4,fat:6.3,carb:9.6,fiber:0.3,sodium:230,unitWeight:500,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'米粉',grams:160,ref:'米粉'},
+      {name:'卤牛肉',grams:35,ref:'酱牛肉'},
+      {name:'锅烧',grams:25,ref:'五花肉'},
+      {name:'花生米',grams:12,ref:'花生'},
+      {name:'酸豆角',grams:20,ref:'酸豆'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['桂林米粉一碗','卤菜粉']},
+  常德牛肉粉:{kcal:86,protein:4.3,fat:4,carb:8.1,fiber:0.1,sodium:201,unitWeight:525,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'圆米粉',grams:160,ref:'米粉'},
+      {name:'牛肉',grams:45,ref:'牛里脊'},
+      {name:'辣椒油',grams:10,ref:'红油辣椒油'},
+      {name:'葱花',grams:8,ref:'小葱'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['常德米粉','津市牛肉粉']},
+  重庆小面:{kcal:97,protein:3.6,fat:5.4,carb:8.6,fiber:0.5,sodium:311,unitWeight:475,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'辣椒油',grams:12,ref:'红油辣椒油'},
+      {name:'花生碎',grams:10,ref:'花生'},
+      {name:'榨菜',grams:12,ref:'榨菜'},
+      {name:'青菜',grams:30,ref:'小白菜'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['重庆小面一碗','小面']},
+  担担面:{kcal:193,protein:7.6,fat:10,carb:18.2,fiber:1.1,sodium:71,unitWeight:225,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'猪肉末',grams:35,ref:'猪瘦肉'},
+      {name:'芝麻酱',grams:12,ref:'芝麻酱'},
+      {name:'辣椒油',grams:10,ref:'红油辣椒油'},
+      {name:'花生碎',grams:8,ref:'花生'}
+    ],
+    aliases:['担担面一碗','成都担担面']},
+  兰州牛肉面:{kcal:68,protein:4.4,fat:2.3,carb:7.1,fiber:0.3,sodium:211,unitWeight:600,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'拉面',grams:170,ref:'面条'},
+      {name:'牛肉',grams:40,ref:'牛腱'},
+      {name:'白萝卜',grams:30,ref:'白萝卜'},
+      {name:'香菜',grams:8,ref:'香菜'},
+      {name:'蒜苗',grams:8,ref:'蒜苗'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['兰州拉面','牛肉拉面','兰州牛肉拉面']},
+  刀削面一份:{kcal:83,protein:4.1,fat:3.6,carb:8.3,fiber:0.3,sodium:174,unitWeight:535,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'刀削面',grams:180,ref:'面条'},
+      {name:'猪肉',grams:35,ref:'猪瘦肉'},
+      {name:'番茄',grams:60,ref:'番茄'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['刀削面一碗','山西刀削面']},
+  炸酱面一份:{kcal:130,protein:5.9,fat:4.8,carb:15.6,fiber:0.7,sodium:378,unitWeight:295,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'面条',grams:180,ref:'面条'},
+      {name:'猪肉末',grams:45,ref:'猪瘦肉'},
+      {name:'黄豆酱',grams:20,ref:'海天黄豆酱'},
+      {name:'黄瓜丝',grams:40,ref:'黄瓜'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['炸酱面一碗','老北京炸酱面']},
+  热干面一份:{kcal:176,protein:4.6,fat:8.4,carb:20.6,fiber:1.4,sodium:168,unitWeight:230,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'碱面',grams:180,ref:'面条'},
+      {name:'芝麻酱',grams:20,ref:'芝麻酱'},
+      {name:'萝卜干',grams:15,ref:'萝卜干'},
+      {name:'香油',grams:8,ref:'芝麻油'},
+      {name:'葱花',grams:8,ref:'小葱'}
+    ],
+    aliases:['热干面一碗','武汉热干面']},
+  阳春面一份:{kcal:84,protein:3.3,fat:3.9,carb:8.8,fiber:0.3,sodium:370,unitWeight:440,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'猪油',grams:8,ref:'猪油'},
+      {name:'葱花',grams:8,ref:'小葱'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['阳春面一碗','清汤面','光面']},
+  雪菜肉丝面:{kcal:85,protein:4.4,fat:3.9,carb:7.8,fiber:0.4,sodium:212,unitWeight:495,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'雪菜',grams:40,ref:'雪里蕻'},
+      {name:'猪肉丝',grams:35,ref:'猪瘦肉'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['雪菜肉丝面一碗','雪菜面']},
+  三鲜大馄饨:{kcal:106,protein:6.1,fat:4.8,carb:9.8,fiber:0.7,sodium:397,unitWeight:465,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'馄饨',grams:200,ref:'鲜肉馄饨'},
+      {name:'虾仁',grams:20,ref:'虾'},
+      {name:'青菜',grams:40,ref:'小白菜'},
+      {name:'紫菜',grams:3,ref:'紫菜'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['三鲜馄饨','大馄饨']},
+  红油抄手:{kcal:225,protein:7.5,fat:12.4,carb:21,fiber:0.9,sodium:797,unitWeight:240,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'抄手',grams:200,ref:'鲜肉馄饨'},
+      {name:'辣椒油',grams:15,ref:'红油辣椒油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'蒜泥',grams:8,ref:'大蒜'},
+      {name:'白糖',grams:5,ref:'白砂糖'}
+    ],
+    aliases:['红油抄手一碗','成都抄手']},
+  藤椒抄手:{kcal:211,protein:7.7,fat:11.8,carb:18.9,fiber:0.9,sodium:752,unitWeight:230,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'抄手',grams:200,ref:'鲜肉馄饨'},
+      {name:'藤椒油',grams:12,ref:'幺麻子藤椒油'},
+      {name:'生抽',grams:10,ref:'生抽'},
+      {name:'葱花',grams:8,ref:'小葱'}
+    ],
+    aliases:['藤椒抄手一碗']},
+  鲜肉小馄饨:{kcal:108,protein:5.9,fat:5.1,carb:9.8,fiber:0.6,sodium:462,unitWeight:370,cat:'主食',density:0.9,gi:null,
+    components:[
+      {name:'小馄饨',grams:160,ref:'鲜肉馄饨'},
+      {name:'紫菜',grams:3,ref:'紫菜'},
+      {name:'虾皮',grams:3,ref:'虾皮'},
+      {name:'葱花',grams:6,ref:'小葱'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['小馄饨','鲜肉小馄饨一碗']},
+  车仔面:{kcal:136,protein:6.8,fat:3,carb:20,fiber:2.7,sodium:136,unitWeight:290,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'车仔面',grams:150,ref:'面条'},
+      {name:'鱼蛋',grams:40,ref:'鱼丸'},
+      {name:'猪皮',grams:20,ref:'猪皮'},
+      {name:'萝卜',grams:50,ref:'白萝卜'},
+      {name:'咖喱汁',grams:30,ref:'咖喱粉'}
+    ],
+    aliases:['车仔面一碗','港式车仔面']},
+  沙茶面:{kcal:90,protein:5.3,fat:3.8,carb:8.5,fiber:0.4,sodium:283,unitWeight:515,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'沙茶酱',grams:20,ref:'沙茶酱'},
+      {name:'猪肝',grams:25,ref:'猪肝'},
+      {name:'鱿鱼',grams:30,ref:'鱿鱼'},
+      {name:'豆芽',grams:30,ref:'黄豆芽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['沙茶面一碗','厦门沙茶面']},
+  面线糊:{kcal:69,protein:4,fat:3.6,carb:5.1,fiber:0.1,sodium:245,unitWeight:425,cat:'主食',density:0.95,gi:null,
+    components:[
+      {name:'面线',grams:60,ref:'面条'},
+      {name:'猪血',grams:30,ref:'猪血'},
+      {name:'大肠',grams:25,ref:'猪大肠'},
+      {name:'淀粉',grams:8,ref:'淀粉'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['面线糊一碗','泉州面线糊']},
+  烩面:{kcal:98,protein:6.5,fat:3.8,carb:9.5,fiber:0.7,sodium:191,unitWeight:585,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'烩面',grams:180,ref:'面条'},
+      {name:'羊肉',grams:50,ref:'羊肉'},
+      {name:'千张',grams:25,ref:'豆腐皮'},
+      {name:'木耳',grams:8,ref:'木耳'},
+      {name:'粉丝',grams:20,ref:'粉丝'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['河南烩面','羊肉烩面']},
+  biangbiang面:{kcal:159,protein:4.1,fat:7.9,carb:17.7,fiber:1.5,sodium:144,unitWeight:265,cat:'主食',density:0.84,gi:null,
+    components:[
+      {name:'裤带面',grams:180,ref:'面条'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'辣椒粉',grams:8,ref:'辣椒粉'},
+      {name:'番茄鸡蛋',grams:60,ref:'西红柿炒蛋'}
+    ],
+    aliases:['biangbiang面一碗','裤带面']},
+  猫耳朵:{kcal:70,protein:4.1,fat:2,carb:8.8,fiber:0.4,sodium:163,unitWeight:480,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'猫耳朵',grams:170,ref:'面条'},
+      {name:'猪肉',grams:30,ref:'猪瘦肉'},
+      {name:'番茄',grams:50,ref:'番茄'},
+      {name:'青菜',grams:30,ref:'小白菜'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['猫耳朵一碗','山西猫耳朵']},
+  锅盖面:{kcal:72,protein:4.5,fat:2.4,carb:8,fiber:0.3,sodium:338,unitWeight:495,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'猪里脊',grams:35,ref:'猪里脊'},
+      {name:'青菜',grams:40,ref:'小白菜'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['锅盖面一碗','镇江锅盖面']},
+  皮肚面:{kcal:84,protein:5.9,fat:3.2,carb:7.6,fiber:0.3,sodium:187,unitWeight:515,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'皮肚',grams:40,ref:'猪皮'},
+      {name:'猪肝',grams:25,ref:'猪肝'},
+      {name:'青菜',grams:40,ref:'小白菜'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['皮肚面一碗','南京皮肚面']},
+  鱼汤面:{kcal:71,protein:4.9,fat:2.4,carb:7.5,fiber:0.3,sodium:204,unitWeight:530,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'鲫鱼',grams:60,ref:'鲫鱼'},
+      {name:'葱花',grams:8,ref:'小葱'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['鱼汤面一碗','东台鱼汤面']},
+  牛腩面:{kcal:94,protein:4.7,fat:5.3,carb:6.8,fiber:0.3,sodium:186,unitWeight:580,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'牛腩',grams:70,ref:'牛腩'},
+      {name:'白萝卜',grams:40,ref:'白萝卜'},
+      {name:'青菜',grams:30,ref:'小白菜'},
+      {name:'汤底',grams:280,ref:'猪骨汤'}
+    ],
+    aliases:['牛腩面一碗','清汤牛腩面']},
+  肥牛面:{kcal:92,protein:4.6,fat:4.9,carb:7.5,fiber:0.5,sodium:180,unitWeight:530,cat:'主食',density:0.87,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'肥牛',grams:60,ref:'肥牛'},
+      {name:'金针菇',grams:30,ref:'金针菇'},
+      {name:'青菜',grams:30,ref:'小白菜'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['肥牛面一碗']},
+  酸辣粉一份:{kcal:99,protein:2.8,fat:6.1,carb:8.5,fiber:0.4,sodium:336,unitWeight:400,cat:'主食',density:0.9,gi:null,
+    components:[
+      {name:'红薯粉',grams:150,ref:'粉丝'},
+      {name:'花生米',grams:12,ref:'花生'},
+      {name:'榨菜',grams:15,ref:'榨菜'},
+      {name:'辣椒油',grams:12,ref:'红油辣椒油'},
+      {name:'香菜',grams:8,ref:'香菜'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['酸辣粉一份','重庆酸辣粉']},
+  大排面一碗:{kcal:122,protein:5.6,fat:7.5,carb:7.8,fiber:0.3,sodium:336,unitWeight:500,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'猪大排',grams:80,ref:'猪排骨'},
+      {name:'食用油',grams:10,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['大排面一碗','上海大排面','红烧大排面']},
+  爆鱼面一碗:{kcal:93,protein:5.2,fat:4.6,carb:7.6,fiber:0.3,sodium:332,unitWeight:500,cat:'主食',density:0.86,gi:null,
+    components:[
+      {name:'面条',grams:160,ref:'面条'},
+      {name:'熏鱼',grams:70,ref:'草鱼'},
+      {name:'食用油',grams:10,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['爆鱼面一碗','熏鱼面','苏式爆鱼面']},
+  五芳斋鲜肉粽:{kcal:210,protein:6.5,fat:7.5,carb:30.0,fiber:1.0,sodium:400,unitWeight:150,cat:'主食',density:0.9,gi:null,aliases:['鲜肉粽','五芳斋粽子','肉粽']},
+  五芳斋豆沙粽:{kcal:225,protein:4.5,fat:2.5,carb:48.0,fiber:1.5,sodium:180,unitWeight:150,cat:'主食',density:0.9,gi:null,aliases:['豆沙粽','五芳斋豆沙粽']},
+  五芳斋蛋黄鲜肉粽:{kcal:225,protein:7.5,fat:8.5,carb:29.5,fiber:1.0,sodium:420,unitWeight:160,cat:'主食',density:0.9,gi:null,aliases:['蛋黄粽','双黄粽']},
+  湾仔码头猪肉白菜水饺:{kcal:200,protein:8.5,fat:8.5,carb:23.0,fiber:1.2,sodium:480,unitWeight:20,cat:'主食',density:0.75,gi:null,aliases:['湾仔码头水饺','猪肉白菜水饺']},
+  湾仔码头玉米猪肉水饺:{kcal:205,protein:8.5,fat:9.0,carb:23.5,fiber:1.3,sodium:470,unitWeight:20,cat:'主食',density:0.75,gi:null,aliases:['玉米水饺','玉米猪肉饺']},
+  湾仔码头虾仁三鲜水饺:{kcal:180,protein:8.8,fat:6.5,carb:22.0,fiber:1.1,sodium:460,unitWeight:20,cat:'主食',density:0.75,gi:null,aliases:['三鲜水饺','虾仁三鲜饺']},
+  湾仔码头猪肉大葱馄饨:{kcal:195,protein:8.0,fat:8.0,carb:23.0,fiber:1.0,sodium:490,unitWeight:15,cat:'主食',density:0.8,gi:null,aliases:['湾仔码头馄饨','大葱馄饨']},
+  思念猪肉白菜水饺:{kcal:205,protein:8.8,fat:9.0,carb:23.5,fiber:1.3,sodium:490,unitWeight:20,cat:'主食',density:0.75,gi:null,aliases:['思念水饺','思念猪肉水饺']},
+  思念三鲜凌水饺:{kcal:190,protein:8.5,fat:7.5,carb:22.5,fiber:1.2,sodium:480,unitWeight:20,cat:'主食',density:0.75,gi:null,aliases:['凌水饺','思念三鲜饺']},
+  思念灌汤包:{kcal:225,protein:8.0,fat:8.0,carb:29.0,fiber:1.0,sodium:520,unitWeight:35,cat:'主食',density:0.7,gi:null,aliases:['思念汤包','灌汤包思念']},
+  思念猪肉糯米烧麦:{kcal:230,protein:7.0,fat:8.0,carb:32.0,fiber:1.3,sodium:560,unitWeight:40,cat:'主食',density:0.7,gi:null,aliases:['糯米烧麦','思念烧麦']},
+  安井撒尿肉丸:{kcal:225,protein:10.5,fat:13.5,carb:16.0,fiber:0.5,sodium:840,unitWeight:20,cat:'主食',density:0.9,gi:null,aliases:['撒尿牛丸','安井牛丸','爆汁牛丸']},
+  安井红糖馒头:{kcal:235,protein:6.5,fat:1.5,carb:50.0,fiber:1.2,sodium:190,unitWeight:90,cat:'主食',density:0.5,gi:null,aliases:['红糖馒头','安井馒头']},
+  安井奶香馒头:{kcal:245,protein:7.0,fat:2.0,carb:50.0,fiber:1.2,sodium:180,unitWeight:90,cat:'主食',density:0.5,gi:null,aliases:['奶香馒头','牛奶馒头']},
+  龙凤猪肉韭菜煎饺:{kcal:250,protein:9.0,fat:11.0,carb:27.0,fiber:1.3,sodium:580,unitWeight:22,cat:'主食',density:0.75,gi:null,aliases:['龙凤煎饺','韭菜煎饺']},
+  龙凤鲜肉汤圆:{kcal:290,protein:5.5,fat:9.0,carb:47.0,fiber:0.8,sodium:35,unitWeight:20,cat:'主食',density:0.85,gi:null,aliases:['龙凤汤圆','鲜肉汤圆']},
+  统一老坛酸菜牛肉面:{kcal:470,protein:9.5,fat:22.0,carb:60.0,fiber:2.0,sodium:1900,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['老坛酸菜面','统一酸菜面','老坛酸菜牛肉面']},
+  康师傅红烧牛肉面:{kcal:480,protein:10.0,fat:23.0,carb:60.0,fiber:2.0,sodium:1850,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['红烧牛肉面','康师傅牛肉面']},
+  康师傅香辣牛肉面:{kcal:485,protein:9.8,fat:23.5,carb:60.5,fiber:2.0,sodium:1950,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['香辣牛肉面','康师傅香辣面']},
+  康师傅鲜虾鱼板面:{kcal:455,protein:9.0,fat:20.0,carb:61.0,fiber:2.0,sodium:1800,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['鲜虾鱼板面','康师傅海鲜面']},
+  白象大骨面:{kcal:460,protein:9.5,fat:21.5,carb:60.0,fiber:2.0,sodium:1780,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['大骨面','白象大骨面']},
+  白象汤好喝老母鸡汤面:{kcal:450,protein:9.2,fat:20.5,carb:60.5,fiber:2.0,sodium:1750,unitWeight:120,cat:'主食',density:0.6,gi:73,aliases:['汤好喝','白象老母鸡汤面']},
+  今麦郎一桶半:{kcal:465,protein:9.5,fat:22.5,carb:60.0,fiber:2.0,sodium:1880,unitWeight:145,cat:'主食',density:0.6,gi:73,aliases:['一桶半','今麦郎大份面']},
+  汤达人日式豚骨拉面:{kcal:475,protein:10.5,fat:23.0,carb:59.5,fiber:2.0,sodium:1920,unitWeight:125,cat:'主食',density:0.6,gi:73,aliases:['汤达人','豚骨拉面']},
+  出前一丁麻油味:{kcal:460,protein:9.0,fat:22.0,carb:60.0,fiber:2.0,sodium:1700,unitWeight:100,cat:'主食',density:0.6,gi:73,aliases:['出前一丁','麻油面']},
+  三只松鼠螺蛳粉:{kcal:178,protein:6.5,fat:6.5,carb:24.5,fiber:1.8,sodium:1080,unitWeight:650,cat:'主食',density:0.88,gi:null,aliases:['三只松鼠螺蛳粉','袋装螺蛳粉']},
+  李子柒螺蛳粉:{kcal:180,protein:6.8,fat:6.8,carb:24.8,fiber:1.8,sodium:1100,unitWeight:680,cat:'主食',density:0.88,gi:null,aliases:['李子柒螺蛳粉','网红螺蛳粉']},
+  好欢螺螺蛳粉:{kcal:185,protein:7.0,fat:7.2,carb:25.5,fiber:2.0,sodium:1150,unitWeight:700,cat:'主食',density:0.88,gi:null,aliases:['好欢螺','好欢螺螺蛳粉']},
+  自嗨锅自热米饭:{kcal:165,protein:5.0,fat:5.5,carb:23.0,fiber:0.8,sodium:620,unitWeight:350,cat:'主食',density:0.85,gi:null,aliases:['自热米饭','自嗨锅米饭']},
+  老城南自热煲仔饭:{kcal:170,protein:5.5,fat:6.0,carb:23.5,fiber:0.9,sodium:640,unitWeight:360,cat:'主食',density:0.85,gi:null,aliases:['自热煲仔饭','老城南煲仔饭']},
+  银鹭八宝粥:{kcal:85,protein:2.4,fat:1.2,carb:16.5,fiber:1.2,sodium:15,unitWeight:300,cat:'主食',density:1.05,gi:65,aliases:['八宝粥','银鹭粥']},
+  泰奇八宝粥:{kcal:88,protein:2.5,fat:1.3,carb:17.0,fiber:1.2,sodium:18,unitWeight:300,cat:'主食',density:1.05,gi:65,aliases:['泰奇粥','泰奇八宝粥']},
+  娃哈哈桂圆莲子八宝粥:{kcal:90,protein:2.6,fat:1.4,carb:17.5,fiber:1.3,sodium:20,unitWeight:300,cat:'主食',density:1.05,gi:65,aliases:['娃哈哈八宝粥','桂圆莲子粥']},
+  银鹭好粥道黑米粥:{kcal:65,protein:1.8,fat:0.8,carb:14.0,fiber:0.9,sodium:12,unitWeight:300,cat:'主食',density:1.05,gi:60,aliases:['好粥道','黑米粥罐装']},
+  泰奇玉米粥:{kcal:60,protein:1.5,fat:0.7,carb:13.5,fiber:0.8,sodium:10,unitWeight:300,cat:'主食',density:1.05,gi:58,aliases:['玉米粥','泰奇玉米粥']},
+  黄焖鸡米饭:{kcal:134,protein:6.2,fat:6,carb:14.3,fiber:0.6,sodium:160,unitWeight:545,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸡腿肉',grams:150,ref:'鸡腿'},
+      {name:'香菇',grams:40,ref:'蘑菇'},
+      {name:'青椒',grams:30,ref:'青椒'},
+      {name:'土豆',grams:50,ref:'土豆'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['黄焖鸡饭','杨铭宇黄焖鸡米饭','黄焖鸡']},
+  卤肉饭:{kcal:203,protein:4.9,fat:13.1,carb:17.1,fiber:0.3,sodium:367,unitWeight:450,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'五花肉',grams:100,ref:'五花肉'},
+      {name:'卤蛋',grams:50,ref:'卤蛋'},
+      {name:'酸菜',grams:30,ref:'酸菜'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'白砂糖',grams:6,ref:'白砂糖'}
+    ],
+    aliases:['台式卤肉饭','卤肉饭一份']},
+  猪脚饭:{kcal:158,protein:9.8,fat:6.9,carb:14,fiber:0.2,sodium:360,unitWeight:490,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪蹄',grams:150,ref:'猪蹄'},
+      {name:'卤蛋',grams:50,ref:'卤蛋'},
+      {name:'酸菜',grams:30,ref:'酸菜'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['潮汕猪脚饭','猪脚饭一份']},
+  烧腊双拼饭:{kcal:148,protein:8.1,fat:6.1,carb:15.4,fiber:0.3,sodium:277,unitWeight:480,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'叉烧',grams:80,ref:'叉烧'},
+      {name:'烧鹅',grams:80,ref:'鹅肉'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'生抽',grams:10,ref:'生抽'}
+    ],
+    aliases:['烧腊饭','双拼饭','广东烧腊饭']},
+  烧鸭饭:{kcal:203,protein:7,fat:12.3,carb:16.4,fiber:0.3,sodium:222,unitWeight:475,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'烤鸭',grams:150,ref:'烤鸭'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'酸梅酱',grams:15,ref:'番茄酱'}
+    ],
+    aliases:['烧鸭饭一份','广式烧鸭饭']},
+  鸡腿饭:{kcal:127,protein:7.5,fat:4.9,carb:13.3,fiber:0.3,sodium:257,unitWeight:520,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'卤鸡腿',grams:150,ref:'鸡腿'},
+      {name:'卤蛋',grams:50,ref:'卤蛋'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['鸡腿饭一份','卤鸡腿饭']},
+  排骨饭:{kcal:169,protein:6.9,fat:9.5,carb:14.3,fiber:0.3,sodium:182,unitWeight:480,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪排骨',grams:150,ref:'猪排骨'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['排骨饭一份','红烧排骨饭']},
+  梅菜扣肉饭:{kcal:207,protein:4.3,fat:13.9,carb:17.1,fiber:1,sodium:388,unitWeight:470,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'扣肉',grams:120,ref:'五花肉'},
+      {name:'梅干菜',grams:40,ref:'梅干菜'},
+      {name:'青菜',grams:50,ref:'小白菜'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['梅菜扣肉饭一份','扣肉饭']},
+  番茄鸡蛋盖饭:{kcal:110,protein:3.9,fat:4,carb:14.6,fiber:0.3,sodium:27,unitWeight:545,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'番茄',grams:180,ref:'番茄'},
+      {name:'鸡蛋',grams:100,ref:'鸡蛋'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'白砂糖',grams:5,ref:'白砂糖'}
+    ],
+    aliases:['番茄炒蛋盖饭','西红柿鸡蛋盖饭','番茄鸡蛋饭']},
+  青椒肉丝盖饭:{kcal:124,protein:5.9,fat:4.8,carb:14.8,fiber:0.5,sodium:158,unitWeight:495,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪里脊',grams:100,ref:'猪里脊'},
+      {name:'青椒',grams:120,ref:'青椒'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['青椒肉丝饭','尖椒肉丝盖饭']},
+  鱼香肉丝盖饭:{kcal:147,protein:6.3,fat:5.1,carb:19.8,fiber:1.6,sodium:18,unitWeight:475,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪里脊',grams:100,ref:'猪里脊'},
+      {name:'木耳',grams:20,ref:'木耳'},
+      {name:'胡萝卜',grams:40,ref:'胡萝卜'},
+      {name:'青椒',grams:40,ref:'青椒'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'白砂糖',grams:10,ref:'白砂糖'}
+    ],
+    aliases:['鱼香肉丝饭','鱼香肉丝盖浇饭']},
+  宫保鸡丁盖饭:{kcal:168,protein:9.2,fat:6.5,carb:17.8,fiber:0.5,sodium:18,unitWeight:460,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸡胸肉',grams:120,ref:'鸡胸肉'},
+      {name:'花生米',grams:25,ref:'花生'},
+      {name:'黄瓜',grams:40,ref:'黄瓜'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'白砂糖',grams:10,ref:'白砂糖'}
+    ],
+    aliases:['宫保鸡丁饭','宫爆鸡丁盖饭']},
+  回锅肉盖饭:{kcal:199,protein:3.6,fat:14.5,carb:14.5,fiber:0.6,sodium:188,unitWeight:535,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'五花肉',grams:120,ref:'五花肉'},
+      {name:'青椒',grams:60,ref:'青椒'},
+      {name:'卷心菜',grams:80,ref:'卷心菜'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'豆瓣酱',grams:15,ref:'郫县豆瓣酱'}
+    ],
+    aliases:['回锅肉饭','川味回锅肉盖饭']},
+  香菇滑鸡饭:{kcal:147,protein:6.7,fat:6.6,carb:15.4,fiber:0.4,sodium:177,unitWeight:490,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸡腿肉',grams:150,ref:'鸡腿'},
+      {name:'香菇',grams:60,ref:'蘑菇'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'淀粉',grams:8,ref:'淀粉'}
+    ],
+    aliases:['香菇滑鸡饭一份','滑鸡饭']},
+  咖喱鸡饭:{kcal:149,protein:5.4,fat:6.2,carb:17.8,fiber:0.9,sodium:268,unitWeight:560,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸡腿肉',grams:120,ref:'鸡腿'},
+      {name:'土豆',grams:100,ref:'土豆'},
+      {name:'胡萝卜',grams:50,ref:'胡萝卜'},
+      {name:'咖喱块',grams:30,ref:'百梦多咖喱块'},
+      {name:'食用油',grams:8,ref:'食用油'}
+    ],
+    aliases:['咖喱鸡饭一份','日式咖喱鸡饭','咖喱饭']},
+  咖喱牛肉饭:{kcal:171,protein:5.7,fat:8.4,carb:18.1,fiber:0.9,sodium:267,unitWeight:550,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛腩',grams:120,ref:'牛腩'},
+      {name:'土豆',grams:100,ref:'土豆'},
+      {name:'胡萝卜',grams:50,ref:'胡萝卜'},
+      {name:'咖喱块',grams:30,ref:'百梦多咖喱块'}
+    ],
+    aliases:['咖喱牛肉饭一份','日式咖喱牛肉饭']},
+  亲子丼:{kcal:125,protein:7.3,fat:4.6,carb:13.5,fiber:0.2,sodium:209,unitWeight:555,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸡腿肉',grams:120,ref:'鸡腿'},
+      {name:'鸡蛋',grams:100,ref:'鸡蛋'},
+      {name:'洋葱',grams:60,ref:'洋葱'},
+      {name:'生抽',grams:15,ref:'生抽'},
+      {name:'味淋',grams:10,ref:'黄酒'}
+    ],
+    aliases:['亲子饭','亲子丼一份','日式亲子丼']},
+  牛丼:{kcal:155,protein:5.6,fat:7.1,carb:17.2,fiber:0.3,sodium:209,unitWeight:475,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'肥牛',grams:120,ref:'肥牛'},
+      {name:'洋葱',grams:80,ref:'洋葱'},
+      {name:'生抽',grams:15,ref:'生抽'},
+      {name:'白砂糖',grams:8,ref:'白砂糖'}
+    ],
+    aliases:['牛肉饭','吉野家牛丼','日式牛肉饭']},
+  猪排饭:{kcal:152,protein:8,fat:6.5,carb:15.5,fiber:0.4,sodium:24,unitWeight:550,cat:'主食',density:0.8,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'炸猪排',grams:150,ref:'猪里脊'},
+      {name:'卷心菜丝',grams:80,ref:'卷心菜'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'面粉',grams:20,ref:'面粉'},
+      {name:'鸡蛋',grams:30,ref:'鸡蛋'}
+    ],
+    aliases:['日式猪排饭','炸猪排饭','猪排饭一份']},
+  鳗鱼饭:{kcal:143,protein:7.7,fat:4,carb:19.1,fiber:0.3,sodium:181,unitWeight:395,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'烤鳗鱼',grams:120,ref:'鳗鱼'},
+      {name:'蒲烧酱',grams:20,ref:'日式照烧汁'},
+      {name:'白芝麻',grams:5,ref:'白芝麻'}
+    ],
+    aliases:['鳗鱼饭一份','日式鳗鱼饭','蒲烧鳗鱼饭']},
+  三文鱼刺身饭:{kcal:142,protein:6.9,fat:4.1,carb:19.4,fiber:1.1,sodium:319,unitWeight:440,cat:'主食',density:0.9,gi:null,
+    components:[
+      {name:'寿司饭',grams:250,ref:'寿司饭'},
+      {name:'三文鱼',grams:120,ref:'三文鱼'},
+      {name:'牛油果',grams:50,ref:'牛油果'},
+      {name:'海苔',grams:5,ref:'紫菜'},
+      {name:'酱油',grams:15,ref:'刺身寿司酱油'}
+    ],
+    aliases:['三文鱼饭','三文鱼刺身丼','海鲜饭']},
+  牛肉盖饭:{kcal:113,protein:7,fat:2.8,carb:15.3,fiber:0.4,sodium:159,unitWeight:505,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛肉',grams:120,ref:'牛里脊'},
+      {name:'洋葱',grams:70,ref:'洋葱'},
+      {name:'青椒',grams:40,ref:'青椒'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['牛肉盖饭一份','牛肉饭盖浇']},
+  羊肉盖饭:{kcal:153,protein:6.6,fat:7.2,carb:15.8,fiber:0.4,sodium:24,unitWeight:470,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'羊肉',grams:120,ref:'羊肉'},
+      {name:'洋葱',grams:80,ref:'洋葱'},
+      {name:'孜然',grams:5,ref:'孜然粉'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['羊肉盖饭一份','孜然羊肉饭']},
+  土豆牛肉盖饭:{kcal:160,protein:5.5,fat:8.2,carb:16.3,fiber:0.7,sodium:152,unitWeight:560,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛腩',grams:120,ref:'牛腩'},
+      {name:'土豆',grams:120,ref:'土豆'},
+      {name:'胡萝卜',grams:50,ref:'胡萝卜'},
+      {name:'食用油',grams:10,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['土豆牛肉饭','牛肉土豆盖饭']},
+  番茄牛腩饭:{kcal:138,protein:4.8,fat:7.7,carb:12.6,fiber:0.3,sodium:15,unitWeight:600,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛腩',grams:120,ref:'牛腩'},
+      {name:'番茄',grams:180,ref:'番茄'},
+      {name:'洋葱',grams:40,ref:'洋葱'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['番茄牛腩饭','西红柿牛腩盖饭']},
+  麻婆豆腐盖饭:{kcal:133,protein:6.4,fat:5.1,carb:15.5,fiber:0.5,sodium:236,unitWeight:545,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'豆腐',grams:200,ref:'豆腐'},
+      {name:'猪肉末',grams:50,ref:'猪瘦肉'},
+      {name:'豆瓣酱',grams:20,ref:'郫县豆瓣酱'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'淀粉',grams:8,ref:'淀粉'}
+    ],
+    aliases:['麻婆豆腐饭','麻婆豆腐盖浇饭']},
+  红烧肉盖饭:{kcal:199,protein:5.8,fat:12.7,carb:15.7,fiber:0.3,sodium:254,unitWeight:480,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'红烧肉',grams:120,ref:'红烧肉'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'卤蛋',grams:50,ref:'卤蛋'}
+    ],
+    aliases:['红烧肉饭','东坡肉饭']},
+  糖醋里脊盖饭:{kcal:148,protein:5.6,fat:4.2,carb:22,fiber:0.5,sodium:183,unitWeight:450,cat:'主食',density:0.8,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'糖醋里脊',grams:150,ref:'糖醋里脊'},
+      {name:'青菜',grams:50,ref:'小白菜'}
+    ],
+    aliases:['糖醋里脊饭','糖醋里脊盖浇饭']},
+  鱼香茄子盖饭:{kcal:118,protein:3.2,fat:4.5,carb:16.4,fiber:0.6,sodium:7,unitWeight:520,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'茄子',grams:200,ref:'茄子'},
+      {name:'猪肉末',grams:40,ref:'猪瘦肉'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'白砂糖',grams:10,ref:'白砂糖'}
+    ],
+    aliases:['鱼香茄子饭','鱼香茄子盖浇饭']},
+  地三鲜盖饭:{kcal:103,protein:1.9,fat:3.6,carb:16.2,fiber:1,sodium:3,unitWeight:590,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'土豆',grams:120,ref:'土豆'},
+      {name:'茄子',grams:120,ref:'茄子'},
+      {name:'青椒',grams:80,ref:'青椒'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['地三鲜饭','东北地三鲜盖饭']},
+  干煸豆角盖饭:{kcal:114,protein:4.2,fat:4.6,carb:14.6,fiber:1.1,sodium:8,unitWeight:535,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'豇豆',grams:200,ref:'豇豆'},
+      {name:'猪肉末',grams:50,ref:'猪瘦肉'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'辣椒',grams:15,ref:'辣椒'}
+    ],
+    aliases:['干煸豆角饭','豆角盖饭']},
+  酸辣土豆丝盖饭:{kcal:119,protein:2.4,fat:3.5,carb:19.7,fiber:1.1,sodium:27,unitWeight:545,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'土豆',grams:220,ref:'土豆'},
+      {name:'青椒',grams:40,ref:'青椒'},
+      {name:'食用油',grams:18,ref:'食用油'},
+      {name:'陈醋',grams:15,ref:'陈醋'}
+    ],
+    aliases:['酸辣土豆丝饭','土豆丝盖饭']},
+  西红柿牛腩饭:{kcal:153,protein:5.4,fat:8.7,carb:13.3,fiber:0.3,sodium:16,unitWeight:530,cat:'主食',density:0.88,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛腩',grams:120,ref:'牛腩'},
+      {name:'番茄',grams:150,ref:'番茄'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['西红柿牛腩盖饭']},
+  鸡排饭:{kcal:181,protein:6.9,fat:9.2,carb:18.2,fiber:0.5,sodium:203,unitWeight:500,cat:'主食',density:0.8,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'炸鸡排',grams:150,ref:'炸鸡排'},
+      {name:'卷心菜丝',grams:80,ref:'卷心菜'},
+      {name:'食用油',grams:18,ref:'食用油'}
+    ],
+    aliases:['鸡排饭一份','炸鸡排饭','台湾鸡排饭']},
+  烤肉拌饭:{kcal:129,protein:6.4,fat:5.2,carb:14.2,fiber:0.4,sodium:143,unitWeight:515,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪肉',grams:120,ref:'猪里脊'},
+      {name:'生菜',grams:60,ref:'生菜'},
+      {name:'洋葱',grams:50,ref:'洋葱'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'辣椒酱',grams:20,ref:'辣椒酱'}
+    ],
+    aliases:['韩式烤肉拌饭','石锅拌饭','拌饭']},
+  猪肝盖饭:{kcal:124,protein:6.3,fat:4.1,carb:15.9,fiber:0.4,sodium:18,unitWeight:495,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪肝',grams:120,ref:'猪肝'},
+      {name:'青椒',grams:60,ref:'青椒'},
+      {name:'洋葱',grams:50,ref:'洋葱'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['猪肝饭','爆炒猪肝盖饭']},
+  卤鸭腿饭:{kcal:142,protein:7.8,fat:6.3,carb:13.3,fiber:0.3,sodium:253,unitWeight:520,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'鸭腿',grams:150,ref:'鸭腿'},
+      {name:'卤蛋',grams:50,ref:'卤蛋'},
+      {name:'青菜',grams:60,ref:'小白菜'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['鸭腿饭','卤鸭腿饭一份']},
+  猪软骨饭:{kcal:148,protein:6.7,fat:7.2,carb:14.3,fiber:0.3,sodium:180,unitWeight:490,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'猪排骨',grams:150,ref:'猪排骨'},
+      {name:'白萝卜',grams:80,ref:'白萝卜'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['软骨饭','猪软骨饭一份']},
+  台式排骨饭:{kcal:202,protein:7.1,fat:11.6,carb:17.1,fiber:0.4,sodium:146,unitWeight:480,cat:'主食',density:0.8,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'炸排骨',grams:150,ref:'猪排骨'},
+      {name:'酸菜',grams:40,ref:'酸菜'},
+      {name:'面粉',grams:20,ref:'面粉'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['台湾排骨饭','台式排骨饭一份']},
+  铁板炒饭:{kcal:188,protein:6.1,fat:9,carb:20.7,fiber:0.9,sodium:157,unitWeight:470,cat:'主食',density:0.82,gi:null,
+    components:[
+      {name:'米饭',grams:300,ref:'米饭'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'火腿',grams:40,ref:'火腿'},
+      {name:'青豆',grams:30,ref:'蒜香炒青豆'},
+      {name:'胡萝卜',grams:30,ref:'胡萝卜'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['铁板炒饭一份','铁板饭']},
+  石锅拌饭:{kcal:108,protein:6.4,fat:3.2,carb:13.8,fiber:0.7,sodium:178,unitWeight:575,cat:'主食',density:0.85,gi:null,
+    components:[
+      {name:'米饭',grams:250,ref:'米饭'},
+      {name:'牛肉末',grams:80,ref:'牛里脊'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'豆芽',grams:60,ref:'黄豆芽'},
+      {name:'菠菜',grams:60,ref:'菠菜'},
+      {name:'胡萝卜',grams:40,ref:'胡萝卜'},
+      {name:'辣酱',grams:25,ref:'辣椒酱'},
+      {name:'芝麻油',grams:10,ref:'芝麻油'}
+    ],
+    aliases:['石锅拌饭一份','韩式石锅拌饭']},
   鸡胸肉:{kcal:133,protein:24.6,fat:2.5,carb:0.6,fiber:0,sodium:63,unitWeight:120,cat:'肉类',density:1.05,gi:0,aliases:['鸡胸','鸡脯肉']},
   鸡腿:{kcal:181,protein:16.0,fat:13.0,carb:0,fiber:0,sodium:85,unitWeight:100,cat:'肉类',density:1,gi:0,aliases:['鸡腿肉','琵琶腿']},
   炸鸡:{kcal:279,protein:20.0,fat:17.0,carb:11.0,fiber:0.5,sodium:700,unitWeight:90,cat:'肉类',density:0.6,gi:null,aliases:['炸鸡块','鸡米花','炸鸡腿']},
@@ -945,6 +1809,29 @@ const FOODS = {
 羊腿生:{kcal:178,protein:19.2,fat:10.5,carb:0.6,fiber:0,sodium:69,unitWeight:100,cat:'肉类',density:1.05,gi:0,aliases:['生羊腿','生羊腿肉','羊后腿生']},
 羊腿烤:{kcal:220,protein:26.0,fat:12.5,carb:0,fiber:0,sodium:105,unitWeight:100,cat:'肉类',density:1.0,gi:0,aliases:['烤羊腿','烤羊腿肉','香烤羊后腿']},
   牛里脊生:{kcal:107,protein:22.2,fat:0.9,carb:2.4,fiber:0,sodium:53,unitWeight:120,cat:'肉类',density:1.07,gi:0,aliases:['生牛里脊','鲜牛柳']},
+  安井脆皮肠:{kcal:265,protein:10.5,fat:20.0,carb:11.0,fiber:0.3,sodium:820,unitWeight:25,cat:'肉类',density:0.95,gi:null,aliases:['脆皮肠','安井热狗肠']},
+  海霸王甲天下香肠:{kcal:280,protein:10.5,fat:23.0,carb:8.5,fiber:0.3,sodium:780,unitWeight:40,cat:'肉类',density:0.95,gi:null,aliases:['海霸王香肠','甲天下香肠']},
+  正大香肠:{kcal:275,protein:10.8,fat:22.5,carb:8.0,fiber:0.3,sodium:760,unitWeight:35,cat:'肉类',density:0.95,gi:null,aliases:['正大热狗肠','正大脆皮肠']},
+  正大鸡肉玉米肠:{kcal:235,protein:11.0,fat:16.0,carb:12.5,fiber:0.5,sodium:720,unitWeight:40,cat:'肉类',density:0.95,gi:null,aliases:['玉米肠','鸡肉玉米肠','正大玉米肠']},
+  双汇王中王火腿肠:{kcal:212,protein:14.0,fat:10.4,carb:15.6,fiber:0,sodium:1030,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['王中王','双汇火腿肠']},
+  双汇润口香甜王:{kcal:230,protein:11.5,fat:14.0,carb:17.5,fiber:0,sodium:950,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['香甜王','润口香甜王']},
+  双汇泡面搭档:{kcal:225,protein:11.8,fat:13.5,carb:17.0,fiber:0,sodium:980,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['泡面搭档','双汇泡面肠']},
+  双汇辣吗辣香肠:{kcal:255,protein:11.0,fat:18.5,carb:13.0,fiber:0.8,sodium:1050,unitWeight:40,cat:'肉类',density:0.98,gi:null,aliases:['辣吗辣','双汇辣肠']},
+  双汇优级火腿肠:{kcal:205,protein:13.5,fat:9.5,carb:15.0,fiber:0,sodium:1000,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['优级火腿肠','双汇优级肠']},
+  双汇午餐方腿:{kcal:215,protein:13.0,fat:15.0,carb:6.5,fiber:0,sodium:1100,unitWeight:150,cat:'肉类',density:1.0,gi:null,aliases:['方腿','午餐方腿','三明治方腿']},
+  双汇蒜蓉烤肠:{kcal:290,protein:11.5,fat:24.0,carb:8.5,fiber:0.5,sodium:980,unitWeight:50,cat:'肉类',density:0.95,gi:null,aliases:['蒜蓉肠','烤肠','双汇烤肠']},
+  双汇台湾烤香肠:{kcal:305,protein:12.0,fat:26.0,carb:7.5,fiber:0.3,sodium:1020,unitWeight:55,cat:'肉类',density:0.95,gi:null,aliases:['台湾香肠','烤香肠','双汇台湾肠']},
+  双汇Q趣香肠:{kcal:245,protein:11.0,fat:18.0,carb:11.5,fiber:0,sodium:1000,unitWeight:35,cat:'肉类',density:0.98,gi:null,aliases:['Q趣','Q趣肠','双汇Q趣','双汇 Q 趣香肠']},
+  双汇筷厨烟熏香肠:{kcal:280,protein:12.5,fat:23.5,carb:6.0,fiber:0,sodium:1080,unitWeight:45,cat:'肉类',density:0.95,gi:null,aliases:['筷厨','烟熏香肠','双汇筷厨']},
+  金锣鸡肉肠:{kcal:215,protein:12.5,fat:13.5,carb:12.0,fiber:0,sodium:950,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['金锣肠','鸡肉肠']},
+  金锣王中王:{kcal:210,protein:13.8,fat:10.0,carb:15.5,fiber:0,sodium:1010,unitWeight:45,cat:'肉类',density:1.0,gi:null,aliases:['金锣火腿肠','金锣王中王肠']},
+  金锣黑猪王香肠:{kcal:295,protein:12.5,fat:25.0,carb:6.5,fiber:0,sodium:1050,unitWeight:50,cat:'肉类',density:0.95,gi:null,aliases:['黑猪王','金锣黑猪肠']},
+  金锣皮蛋肠:{kcal:245,protein:11.5,fat:18.0,carb:9.0,fiber:0.3,sodium:920,unitWeight:60,cat:'肉类',density:1.0,gi:null,aliases:['皮蛋肠','金锣皮蛋肠']},
+  金锣火腿片:{kcal:225,protein:14.5,fat:16.0,carb:5.0,fiber:0,sodium:1050,unitWeight:25,cat:'肉类',density:1.0,gi:null,aliases:['火腿片','金锣三明治火腿']},
+  金锣培根:{kcal:340,protein:16.0,fat:30.0,carb:2.0,fiber:0,sodium:1350,unitWeight:30,cat:'肉类',density:0.95,gi:null,aliases:['金锣培根片','培根金锣']},
+  雨润盐水方腿:{kcal:210,protein:13.5,fat:14.0,carb:6.0,fiber:0,sodium:1080,unitWeight:150,cat:'肉类',density:1.0,gi:null,aliases:['雨润方腿','盐水方腿']},
+  雨润西班牙香肠:{kcal:320,protein:13.0,fat:28.0,carb:5.5,fiber:0,sodium:1150,unitWeight:45,cat:'肉类',density:0.95,gi:null,aliases:['西班牙香肠','雨润西肠']},
+  得利斯香肠:{kcal:300,protein:12.0,fat:26.0,carb:6.0,fiber:0,sodium:1020,unitWeight:50,cat:'肉类',density:0.95,gi:null,aliases:['得利斯肠','得利斯热狗']},
   三文鱼:{kcal:139,protein:17.2,fat:7.8,carb:0,fiber:0,sodium:62,unitWeight:120,cat:'水产',density:1,gi:0,aliases:['鲑鱼','三文鱼刺身']},
   鱼:{kcal:113,protein:18.0,fat:4.3,carb:0,fiber:0,sodium:70,unitWeight:150,cat:'水产',density:1,gi:0,aliases:['鱼肉','清蒸鱼','鲈鱼','草鱼']},
   虾:{kcal:93,protein:18.6,fat:0.8,carb:2.8,fiber:0,sodium:165,unitWeight:15,cat:'水产',density:0.95,gi:0,aliases:['基围虾','白灼虾','大虾','虾仁']},
@@ -1024,6 +1911,7 @@ const FOODS = {
 鱼生:{kcal:104,protein:18.0,fat:3.2,carb:0,fiber:0,sodium:60,unitWeight:100,cat:'水产',density:1.05,gi:0,aliases:['生鱼','生鱼肉','鲜鱼肉']},
 虾生:{kcal:93,protein:18.6,fat:0.8,carb:2.8,fiber:0,sodium:165,unitWeight:100,cat:'水产',density:1.05,gi:0,aliases:['生虾','生鲜虾','生基围虾']},
 带鱼生:{kcal:127,protein:17.7,fat:4.9,carb:3.1,fiber:0,sodium:150,unitWeight:100,cat:'水产',density:1.02,gi:0,aliases:['生带鱼','生刀鱼','鲜带鱼']},
+  海霸王甜不辣:{kcal:210,protein:9.0,fat:9.5,carb:22.0,fiber:0.5,sodium:800,unitWeight:25,cat:'水产',density:0.95,gi:null,aliases:['甜不辣','海霸王甜不辣']},
   鸡蛋:{kcal:144,protein:13.3,fat:8.8,carb:2.8,fiber:0,sodium:132,unitWeight:55,cat:'蛋奶豆',density:1,gi:0,aliases:['水煮蛋','煎蛋','荷包蛋','蛋']},
   牛奶:{kcal:54,protein:3.0,fat:3.2,carb:3.4,fiber:0,sodium:37,unitWeight:250,cat:'蛋奶豆',density:1.03,gi:27,aliases:['纯牛奶','全脂牛奶']},
   酸奶:{kcal:72,protein:2.5,fat:2.7,carb:9.3,fiber:0,sodium:39,unitWeight:150,cat:'蛋奶豆',density:1.03,gi:36,aliases:['原味酸奶']},
@@ -1840,6 +2728,66 @@ const FOODS = {
 腰果生:{kcal:559,protein:18.2,fat:43.8,carb:30.2,fiber:3.3,sodium:12,unitWeight:30,cat:'零食',density:0.62,gi:null,aliases:['生腰果','生鸡腰果','腰果仁生']},
 腰果烤:{kcal:574,protein:18.0,fat:46.0,carb:30.0,fiber:3.3,sodium:12,unitWeight:30,cat:'零食',density:0.6,gi:22,aliases:['烤腰果','盐焗腰果','烘烤腰果']},
   核桃生:{kcal:646,protein:14.9,fat:58.8,carb:19.1,fiber:9.5,sodium:6,unitWeight:10,cat:'零食',density:0.5,gi:15,aliases:['生核桃','鲜核桃仁']},
+  桃李醇熟吐司:{kcal:287,protein:8.8,fat:4.5,carb:50.5,fiber:2.2,sodium:430,unitWeight:150,cat:'零食',density:0.35,gi:null,aliases:['桃李吐司','醇熟吐司','桃李面包']},
+  桃李全麦吐司:{kcal:255,protein:9.5,fat:3.8,carb:43.0,fiber:5.5,sodium:420,unitWeight:150,cat:'零食',density:0.35,gi:null,aliases:['桃李全麦面包','全麦吐司桃李']},
+  桃李奶棒面包:{kcal:330,protein:9.0,fat:7.5,carb:56.0,fiber:2.0,sodium:350,unitWeight:80,cat:'零食',density:0.4,gi:null,aliases:['奶棒面包','桃李奶棒']},
+  桃李鸡蛋肉松面包:{kcal:315,protein:10.5,fat:11.0,carb:43.0,fiber:1.8,sodium:480,unitWeight:100,cat:'零食',density:0.45,gi:null,aliases:['肉松面包','鸡蛋肉松面包']},
+  桃李豆沙餐包:{kcal:295,protein:7.5,fat:6.0,carb:53.0,fiber:2.2,sodium:320,unitWeight:70,cat:'零食',density:0.45,gi:null,aliases:['豆沙餐包','豆沙小面包']},
+  桃李手撕面包:{kcal:340,protein:8.5,fat:11.0,carb:52.0,fiber:1.8,sodium:360,unitWeight:100,cat:'零食',density:0.4,gi:null,aliases:['手撕面包','桃李手撕']},
+  桃李酵母面包:{kcal:300,protein:8.8,fat:5.5,carb:52.0,fiber:2.0,sodium:380,unitWeight:100,cat:'零食',density:0.4,gi:null,aliases:['酵母面包','天然酵母面包']},
+  曼可顿超醇吐司:{kcal:290,protein:9.0,fat:4.8,carb:51.0,fiber:2.3,sodium:440,unitWeight:150,cat:'零食',density:0.35,gi:null,aliases:['曼可顿吐司','超醇吐司']},
+  曼可顿全麦吐司:{kcal:258,protein:9.8,fat:4.0,carb:43.5,fiber:5.8,sodium:430,unitWeight:150,cat:'零食',density:0.35,gi:null,aliases:['曼可顿全麦面包']},
+  曼可顿牛奶吐司:{kcal:305,protein:9.5,fat:6.0,carb:52.0,fiber:2.0,sodium:400,unitWeight:150,cat:'零食',density:0.36,gi:null,aliases:['牛奶吐司','曼可顿牛奶面包']},
+  曼可顿法式软面包:{kcal:320,protein:8.5,fat:8.0,carb:53.0,fiber:2.2,sodium:420,unitWeight:90,cat:'零食',density:0.4,gi:null,aliases:['法式软面包','软面包']},
+  曼可顿汉堡胚:{kcal:295,protein:9.2,fat:5.2,carb:53.0,fiber:2.0,sodium:470,unitWeight:70,cat:'零食',density:0.3,gi:null,aliases:['汉堡面包','汉堡胚曼可顿']},
+  宾堡多菲角巧克力面包:{kcal:355,protein:7.5,fat:13.0,carb:50.0,fiber:2.0,sodium:380,unitWeight:80,cat:'零食',density:0.4,gi:null,aliases:['多菲角','巧克力面包','宾堡巧克力面包']},
+  宾堡全麦热狗肠面包:{kcal:310,protein:10.0,fat:9.5,carb:46.0,fiber:3.0,sodium:560,unitWeight:90,cat:'零食',density:0.42,gi:null,aliases:['热狗面包','肠仔包']},
+  达利园法式小面包:{kcal:325,protein:8.0,fat:8.5,carb:54.0,fiber:1.8,sodium:330,unitWeight:50,cat:'零食',density:0.4,gi:null,aliases:['法式小面包','达利园小面包']},
+  达利园软面包:{kcal:345,protein:7.5,fat:11.0,carb:54.0,fiber:1.5,sodium:340,unitWeight:60,cat:'零食',density:0.4,gi:null,aliases:['软面包达利园']},
+  达利园熊字饼:{kcal:470,protein:6.5,fat:19.0,carb:67.0,fiber:1.5,sodium:400,unitWeight:50,cat:'零食',density:0.45,gi:null,aliases:['熊字饼','熊饼']},
+  三辉麦风法式奶香片:{kcal:420,protein:8.0,fat:16.0,carb:60.0,fiber:2.0,sodium:360,unitWeight:40,cat:'零食',density:0.35,gi:null,aliases:['奶香片','法式奶香面包片']},
+  好利来半熟芝士:{kcal:290,protein:7.0,fat:16.0,carb:29.0,fiber:0.5,sodium:180,unitWeight:35,cat:'零食',density:0.6,gi:null,aliases:['半熟芝士','好利来芝士']},
+  好利来蜂蜜蛋糕:{kcal:330,protein:6.5,fat:14.0,carb:45.0,fiber:0.8,sodium:220,unitWeight:80,cat:'零食',density:0.45,gi:null,aliases:['蜂蜜蛋糕','好利来蛋糕']},
+  好利来全麦面包:{kcal:260,protein:9.5,fat:4.2,carb:44.0,fiber:5.5,sodium:430,unitWeight:120,cat:'零食',density:0.38,gi:null,aliases:['好利来全麦吐司']},
+  面包新语乳酪面包:{kcal:320,protein:9.5,fat:12.0,carb:43.0,fiber:1.8,sodium:400,unitWeight:90,cat:'零食',density:0.45,gi:null,aliases:['乳酪面包','芝士面包','面包新语芝士']},
+  面包新语抹茶麻薯面包:{kcal:295,protein:7.0,fat:9.0,carb:48.0,fiber:2.0,sodium:350,unitWeight:85,cat:'零食',density:0.42,gi:null,aliases:['麻薯面包','抹茶麻薯']},
+  静安面包房别司忌:{kcal:390,protein:7.5,fat:14.0,carb:58.0,fiber:1.8,sodium:420,unitWeight:70,cat:'零食',density:0.4,gi:null,aliases:['别司忌','静安别司忌']},
+  静安面包房白脱别司忌:{kcal:420,protein:7.8,fat:18.0,carb:55.0,fiber:1.8,sodium:440,unitWeight:75,cat:'零食',density:0.4,gi:null,aliases:['白脱别司忌','黄油别司忌']},
+  老大房鲜肉月饼:{kcal:395,protein:8.0,fat:20.0,carb:45.0,fiber:1.5,sodium:520,unitWeight:80,cat:'零食',density:0.55,gi:null,aliases:['鲜肉月饼','上海鲜肉月饼']},
+  杏花楼广式月饼:{kcal:440,protein:6.5,fat:20.0,carb:59.0,fiber:1.2,sodium:280,unitWeight:80,cat:'零食',density:0.6,gi:null,aliases:['广式月饼','莲蓉月饼']},
+  元朗荣华月饼:{kcal:430,protein:6.8,fat:19.0,carb:58.0,fiber:1.3,sodium:290,unitWeight:80,cat:'零食',density:0.6,gi:null,aliases:['荣华月饼','双黄白莲蓉月饼']},
+  广州酒家双黄白莲蓉月饼:{kcal:435,protein:7.0,fat:19.5,carb:58.5,fiber:1.2,sodium:300,unitWeight:80,cat:'零食',density:0.6,gi:null,aliases:['广州酒家月饼','双黄白莲蓉']},
+  美心流心奶黄月饼:{kcal:445,protein:7.2,fat:21.0,carb:56.0,fiber:1.0,sodium:310,unitWeight:45,cat:'零食',density:0.6,gi:null,aliases:['流心奶黄月饼','美心月饼','流心月饼']},
+  周黑鸭锁鲜气调盒装鸭脖:{kcal:205,protein:22.0,fat:12.0,carb:3.0,fiber:0,sodium:1600,unitWeight:45,cat:'零食',density:0.9,gi:0,aliases:['周黑鸭鸭脖','锁鲜鸭脖']},
+  周黑鸭锁鲜鸭锁骨:{kcal:215,protein:22.0,fat:13.0,carb:4.0,fiber:0,sodium:1550,unitWeight:45,cat:'零食',density:0.9,gi:0,aliases:['鸭锁骨','周黑鸭锁骨']},
+  周黑鸭锁鲜鸭翅:{kcal:195,protein:20.0,fat:12.0,carb:2.5,fiber:0,sodium:1500,unitWeight:40,cat:'零食',density:0.9,gi:0,aliases:['鸭翅','周黑鸭鸭翅']},
+  绝味黑鸭甜辣鸭脖:{kcal:200,protein:21.5,fat:11.5,carb:3.5,fiber:0,sodium:1580,unitWeight:45,cat:'零食',density:0.9,gi:0,aliases:['绝味鸭脖','甜辣鸭脖']},
+  有友泡椒凤爪袋装:{kcal:170,protein:19.0,fat:8.0,carb:4.0,fiber:0.5,sodium:1500,unitWeight:40,cat:'零食',density:0.9,gi:0,aliases:['有友凤爪','泡椒鸡爪']},
+  盐津铺子手撕素肉:{kcal:325,protein:25.0,fat:15.0,carb:22.0,fiber:3.5,sodium:1500,unitWeight:60,cat:'零食',density:0.7,gi:null,aliases:['盐津铺子素肉','手撕素肉']},
+  盐津铺子鱼豆腐:{kcal:230,protein:13.0,fat:12.0,carb:18.0,fiber:1.0,sodium:1100,unitWeight:30,cat:'零食',density:0.9,gi:null,aliases:['盐津铺子鱼豆腐','香辣鱼豆腐']},
+  盐津铺子魔芋爽:{kcal:175,protein:3.5,fat:8.5,carb:21.0,fiber:5.5,sodium:1850,unitWeight:26,cat:'零食',density:0.5,gi:null,aliases:['盐津铺子魔芋','魔芋爽袋装']},
+  盐津铺子鹌鹑蛋:{kcal:165,protein:13.5,fat:9.5,carb:5.0,fiber:0,sodium:850,unitWeight:25,cat:'零食',density:0.9,gi:0,aliases:['盐津铺子鹌鹑蛋','卤鹌鹑蛋']},
+  卫龙大面筋袋装:{kcal:490,protein:10.0,fat:25.0,carb:55.0,fiber:2.5,sodium:2450,unitWeight:98,cat:'零食',density:0.4,gi:null,aliases:['卫龙大面筋','大面筋']},
+  卫龙风吃海带结:{kcal:150,protein:4.0,fat:9.0,carb:14.0,fiber:4.0,sodium:1900,unitWeight:45,cat:'零食',density:0.6,gi:null,aliases:['卫龙海带','风吃海带']},
+  洽洽香瓜子袋装:{kcal:590,protein:22.0,fat:50.0,carb:18.0,fiber:8.0,sodium:600,unitWeight:108,cat:'零食',density:0.5,gi:null,aliases:['洽洽瓜子','香瓜子']},
+  洽洽小而香西瓜子:{kcal:580,protein:24.0,fat:48.0,carb:16.0,fiber:7.0,sodium:650,unitWeight:180,cat:'零食',density:0.5,gi:null,aliases:['西瓜子','洽洽小而香']},
+  三只松鼠每日坚果:{kcal:590,protein:18.0,fat:48.0,carb:24.0,fiber:8.0,sodium:150,unitWeight:25,cat:'零食',density:0.5,gi:null,aliases:['每日坚果','三只松鼠坚果']},
+  良品铺子猪肉脯:{kcal:400,protein:38.0,fat:12.0,carb:36.0,fiber:0,sodium:1400,unitWeight:50,cat:'零食',density:0.8,gi:null,aliases:['良品铺子肉脯','猪肉脯袋装']},
+  百草味牛肉干:{kcal:330,protein:45.0,fat:7.0,carb:20.0,fiber:0,sodium:1300,unitWeight:50,cat:'零食',density:0.8,gi:0,aliases:['百草味肉干','牛肉干百草味']},
+  好丽友派巧克力味:{kcal:420,protein:5.0,fat:18.0,carb:58.0,fiber:1.0,sodium:280,unitWeight:28,cat:'零食',density:0.5,gi:null,aliases:['好丽友巧克力派','巧克力派']},
+  好丽友蛋黄派:{kcal:415,protein:5.0,fat:17.0,carb:60.0,fiber:1.0,sodium:300,unitWeight:25,cat:'零食',density:0.5,gi:null,aliases:['蛋黄派','好丽友派']},
+  奥利奥夹心饼干原味:{kcal:480,protein:5.0,fat:20.0,carb:70.0,fiber:3.0,sodium:400,unitWeight:116,cat:'零食',density:0.5,gi:null,aliases:['奥利奥','夹心饼干奥利奥']},
+  奥利奥巧脆卷:{kcal:505,protein:5.5,fat:24.0,carb:65.0,fiber:2.5,sodium:420,unitWeight:97,cat:'零食',density:0.45,gi:null,aliases:['巧脆卷','奥利奥蛋卷']},
+  闲趣自然清咸饼干:{kcal:470,protein:8.0,fat:18.0,carb:68.0,fiber:3.0,sodium:750,unitWeight:100,cat:'零食',density:0.5,gi:null,aliases:['闲趣','闲趣饼干']},
+  太平苏打饼干:{kcal:450,protein:8.5,fat:16.0,carb:67.0,fiber:2.8,sodium:680,unitWeight:100,cat:'零食',density:0.5,gi:null,aliases:['太平饼干','苏打饼干太平']},
+  康师傅3加2夹心饼干:{kcal:500,protein:6.0,fat:24.0,carb:65.0,fiber:2.0,sodium:480,unitWeight:125,cat:'零食',density:0.5,gi:null,aliases:['3+2饼干','康师傅3加2']},
+  雀巢脆脆鲨巧克力威化:{kcal:505,protein:6.0,fat:26.0,carb:62.0,fiber:2.0,sodium:250,unitWeight:20,cat:'零食',density:0.4,gi:null,aliases:['脆脆鲨','雀巢威化']},
+  阿尔卑斯棒棒糖原味:{kcal:410,protein:0.5,fat:5.0,carb:87.0,fiber:0,sodium:80,unitWeight:12,cat:'零食',density:0.8,gi:65,aliases:['阿尔卑斯','棒棒糖']},
+  大白兔奶糖原味:{kcal:410,protein:4.0,fat:8.0,carb:80.0,fiber:0,sodium:90,unitWeight:5,cat:'零食',density:0.9,gi:65,aliases:['大白兔','大白兔奶糖']},
+  旺仔牛奶糖:{kcal:420,protein:4.0,fat:9.0,carb:80.0,fiber:0,sodium:100,unitWeight:5,cat:'零食',density:0.9,gi:65,aliases:['旺仔糖','旺仔奶糖']},
+  乐事原切薯片:{kcal:535,protein:6.0,fat:33.0,carb:53.0,fiber:4.0,sodium:520,unitWeight:70,cat:'零食',density:0.15,gi:null,aliases:['乐事薯片','原切薯片']},
+  可比克纯切薯片:{kcal:520,protein:6.0,fat:30.0,carb:56.0,fiber:3.5,sodium:560,unitWeight:65,cat:'零食',density:0.15,gi:null,aliases:['可比克','可比克薯片']},
+  上好佳鲜虾片:{kcal:470,protein:6.0,fat:20.0,carb:66.0,fiber:2.0,sodium:900,unitWeight:40,cat:'零食',density:0.12,gi:null,aliases:['虾片','上好佳虾条']},
   可乐:{kcal:43,protein:0,fat:0,carb:10.8,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.04,gi:63,aliases:['汽水','雪碧']},
   啤酒:{kcal:32,protein:0.4,fat:0,carb:3.1,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1,gi:null,aliases:[]},
   奶茶:{kcal:89,protein:1.2,fat:3.5,carb:12.9,fiber:0.2,sodium:40,unitWeight:500,cat:'饮品',density:1.05,gi:null,aliases:['珍珠奶茶']},
@@ -2037,6 +2985,45 @@ const FOODS = {
   奈雪金色山脉宝藏茶中杯:{kcal:48,protein:1.2,fat:1.4,carb:7.4,fiber:0.2,sodium:20,unitWeight:500,cat:'饮品',density:1.0,gi:null,est:true,aliases:['金色山脉宝藏茶']},
   蜜雪冰城棒打鲜橙大杯:{kcal:26,protein:0.3,fat:0.2,carb:6.0,fiber:0.3,sodium:3,unitWeight:700,cat:'饮品',density:0.98,gi:null,est:true,aliases:['棒打鲜橙大杯']},
   蜜雪冰城芝芝莓莓中杯:{kcal:46,protein:0.9,fat:2.2,carb:5.8,fiber:0.3,sodium:13,unitWeight:500,cat:'饮品',density:0.98,gi:null,est:true,aliases:['蜜雪芝芝莓莓']},
+  蒙牛纯牛奶:{kcal:54,protein:3.0,fat:3.2,carb:3.4,fiber:0,sodium:37,unitWeight:250,cat:'饮品',density:1.03,gi:27,aliases:['蒙牛奶','纯牛奶蒙牛']},
+  伊利纯牛奶:{kcal:54,protein:3.0,fat:3.2,carb:3.4,fiber:0,sodium:37,unitWeight:250,cat:'饮品',density:1.03,gi:27,aliases:['伊利奶','纯牛奶伊利']},
+  伊利金典有机纯牛奶:{kcal:66,protein:3.4,fat:3.8,carb:4.8,fiber:0,sodium:42,unitWeight:250,cat:'饮品',density:1.04,gi:28,aliases:['金典牛奶','金典有机奶']},
+  蒙牛特仑苏纯牛奶:{kcal:66,protein:3.4,fat:3.8,carb:4.8,fiber:0,sodium:42,unitWeight:250,cat:'饮品',density:1.04,gi:28,aliases:['特仑苏','特仑苏牛奶']},
+  蒙牛新养道零乳糖牛奶:{kcal:56,protein:3.1,fat:3.3,carb:4.5,fiber:0,sodium:38,unitWeight:250,cat:'饮品',density:1.03,gi:28,aliases:['新养道','零乳糖牛奶']},
+  伊利安慕希希腊酸奶:{kcal:95,protein:3.1,fat:3.5,carb:13.0,fiber:0,sodium:50,unitWeight:200,cat:'饮品',density:1.08,gi:36,aliases:['安慕希','希腊酸奶']},
+  蒙牛纯甄酸牛奶:{kcal:90,protein:3.0,fat:3.2,carb:12.5,fiber:0,sodium:48,unitWeight:200,cat:'饮品',density:1.08,gi:36,aliases:['纯甄','纯甄酸奶']},
+  光明如实酸奶:{kcal:75,protein:3.3,fat:3.6,carb:6.0,fiber:0,sodium:40,unitWeight:135,cat:'饮品',density:1.06,gi:34,aliases:['如实酸奶','光明如实']},
+  君乐宝简醇酸奶:{kcal:80,protein:3.0,fat:3.0,carb:10.0,fiber:0,sodium:45,unitWeight:160,cat:'饮品',density:1.06,gi:35,aliases:['简醇','君乐宝酸奶']},
+  娃哈哈AD钙奶:{kcal:42,protein:1.0,fat:1.2,carb:6.5,fiber:0,sodium:35,unitWeight:220,cat:'饮品',density:1.04,gi:null,aliases:['AD钙奶','娃哈哈钙奶','娃哈哈 AD 钙奶']},
+  娃哈哈营养快线:{kcal:45,protein:1.0,fat:1.0,carb:7.5,fiber:0,sodium:40,unitWeight:500,cat:'饮品',density:1.04,gi:null,aliases:['营养快线','娃哈哈快线']},
+  农夫山泉饮用天然水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:550,cat:'饮品',density:1.0,gi:null,aliases:['农夫山泉','天然水']},
+  怡宝纯净水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:550,cat:'饮品',density:1.0,gi:null,aliases:['怡宝','纯净水怡宝']},
+  百岁山矿泉水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:8,unitWeight:570,cat:'饮品',density:1.0,gi:null,aliases:['百岁山','矿泉水百岁山']},
+  元气森林白桃气泡水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:480,cat:'饮品',density:1.0,gi:null,aliases:['元气森林','白桃气泡水']},
+  元气森林青瓜气泡水:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:0,unitWeight:480,cat:'饮品',density:1.0,gi:null,aliases:['青瓜气泡水','元气森林青瓜']},
+  零度可口可乐:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:12,unitWeight:500,cat:'饮品',density:1.0,gi:null,aliases:['零度可乐','可口可乐零度']},
+  雪碧纤维罐装:{kcal:0,protein:0,fat:0,carb:0,fiber:0,sodium:14,unitWeight:330,cat:'饮品',density:1.0,gi:null,aliases:['雪碧纤维','零卡雪碧']},
+  康师傅冰红茶柠檬味:{kcal:38,protein:0,fat:0,carb:9.2,fiber:0,sodium:12,unitWeight:500,cat:'饮品',density:1.02,gi:63,aliases:['冰红茶','康师傅冰红茶']},
+  统一冰红茶:{kcal:38,protein:0,fat:0,carb:9.2,fiber:0,sodium:12,unitWeight:500,cat:'饮品',density:1.02,gi:63,aliases:['统一冰红茶','冰红茶统一']},
+  维他柠檬茶:{kcal:42,protein:0,fat:0,carb:10.2,fiber:0,sodium:14,unitWeight:310,cat:'饮品',density:1.03,gi:63,aliases:['维他茶','柠檬茶维他']},
+  王老吉凉茶:{kcal:38,protein:0,fat:0,carb:9.2,fiber:0,sodium:8,unitWeight:310,cat:'饮品',density:1.02,gi:null,aliases:['王老吉','凉茶王老吉']},
+  加多宝凉茶:{kcal:37,protein:0,fat:0,carb:9.0,fiber:0,sodium:8,unitWeight:310,cat:'饮品',density:1.02,gi:null,aliases:['加多宝','凉茶加多宝']},
+  统一鲜橙多:{kcal:45,protein:0,fat:0,carb:10.8,fiber:0,sodium:5,unitWeight:450,cat:'饮品',density:1.03,gi:50,aliases:['鲜橙多','统一橙汁']},
+  美汁源果粒橙:{kcal:45,protein:0,fat:0,carb:10.8,fiber:0,sodium:5,unitWeight:450,cat:'饮品',density:1.03,gi:50,aliases:['果粒橙','美汁源橙汁']},
+  汇源100橙汁:{kcal:45,protein:0.7,fat:0.2,carb:10.4,fiber:0.2,sodium:3,unitWeight:250,cat:'饮品',density:1.03,gi:50,aliases:['汇源果汁','汇源橙汁','汇源 100% 橙汁','汇源100%橙汁']},
+  椰树椰汁:{kcal:52,protein:0.7,fat:2.8,carb:8.0,fiber:0,sodium:12,unitWeight:245,cat:'饮品',density:1.04,gi:43,aliases:['椰树牌椰汁','椰汁']},
+  银鹭花生牛奶:{kcal:56,protein:1.6,fat:2.0,carb:8.0,fiber:0,sodium:30,unitWeight:250,cat:'饮品',density:1.05,gi:null,aliases:['花生牛奶','银鹭花生']},
+  维他奶原味豆奶:{kcal:52,protein:2.4,fat:1.8,carb:7.0,fiber:0.5,sodium:32,unitWeight:255,cat:'饮品',density:1.04,gi:34,aliases:['维他奶','豆奶维他']},
+  豆本豆豆奶:{kcal:46,protein:2.6,fat:1.5,carb:6.0,fiber:0.8,sodium:35,unitWeight:250,cat:'饮品',density:1.04,gi:34,aliases:['豆本豆','豆奶豆本豆']},
+  红牛维生素功能饮料:{kcal:45,protein:0,fat:0,carb:11.0,fiber:0,sodium:12,unitWeight:250,cat:'饮品',density:1.04,gi:null,aliases:['红牛','功能饮料红牛']},
+  东鹏特饮:{kcal:42,protein:0,fat:0,carb:10.2,fiber:0,sodium:11,unitWeight:500,cat:'饮品',density:1.04,gi:null,aliases:['东鹏','东鹏饮料']},
+  宝矿力水特:{kcal:26,protein:0,fat:0,carb:6.2,fiber:0,sodium:49,unitWeight:500,cat:'饮品',density:1.03,gi:null,aliases:['宝矿力','运动饮料宝矿力']},
+  佳得乐运动饮料:{kcal:26,protein:0,fat:0,carb:6.2,fiber:0,sodium:45,unitWeight:600,cat:'饮品',density:1.03,gi:null,aliases:['佳得乐','Gatorade']},
+  可口可乐罐装:{kcal:43,protein:0,fat:0,carb:10.8,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.04,gi:63,aliases:['可乐罐装','罐装可乐']},
+  百事可乐罐装:{kcal:43,protein:0,fat:0,carb:10.8,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.04,gi:63,aliases:['百事罐装','罐装百事']},
+  青岛啤酒经典:{kcal:32,protein:0.4,fat:0,carb:3.1,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.0,gi:null,aliases:['青岛啤酒','啤酒青岛']},
+  雪花勇闯天涯:{kcal:32,protein:0.4,fat:0,carb:3.1,fiber:0,sodium:11,unitWeight:330,cat:'饮品',density:1.0,gi:null,aliases:['雪花啤酒','勇闯天涯']},
+  乌苏啤酒:{kcal:35,protein:0.5,fat:0,carb:3.4,fiber:0,sodium:12,unitWeight:330,cat:'饮品',density:1.0,gi:null,aliases:['乌苏','大乌苏']},
   食用油:{kcal:899,protein:0,fat:99.9,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['植物油','花生油','橄榄油','油']},
   白砂糖:{kcal:400,protein:0,fat:0,carb:99.9,fiber:0,sodium:0,unitWeight:5,cat:'调味',density:0.85,gi:65,aliases:['糖','砂糖']},
   番茄酱:{kcal:81,protein:4.9,fat:0.2,carb:16.9,fiber:1.5,sodium:900,unitWeight:15,cat:'调味',density:1.1,gi:null,aliases:[]},
@@ -2152,6 +3139,23 @@ const FOODS = {
 腌萝卜:{kcal:35,protein:1.0,fat:0.1,carb:7.2,fiber:1.8,sodium:2200,unitWeight:30,cat:'调味',density:0.95,gi:null,aliases:['腌白萝卜','咸萝卜','泡萝卜']},
 酸菜:{kcal:20,protein:1.0,fat:0.2,carb:3.5,fiber:1.4,sodium:1500,unitWeight:50,cat:'调味',density:0.95,gi:null,aliases:['东北酸菜','腌白菜','酸白菜']},
 梅干菜:{kcal:145,protein:7.5,fat:1.5,carb:25.0,fiber:9.0,sodium:2500,unitWeight:20,cat:'调味',density:0.5,gi:null,aliases:['霉干菜','干梅菜','绍兴梅干菜']},
+  老干妈风味豆豉油辣椒:{kcal:520,protein:12.0,fat:44.0,carb:20.0,fiber:4.0,sodium:3200,unitWeight:210,cat:'调味',density:1.05,gi:null,aliases:['老干妈','风味豆豉']},
+  老干妈干煸肉丝油辣椒:{kcal:500,protein:14.0,fat:41.0,carb:21.0,fiber:4.2,sodium:3300,unitWeight:210,cat:'调味',density:1.05,gi:null,aliases:['老干妈肉丝','干煸肉丝']},
+  李锦记锦珍老抽:{kcal:88,protein:5.2,fat:0.1,carb:17.5,fiber:0,sodium:7100,unitWeight:15,cat:'调味',density:1.2,gi:null,aliases:['李锦记老抽','锦珍老抽']},
+  海天上等蚝油:{kcal:115,protein:3.0,fat:0.3,carb:25.0,fiber:0,sodium:4500,unitWeight:15,cat:'调味',density:1.15,gi:null,aliases:['海天蚝油','上等蚝油']},
+  郫县豆瓣红油豆瓣:{kcal:180,protein:9.0,fat:7.0,carb:19.0,fiber:5.0,sodium:6200,unitWeight:500,cat:'调味',density:1.1,gi:null,aliases:['郫县豆瓣','红油豆瓣']},
+  山西老陈醋东湖:{kcal:50,protein:2.5,fat:0.1,carb:9.5,fiber:0,sodium:900,unitWeight:15,cat:'调味',density:1.05,gi:null,aliases:['老陈醋','东湖醋']},
+  金龙鱼食用调和油:{kcal:884,protein:0,fat:100.0,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['金龙鱼','调和油']},
+  鲁花压榨玉米油:{kcal:884,protein:0,fat:100.0,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['鲁花玉米油','玉米油']},
+  多力葵花籽油:{kcal:884,protein:0,fat:100.0,carb:0,fiber:0,sodium:0,unitWeight:10,cat:'调味',density:0.92,gi:0,aliases:['葵花籽油','多力油']},
+  麻辣汤底:{kcal:95,protein:2.0,fat:8.5,carb:2.5,fiber:0.5,sodium:1200,unitWeight:250,cat:'调味',density:1.02,gi:null,aliases:['火锅麻辣底','麻辣锅底','红汤底']},
+  清汤锅底:{kcal:18,protein:1.5,fat:0.8,carb:1.2,fiber:0.2,sodium:600,unitWeight:250,cat:'调味',density:1.0,gi:null,aliases:['清汤底','高汤锅底','白汤底']},
+  菌汤锅底:{kcal:25,protein:1.8,fat:1.0,carb:2.0,fiber:0.8,sodium:700,unitWeight:250,cat:'调味',density:1.0,gi:null,aliases:['菌菇锅底','菌汤底']},
+  番茄锅底:{kcal:45,protein:1.5,fat:1.5,carb:6.5,fiber:1.0,sodium:800,unitWeight:250,cat:'调味',density:1.02,gi:null,aliases:['番茄底','番茄汤底']},
+  牛油锅底:{kcal:150,protein:1.8,fat:14.5,carb:3.0,fiber:0.5,sodium:1300,unitWeight:150,cat:'调味',density:1.0,gi:null,aliases:['牛油麻辣底','重庆锅底','牛油底']},
+  关东煮汤底:{kcal:20,protein:1.8,fat:0.6,carb:1.8,fiber:0.2,sodium:900,unitWeight:250,cat:'调味',density:1.01,gi:null,aliases:['关东煮高汤','日式关东煮汤']},
+  麻辣拌汤底:{kcal:130,protein:2.5,fat:12.0,carb:3.5,fiber:0.5,sodium:1400,unitWeight:100,cat:'调味',density:1.0,gi:null,aliases:['麻辣拌料','拌菜红油']},
+  酸汤底:{kcal:35,protein:1.2,fat:1.0,carb:5.5,fiber:0.8,sodium:1000,unitWeight:250,cat:'调味',density:1.01,gi:null,aliases:['酸汤锅底','贵州酸汤底']},
   沙拉:{kcal:90,protein:2.5,fat:6.0,carb:7.0,fiber:2.0,sodium:300,unitWeight:200,cat:'菜肴',density:0.5,gi:null,aliases:['蔬菜沙拉','轻食沙拉']},
   麻辣烫:{kcal:130,protein:6.0,fat:7.0,carb:11.0,fiber:1.5,sodium:900,unitWeight:500,cat:'菜肴',density:0.95,gi:null,aliases:['冒菜']},
   火锅:{kcal:150,protein:8.0,fat:10.0,carb:6.0,fiber:1.2,sodium:800,unitWeight:400,cat:'菜肴',density:0.9,gi:null,aliases:['涮火锅']},
@@ -2159,7 +3163,16 @@ const FOODS = {
   披萨:{kcal:268,protein:11.0,fat:10.0,carb:33.0,fiber:2.0,sodium:600,unitWeight:120,cat:'菜肴',density:0.7,gi:60,aliases:['比萨']},
   薯条:{kcal:298,protein:3.4,fat:15.0,carb:38.0,fiber:3.8,sodium:210,unitWeight:100,cat:'菜肴',density:0.3,gi:75,aliases:['炸薯条']},
   寿司:{kcal:150,protein:5.5,fat:2.5,carb:27.0,fiber:0.5,sodium:400,unitWeight:30,cat:'菜肴',density:0.9,gi:null,aliases:[]},
-  宫保鸡丁:{kcal:215,protein:14.0,fat:13.0,carb:10.5,fiber:2.0,sodium:850,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['宫爆鸡丁','花生鸡丁']},
+  宫保鸡丁:{kcal:234,protein:17,fat:14.2,carb:9.1,fiber:1.5,sodium:38,unitWeight:270,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'鸡胸肉',grams:150,ref:'鸡胸肉'},
+      {name:'花生米',grams:30,ref:'花生'},
+      {name:'干辣椒',grams:8,ref:'辣椒粉'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'白砂糖',grams:12,ref:'白砂糖'},
+      {name:'黄瓜',grams:50,ref:'黄瓜'}
+    ],
+    aliases:['宫保鸡丁一份','宫爆鸡丁']},
   鱼香肉丝:{kcal:195,protein:11.0,fat:12.5,carb:10.0,fiber:1.8,sodium:800,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['鱼香猪肉丝']},
   麻婆豆腐:{kcal:135,protein:8.5,fat:9.0,carb:5.5,fiber:1.2,sodium:750,unitWeight:200,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣豆腐','陈麻婆豆腐']},
   川味回锅肉:{kcal:380,protein:11.0,fat:34.0,carb:7.0,fiber:1.8,sodium:780,unitWeight:180,cat:'菜肴',density:0.85,gi:null,aliases:['回锅肉','熬锅肉']},
@@ -2185,8 +3198,28 @@ const FOODS = {
   酸辣土豆丝:{kcal:105,protein:2.2,fat:5.0,carb:13.5,fiber:1.6,sodium:550,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['醋溜土豆丝','炒土豆丝']},
   清蒸鱼:{kcal:105,protein:17.0,fat:3.5,carb:1.5,fiber:0.2,sodium:480,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['蒸鱼','清蒸鲈鱼']},
   红烧鱼:{kcal:145,protein:15.5,fat:7.5,carb:4.5,fiber:0.3,sodium:650,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['烧鱼','家常烧鱼']},
-  水煮鱼:{kcal:180,protein:13.0,fat:12.5,carb:3.5,fiber:1.0,sodium:800,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣水煮鱼','水煮鱼片']},
-  酸菜鱼:{kcal:115,protein:12.0,fat:6.0,carb:3.0,fiber:1.2,sodium:750,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['酸菜鱼片','老坛酸菜鱼']},
+  水煮鱼:{kcal:129,protein:7.9,fat:10,carb:2.3,fiber:0.2,sodium:179,unitWeight:595,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'草鱼片',grams:200,ref:'草鱼'},
+      {name:'黄豆芽',grams:80,ref:'黄豆芽'},
+      {name:'辣椒油',grams:35,ref:'红油辣椒油'},
+      {name:'花椒',grams:5,ref:'花椒油'},
+      {name:'蛋清',grams:15,ref:'蛋清'},
+      {name:'淀粉',grams:10,ref:'淀粉'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['水煮鱼一份','川味水煮鱼','水煮鱼片']},
+  酸菜鱼:{kcal:96,protein:6.7,fat:6.7,carb:2.3,fiber:0.3,sodium:417,unitWeight:690,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'草鱼片',grams:200,ref:'草鱼'},
+      {name:'酸菜',grams:120,ref:'酸菜'},
+      {name:'泡椒',grams:20,ref:'辣椒'},
+      {name:'食用油',grams:25,ref:'食用油'},
+      {name:'蛋清',grams:15,ref:'蛋清'},
+      {name:'淀粉',grams:10,ref:'淀粉'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['酸菜鱼一份','老坛酸菜鱼','四川酸菜鱼']},
   糖醋鱼:{kcal:175,protein:13.0,fat:7.0,carb:14.5,fiber:0.3,sodium:600,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['糖醋鲤鱼','松鼠鱼']},
   香煎三文鱼:{kcal:210,protein:21.0,fat:13.0,carb:0.5,fiber:0,sodium:420,unitWeight:150,cat:'菜肴',density:1.0,gi:null,aliases:['煎三文鱼','香煎鲑鱼']},
   白灼虾:{kcal:95,protein:18.5,fat:1.2,carb:2.0,fiber:0,sodium:400,unitWeight:150,cat:'菜肴',density:0.95,gi:null,aliases:['水煮虾','灼虾']},
@@ -2195,28 +3228,132 @@ const FOODS = {
   辣炒蛤蜊:{kcal:90,protein:10.5,fat:3.5,carb:4.0,fiber:0.5,sodium:750,unitWeight:200,cat:'菜肴',density:0.9,gi:null,aliases:['爆炒花蛤','辣炒花甲']},
   白切鸡:{kcal:180,protein:20.0,fat:11.0,carb:0.5,fiber:0,sodium:420,unitWeight:150,cat:'菜肴',density:1.0,gi:null,aliases:['白斩鸡','清远白切鸡']},
   口水鸡:{kcal:200,protein:17.0,fat:13.5,carb:3.0,fiber:1.0,sodium:800,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['麻辣口水鸡','川味口水鸡']},
-  大盘鸡:{kcal:165,protein:12.0,fat:9.0,carb:11.0,fiber:1.5,sodium:700,unitWeight:300,cat:'菜肴',density:0.85,gi:null,aliases:['新疆大盘鸡','土豆烧鸡']},
-  黄焖鸡:{kcal:155,protein:13.5,fat:9.0,carb:5.5,fiber:0.8,sodium:680,unitWeight:250,cat:'菜肴',density:0.85,gi:null,aliases:['黄焖鸡块','香菇焖鸡']},
+  大盘鸡:{kcal:150,protein:7.2,fat:9.3,carb:9.4,fiber:0.9,sodium:42,unitWeight:680,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:250,ref:'鸡腿'},
+      {name:'土豆',grams:200,ref:'土豆'},
+      {name:'青椒',grams:50,ref:'青椒'},
+      {name:'洋葱',grams:50,ref:'洋葱'},
+      {name:'食用油',grams:30,ref:'食用油'},
+      {name:'皮带面',grams:100,ref:'面条'}
+    ],
+    aliases:['大盘鸡一份','新疆大盘鸡']},
+  黄焖鸡:{kcal:151,protein:9.5,fat:10.9,carb:4.2,fiber:0.8,sodium:288,unitWeight:380,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:200,ref:'鸡腿'},
+      {name:'香菇',grams:50,ref:'蘑菇'},
+      {name:'青椒',grams:40,ref:'青椒'},
+      {name:'土豆',grams:60,ref:'土豆'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'生抽',grams:15,ref:'生抽'}
+    ],
+    aliases:['黄焖鸡一份','黄焖鸡块','杨铭宇黄焖鸡']},
   可乐鸡翅:{kcal:215,protein:15.5,fat:12.0,carb:11.0,fiber:0.1,sodium:620,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['可乐烧鸡翅','汽水鸡翅']},
   炸鸡翅:{kcal:280,protein:18.0,fat:18.0,carb:11.0,fiber:0.4,sodium:750,unitWeight:60,cat:'菜肴',density:0.6,gi:null,aliases:['脆皮鸡翅','炸翅中']},
-  烤鸡腿:{kcal:215,protein:19.5,fat:14.0,carb:1.5,fiber:0,sodium:620,unitWeight:120,cat:'菜肴',density:1.0,gi:null,aliases:['烤鸡大腿','奥尔良烤鸡腿']},
+  烤鸡腿:{kcal:212,protein:14.5,fat:15.9,carb:2.6,fiber:0,sodium:337,unitWeight:280,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸡腿',grams:250,ref:'鸡腿'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'蜂蜜',grams:8,ref:'蜂蜜'}
+    ],
+    aliases:['烤鸡腿一份','奥尔良烤鸡腿','炭烤鸡腿']},
   北京烤鸭:{kcal:436,protein:16.6,fat:38.4,carb:6.0,fiber:0.2,sodium:780,unitWeight:100,cat:'菜肴',density:0.9,gi:null,aliases:['烤鸭','挂炉烤鸭']},
   孜然羊肉:{kcal:230,protein:18.0,fat:15.0,carb:4.0,fiber:1.0,sodium:700,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['炒羊肉','孜然羊柳']},
-  烤羊肉串:{kcal:235,protein:20.0,fat:15.5,carb:3.0,fiber:0.5,sodium:750,unitWeight:25,cat:'菜肴',density:1.0,gi:null,aliases:['羊肉串','新疆羊肉串']},
-  番茄牛腩:{kcal:135,protein:12.5,fat:7.0,carb:5.5,fiber:1.2,sodium:620,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['西红柿炖牛腩','牛腩煲']},
+  烤羊肉串:{kcal:253,protein:17.7,fat:19.4,carb:2.6,fiber:1.1,sodium:77,unitWeight:170,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'羊肉',grams:150,ref:'羊肉'},
+      {name:'孜然',grams:5,ref:'孜然粉'},
+      {name:'辣椒粉',grams:5,ref:'辣椒粉'},
+      {name:'食用油',grams:10,ref:'食用油'}
+    ],
+    aliases:['烤羊肉串一份','羊肉串一把','新疆羊肉串']},
+  番茄牛腩:{kcal:125,protein:5.8,fat:10.5,carb:2.2,fiber:0.2,sodium:111,unitWeight:690,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'牛腩',grams:180,ref:'牛腩'},
+      {name:'番茄',grams:250,ref:'番茄'},
+      {name:'洋葱',grams:50,ref:'洋葱'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['番茄牛腩一份','西红柿炖牛腩']},
   黑椒牛柳:{kcal:175,protein:17.0,fat:9.5,carb:5.0,fiber:0.8,sodium:750,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['黑胡椒牛柳','铁板牛柳']},
-  水煮牛肉:{kcal:190,protein:14.0,fat:13.0,carb:3.5,fiber:1.2,sodium:850,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['川味水煮牛肉','麻辣牛肉片']},
-  毛血旺:{kcal:170,protein:10.0,fat:12.0,carb:6.0,fiber:1.5,sodium:900,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['重庆毛血旺','血旺']},
-  麻辣香锅:{kcal:210,protein:8.0,fat:15.0,carb:11.0,fiber:2.0,sodium:950,unitWeight:300,cat:'菜肴',density:0.8,gi:null,aliases:['香锅','麻辣干锅']},
+  水煮牛肉:{kcal:115,protein:9.2,fat:7.3,carb:3.5,fiber:0.3,sodium:179,unitWeight:570,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'牛里脊',grams:180,ref:'牛里脊'},
+      {name:'黄豆芽',grams:100,ref:'黄豆芽'},
+      {name:'辣椒油',grams:30,ref:'红油辣椒油'},
+      {name:'淀粉',grams:12,ref:'淀粉'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['水煮牛肉一份','川味水煮牛肉']},
+  毛血旺:{kcal:107,protein:8,fat:7.9,carb:1.9,fiber:0.2,sodium:256,unitWeight:695,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'鸭血',grams:150,ref:'鸭血'},
+      {name:'毛肚',grams:80,ref:'牛百叶'},
+      {name:'黄喉',grams:50,ref:'牛肚'},
+      {name:'午餐肉',grams:50,ref:'午餐肉'},
+      {name:'黄豆芽',grams:80,ref:'黄豆芽'},
+      {name:'辣椒油',grams:35,ref:'红油辣椒油'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['毛血旺一份','川味毛血旺','重庆毛血旺']},
+  麻辣香锅:{kcal:188,protein:5.6,fat:14.9,carb:8.7,fiber:1,sodium:196,unitWeight:410,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'牛百叶',grams:80,ref:'牛百叶'},
+      {name:'午餐肉',grams:60,ref:'午餐肉'},
+      {name:'土豆片',grams:80,ref:'土豆'},
+      {name:'藕片',grams:60,ref:'莲藕生'},
+      {name:'西兰花',grams:80,ref:'西兰花'},
+      {name:'辣椒油',grams:30,ref:'红油辣椒油'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['麻辣香锅一份','香锅']},
   麻辣烫自选:{kcal:130,protein:6.0,fat:7.0,carb:11.0,fiber:1.5,sodium:900,unitWeight:500,cat:'菜肴',density:0.95,gi:null,aliases:['麻辣烫','冒菜','麻辣烫串']},
   清汤火锅:{kcal:110,protein:7.5,fat:6.0,carb:5.5,fiber:1.2,sodium:600,unitWeight:400,cat:'菜肴',density:0.95,gi:null,aliases:['涮火锅','清汤涮锅']},
   麻辣火锅:{kcal:175,protein:8.0,fat:13.0,carb:5.5,fiber:1.4,sodium:950,unitWeight:400,cat:'菜肴',density:0.95,gi:null,aliases:['重庆火锅','红汤火锅']},
-  酸菜白肉:{kcal:190,protein:9.5,fat:15.0,carb:4.0,fiber:1.2,sodium:800,unitWeight:250,cat:'菜肴',density:0.95,gi:null,aliases:['东北酸菜白肉','汆白肉']},
-  猪肉炖粉条:{kcal:220,protein:9.0,fat:14.0,carb:15.5,fiber:0.8,sodium:650,unitWeight:300,cat:'菜肴',density:0.9,gi:null,aliases:['东北炖粉条','五花肉炖粉条']},
-  小鸡炖蘑菇:{kcal:140,protein:13.0,fat:8.0,carb:4.0,fiber:1.5,sodium:620,unitWeight:300,cat:'菜肴',density:0.9,gi:null,aliases:['东北小鸡炖蘑菇','蘑菇炖鸡']},
+  酸菜白肉:{kcal:141,protein:3.4,fat:13.1,carb:2.8,fiber:0.4,sodium:583,unitWeight:690,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'五花肉',grams:150,ref:'五花肉'},
+      {name:'酸菜',grams:200,ref:'酸菜'},
+      {name:'粉丝',grams:40,ref:'粉丝'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['酸菜白肉一份','东北酸菜白肉','汆白肉']},
+  猪肉炖粉条:{kcal:163,protein:3.6,fat:14.7,carb:4.6,fiber:0.3,sodium:395,unitWeight:600,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'五花肉',grams:150,ref:'五花肉'},
+      {name:'粉条',grams:100,ref:'粉丝'},
+      {name:'酸菜',grams:100,ref:'酸菜'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['猪肉炖粉条一份','东北猪肉炖粉条']},
+  小鸡炖蘑菇:{kcal:134,protein:8.4,fat:9,carb:5.6,fiber:1.7,sodium:176,unitWeight:555,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:200,ref:'鸡腿'},
+      {name:'榛蘑',grams:30,ref:'香菇干'},
+      {name:'粉条',grams:60,ref:'粉丝'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['小鸡炖蘑菇一份','东北小鸡炖蘑菇']},
   蚂蚁上树:{kcal:210,protein:7.0,fat:11.0,carb:21.0,fiber:1.0,sodium:700,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['肉末粉丝','粉丝炒肉末']},
-  干锅花菜:{kcal:125,protein:4.0,fat:8.5,carb:8.0,fiber:2.2,sodium:680,unitWeight:200,cat:'菜肴',density:0.7,gi:null,aliases:['干锅菜花','腊肉花菜']},
-  干锅土豆片:{kcal:165,protein:3.0,fat:9.5,carb:17.5,fiber:2.0,sodium:680,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['干锅洋芋片','香辣土豆片']},
+  干锅花菜:{kcal:196,protein:2.9,fat:19.4,carb:3.8,fiber:0.9,sodium:53,unitWeight:345,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'花菜',grams:250,ref:'菜花'},
+      {name:'五花肉',grams:60,ref:'五花肉'},
+      {name:'辣椒油',grams:20,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅花菜一份','干锅菜花']},
+  干锅土豆片:{kcal:214,protein:2.6,fat:16.9,carb:13.6,fiber:1.7,sodium:32,unitWeight:365,cat:'菜肴',density:0.8,gi:null,
+    components:[
+      {name:'土豆',grams:280,ref:'土豆'},
+      {name:'五花肉',grams:50,ref:'五花肉'},
+      {name:'辣椒油',grams:20,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅土豆片一份','干锅土豆']},
   什锦炒饭:{kcal:190,protein:6.0,fat:6.5,carb:26.0,fiber:1.0,sodium:550,unitWeight:300,cat:'菜肴',density:0.78,gi:null,aliases:['扬州炒饭','扬州蛋炒饭','什锦蛋炒饭']},
   干炒河粉:{kcal:195,protein:6.5,fat:8.0,carb:24.0,fiber:1.2,sodium:700,unitWeight:300,cat:'菜肴',density:0.8,gi:null,aliases:['炒河粉','干炒牛河','炒米粉']},
   炒饭:{kcal:185,protein:5.5,fat:6.5,carb:26.0,fiber:0.8,sodium:520,unitWeight:300,cat:'菜肴',density:0.78,gi:null,aliases:['家常炒饭','鸡蛋炒饭']},
@@ -2244,9 +3381,26 @@ const FOODS = {
 白肉血肠:{kcal:205,protein:11.0,fat:17.0,carb:3.5,fiber:0.6,sodium:740,unitWeight:250,cat:'菜肴',density:0.90,gi:null,aliases:['血肠白肉','东北血肠']},
 东北酱骨架:{kcal:215,protein:16.5,fat:15.5,carb:2.5,fiber:0.4,sodium:900,unitWeight:300,cat:'菜肴',density:0.85,gi:null,aliases:['酱骨架','酱骨头']},
 东北熏鸡:{kcal:198,protein:22.5,fat:11.0,carb:2.0,fiber:0.2,sodium:880,unitWeight:150,cat:'菜肴',density:0.80,gi:null,aliases:['熏鸡','沟帮子熏鸡']},
-水煮肉片:{kcal:178,protein:12.5,fat:12.0,carb:4.5,fiber:1.2,sodium:760,unitWeight:300,cat:'菜肴',density:0.90,gi:null,aliases:['麻辣水煮肉片','水煮肉']},
+  水煮肉片:{kcal:128,protein:8.7,fat:9.2,carb:3,fiber:0.3,sodium:176,unitWeight:585,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'猪里脊',grams:180,ref:'猪里脊'},
+      {name:'黄豆芽',grams:100,ref:'黄豆芽'},
+      {name:'辣椒油',grams:30,ref:'红油辣椒油'},
+      {name:'淀粉',grams:12,ref:'淀粉'},
+      {name:'蛋清',grams:15,ref:'蛋清'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['水煮肉片一份','川味水煮肉片']},
 川味毛血旺:{kcal:168,protein:11.0,fat:11.5,carb:5.5,fiber:1.0,sodium:950,unitWeight:300,cat:'菜肴',density:0.95,gi:null,aliases:['重庆毛血旺','毛血旺']},
-辣子鸡:{kcal:252,protein:16.5,fat:17.0,carb:7.5,fiber:1.4,sodium:720,unitWeight:220,cat:'菜肴',density:0.70,gi:null,aliases:['歌乐山辣子鸡','重庆辣子鸡']},
+  辣子鸡:{kcal:317,protein:12.7,fat:26.8,carb:7,fiber:2,sodium:66,unitWeight:275,cat:'菜肴',density:0.75,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:200,ref:'鸡腿'},
+      {name:'干辣椒',grams:20,ref:'辣椒粉'},
+      {name:'花椒',grams:5,ref:'花椒油'},
+      {name:'食用油',grams:40,ref:'食用油'},
+      {name:'淀粉',grams:12,ref:'淀粉'}
+    ],
+    aliases:['辣子鸡一份','歌乐山辣子鸡','重庆辣子鸡']},
 夫妻肺片:{kcal:185,protein:13.0,fat:12.5,carb:4.5,fiber:1.2,sodium:980,unitWeight:150,cat:'菜肴',density:0.70,gi:null,aliases:['夫妻肺片儿','成都夫妻肺片']},
 蒜泥白肉:{kcal:256,protein:14.5,fat:21.0,carb:2.5,fiber:0.5,sodium:650,unitWeight:150,cat:'菜肴',density:0.70,gi:null,aliases:['蒜泥白肉片','成都蒜泥白肉']},
 樟茶鸭:{kcal:278,protein:20.0,fat:21.0,carb:2.0,fiber:0.3,sodium:820,unitWeight:150,cat:'菜肴',density:0.80,gi:null,aliases:['樟茶鸭子','成都樟茶鸭']},
@@ -2261,7 +3415,15 @@ const FOODS = {
 川味麻辣香锅:{kcal:198,protein:10.5,fat:14.5,carb:8.0,fiber:2.5,sodium:880,unitWeight:300,cat:'菜肴',density:0.85,gi:null,aliases:['麻辣香锅','重庆香锅']},
 川味水煮牛肉:{kcal:175,protein:14.5,fat:11.0,carb:4.0,fiber:1.0,sodium:780,unitWeight:300,cat:'菜肴',density:0.90,gi:null,aliases:['麻辣水煮牛肉','水煮牛肉片']},
 泡椒牛蛙:{kcal:128,protein:15.5,fat:5.0,carb:4.5,fiber:0.8,sodium:700,unitWeight:250,cat:'菜肴',density:0.88,gi:null,aliases:['泡椒田鸡','泡椒牛蛙腿']},
-干锅肥肠:{kcal:248,protein:13.0,fat:20.0,carb:5.0,fiber:1.5,sodium:860,unitWeight:250,cat:'菜肴',density:0.80,gi:null,aliases:['干锅大肠','干锅猪大肠']},
+  干锅肥肠:{kcal:205,protein:4.1,fat:20.4,carb:2.6,fiber:0.5,sodium:89,unitWeight:380,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'猪大肠',grams:200,ref:'猪大肠'},
+      {name:'青椒',grams:80,ref:'青椒'},
+      {name:'洋葱',grams:60,ref:'洋葱'},
+      {name:'辣椒油',grams:25,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅肥肠一份','干锅大肠']},
 麻辣鸡片:{kcal:198,protein:17.0,fat:12.5,carb:4.5,fiber:1.0,sodium:800,unitWeight:150,cat:'菜肴',density:0.70,gi:null,aliases:['椒麻鸡片','麻辣鸡片儿']},
 川味香肠:{kcal:468,protein:22.0,fat:39.0,carb:7.0,fiber:0.5,sodium:1750,unitWeight:60,cat:'菜肴',density:0.90,gi:null,aliases:['四川香肠','川味腊肠']},
 粤式白切鸡:{kcal:205,protein:19.0,fat:13.5,carb:1.0,fiber:0.1,sodium:420,unitWeight:150,cat:'菜肴',density:0.75,gi:0,aliases:['广东白切鸡','清远鸡']},
@@ -2287,7 +3449,15 @@ const FOODS = {
 淮扬红烧狮子头:{kcal:268,protein:11.5,fat:21.0,carb:7.0,fiber:0.8,sodium:720,unitWeight:150,cat:'菜肴',density:0.90,gi:null,aliases:['淮扬狮子头','清炖狮子头']},
 松鼠鳜鱼:{kcal:218,protein:14.0,fat:12.0,carb:13.5,fiber:0.5,sodium:620,unitWeight:250,cat:'菜肴',density:0.85,gi:null,aliases:['松鼠桂鱼','松鼠鱼']},
 龙井虾仁:{kcal:138,protein:17.0,fat:6.5,carb:2.5,fiber:0.4,sodium:520,unitWeight:150,cat:'菜肴',density:0.85,gi:0,aliases:['龙井炒虾仁','杭州龙井虾仁']},
-腌笃鲜:{kcal:118,protein:8.0,fat:7.5,carb:4.0,fiber:1.0,sodium:880,unitWeight:350,cat:'菜肴',density:1.00,gi:null,aliases:['腌笃鲜汤','咸肉鲜肉炖笋']},
+  腌笃鲜:{kcal:132,protein:9.1,fat:9.7,carb:2.4,fiber:0.4,sodium:297,unitWeight:860,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'咸肉',grams:100,ref:'咸肉'},
+      {name:'猪排骨',grams:100,ref:'猪排骨'},
+      {name:'春笋',grams:200,ref:'竹笋'},
+      {name:'百叶结',grams:60,ref:'豆腐皮'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['腌笃鲜一份','上海腌笃鲜']},
 油焖春笋:{kcal:88,protein:2.5,fat:5.0,carb:8.5,fiber:2.5,sodium:620,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['油焖笋','油焖竹笋']},
 西湖醋鱼:{kcal:128,protein:15.5,fat:5.0,carb:4.0,fiber:0.2,sodium:560,unitWeight:250,cat:'菜肴',density:0.90,gi:null,aliases:['醋鱼','杭州西湖醋鱼']},
 叫花鸡:{kcal:245,protein:22.0,fat:16.5,carb:1.5,fiber:0.5,sodium:680,unitWeight:200,cat:'菜肴',density:0.85,gi:null,aliases:['叫化鸡','常熟叫化鸡']},
@@ -2309,7 +3479,14 @@ const FOODS = {
 湖南口味蟹:{kcal:126,protein:15.6,fat:4.8,carb:3.8,fiber:0.5,sodium:820,unitWeight:250,cat:'菜肴',density:0.8,gi:0,aliases:['口味蟹','香辣蟹']},
 剁椒蒸芋头:{kcal:132,protein:2.6,fat:5.8,carb:18.2,fiber:2.6,sodium:560,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['剁椒芋头','蒸芋头']},
 湘式烧辣椒:{kcal:96,protein:2.4,fat:6.4,carb:7.8,fiber:2.8,sodium:520,unitWeight:120,cat:'菜肴',density:0.8,gi:null,aliases:['烧辣椒','擂辣椒']},
-干锅茶树菇:{kcal:168,protein:6.8,fat:11.6,carb:10.4,fiber:4.2,sodium:780,unitWeight:200,cat:'菜肴',density:0.7,gi:null,aliases:['茶树菇干锅','干锅茶菇']},
+  干锅茶树菇:{kcal:339,protein:12.6,fat:22.3,carb:26.8,fiber:7.2,sodium:57,unitWeight:270,cat:'菜肴',density:0.8,gi:null,
+    components:[
+      {name:'茶树菇',grams:120,ref:'茶树菇'},
+      {name:'五花肉',grams:70,ref:'五花肉'},
+      {name:'青椒',grams:60,ref:'青椒'},
+      {name:'辣椒油',grams:20,ref:'红油辣椒油'}
+    ],
+    aliases:['干锅茶树菇一份']},
 浏阳蒸菜:{kcal:156,protein:11.6,fat:9.8,carb:6.2,fiber:1.8,sodium:700,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['浏阳蒸碗','湖南蒸菜']},
 新疆大盘鸡:{kcal:186,protein:12.8,fat:11.4,carb:8.6,fiber:1.0,sodium:620,unitWeight:300,cat:'菜肴',density:0.9,gi:null,aliases:['大盘鸡块','新疆大盘鸡块']},
 手抓羊肉:{kcal:278,protein:20.6,fat:21.2,carb:0.6,fiber:0.1,sodium:420,unitWeight:200,cat:'菜肴',density:0.9,gi:0,aliases:['手抓羊排','清炖手抓肉']},
@@ -2324,11 +3501,27 @@ const FOODS = {
 羊肉烩面菜:{kcal:118,protein:8.6,fat:5.4,carb:9.2,fiber:1.4,sodium:600,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['烩面菜','河南羊肉烩面菜']},
 凉拌面筋:{kcal:164,protein:12.6,fat:8.4,carb:9.6,fiber:1.2,sodium:720,unitWeight:150,cat:'菜肴',density:0.7,gi:null,aliases:['拌面筋','凉皮面筋']},
 陕西凉粉:{kcal:88,protein:1.2,fat:4.2,carb:11.6,fiber:0.6,sodium:680,unitWeight:200,cat:'菜肴',density:0.7,gi:null,aliases:['凉粉','豌豆凉粉']},
-烤羊排:{kcal:286,protein:22.4,fat:21.6,carb:0.8,fiber:0.1,sodium:560,unitWeight:200,cat:'菜肴',density:0.7,gi:0,aliases:['新疆烤羊排','孜然烤羊排']},
+  烤羊排:{kcal:290,protein:17,fat:23.3,carb:2.2,fiber:0.7,sodium:70,unitWeight:275,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'羊排',grams:250,ref:'羊排'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'孜然',grams:6,ref:'孜然粉'},
+      {name:'辣椒粉',grams:5,ref:'辣椒粉'}
+    ],
+    aliases:['烤羊排一份','炭烤羊排']},
 羊肉汤:{kcal:82,protein:7.8,fat:4.6,carb:2.4,fiber:0.3,sodium:560,unitWeight:400,cat:'菜肴',density:1.0,gi:0,aliases:['清炖羊肉汤','羊汤']},
 黄焖羊肉:{kcal:228,protein:18.6,fat:15.2,carb:5.4,fiber:0.8,sodium:740,unitWeight:200,cat:'菜肴',density:0.9,gi:null,aliases:['黄焖羊','焖羊肉']},
 汽锅鸡:{kcal:118,protein:16.4,fat:5.2,carb:1.6,fiber:0.3,sodium:480,unitWeight:300,cat:'菜肴',density:1.0,gi:0,aliases:['云南汽锅鸡','汽锅炖鸡']},
-酸汤鱼:{kcal:102,protein:14.2,fat:3.6,carb:3.4,fiber:0.6,sodium:700,unitWeight:300,cat:'菜肴',density:1.0,gi:0,aliases:['贵州酸汤鱼','凯里酸汤鱼']},
+  酸汤鱼:{kcal:67,protein:5.7,fat:3.8,carb:2.6,fiber:0.9,sodium:754,unitWeight:710,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'草鱼片',grams:200,ref:'草鱼'},
+      {name:'酸汤',grams:350,ref:'酸菜'},
+      {name:'番茄',grams:80,ref:'番茄'},
+      {name:'木姜子',grams:5,ref:'辣椒'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'豆芽',grams:60,ref:'黄豆芽'}
+    ],
+    aliases:['酸汤鱼一份','贵州酸汤鱼','凯里酸汤鱼']},
 云南小炒肉:{kcal:236,protein:13.6,fat:18.4,carb:5.2,fiber:1.2,sodium:680,unitWeight:180,cat:'菜肴',density:0.8,gi:null,aliases:['滇式小炒肉','云南炒肉']},
 老奶洋芋:{kcal:148,protein:2.6,fat:6.8,carb:19.6,fiber:1.8,sodium:520,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['云南老奶洋芋','土豆泥']},
 折耳根炒腊肉:{kcal:272,protein:13.4,fat:22.6,carb:4.6,fiber:1.6,sodium:980,unitWeight:150,cat:'菜肴',density:0.8,gi:null,aliases:['鱼腥草炒腊肉','折耳根腊肉']},
@@ -2356,7 +3549,16 @@ const FOODS = {
 醋溜藕丁:{kcal:94,protein:2.4,fat:4.8,carb:11.4,fiber:1.8,sodium:580,unitWeight:150,cat:'菜肴',density:0.8,gi:null,aliases:['醋炒藕丁','糖醋藕丁']},
 炒秋葵:{kcal:76,protein:2.6,fat:4.4,carb:6.4,fiber:2.8,sodium:500,unitWeight:150,cat:'菜肴',density:0.8,gi:null,aliases:['清炒秋葵','蒜炒秋葵']},
 家常红烧排骨:{kcal:280,protein:16.0,fat:19.0,carb:10.0,fiber:0.3,sodium:680,unitWeight:150,cat:'菜肴',density:0.9,gi:null,aliases:['红烧排骨','家常排骨']},
-土豆炖牛肉:{kcal:172,protein:13.6,fat:8.4,carb:10.2,fiber:1.4,sodium:640,unitWeight:250,cat:'菜肴',density:0.9,gi:null,aliases:['牛肉炖土豆','炖牛肉']},
+  土豆炖牛肉:{kcal:138,protein:6,fat:10,carb:6,fiber:0.7,sodium:257,unitWeight:735,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'牛腩',grams:180,ref:'牛腩'},
+      {name:'土豆',grams:200,ref:'土豆'},
+      {name:'胡萝卜',grams:80,ref:'胡萝卜'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'生抽',grams:15,ref:'生抽'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['土豆炖牛肉一份','牛肉炖土豆']},
 香菇滑鸡:{kcal:186,protein:16.4,fat:11.2,carb:4.6,fiber:0.8,sodium:660,unitWeight:200,cat:'菜肴',density:0.8,gi:null,aliases:['香菇蒸鸡','滑鸡']},
 啤酒鸭:{kcal:198,protein:15.6,fat:13.6,carb:3.4,fiber:0.4,sodium:700,unitWeight:200,cat:'菜肴',density:0.9,gi:0,aliases:['啤酒烧鸭','啤酒焖鸭']},
 三杯鸡:{kcal:216,protein:17.2,fat:14.4,carb:4.2,fiber:0.3,sodium:760,unitWeight:180,cat:'菜肴',density:0.9,gi:null,aliases:['台式三杯鸡','三杯鸡块']},
@@ -2364,24 +3566,112 @@ const FOODS = {
 糖醋荷包蛋:{kcal:212,protein:11.2,fat:14.6,carb:9.2,fiber:0.1,sodium:620,unitWeight:140,cat:'菜肴',density:0.8,gi:null,aliases:['糖醋煎蛋','酸甜荷包蛋']},
 洋葱炒蛋:{kcal:146,protein:8.6,fat:10.4,carb:4.6,fiber:0.8,sodium:540,unitWeight:160,cat:'菜肴',density:0.8,gi:null,aliases:['洋葱鸡蛋','炒洋葱蛋']},
 番茄炖牛腩:{kcal:142,protein:12.4,fat:7.8,carb:5.4,fiber:1.0,sodium:600,unitWeight:250,cat:'菜肴',density:1.0,gi:null,aliases:['西红柿炖牛腩','番茄牛腩煲']},
-萝卜炖羊肉:{kcal:126,protein:11.4,fat:6.8,carb:4.6,fiber:1.0,sodium:560,unitWeight:300,cat:'菜肴',density:1.0,gi:null,aliases:['白萝卜炖羊肉','羊腩炖萝卜']},
+  萝卜炖羊肉:{kcal:74,protein:6.2,fat:4.9,carb:1.6,fiber:0.4,sodium:170,unitWeight:740,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'羊肉',grams:180,ref:'羊肉'},
+      {name:'白萝卜',grams:250,ref:'白萝卜'},
+      {name:'姜片',grams:10,ref:'生姜'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['萝卜炖羊肉一份','羊肉炖萝卜']},
 葱爆羊肉:{kcal:218,protein:17.6,fat:15.2,carb:3.6,fiber:0.8,sodium:680,unitWeight:160,cat:'菜肴',density:0.8,gi:null,aliases:['爆羊肉','京葱爆羊肉']},
 蒜香排骨:{kcal:308,protein:17.2,fat:23.6,carb:7.4,fiber:0.4,sodium:720,unitWeight:150,cat:'菜肴',density:0.7,gi:null,aliases:['炸蒜香排骨','蒜茸排骨']},
 蜜汁鸡翅:{kcal:242,protein:17.6,fat:15.4,carb:8.6,fiber:0.1,sodium:640,unitWeight:120,cat:'菜肴',density:0.8,gi:null,aliases:['蜜汁烤鸡翅','蜜糖鸡翅']},
 咖喱鸡块:{kcal:168,protein:12.6,fat:9.4,carb:8.2,fiber:1.2,sodium:620,unitWeight:220,cat:'菜肴',density:0.9,gi:null,aliases:['咖喱鸡','土豆咖喱鸡']},
 咖喱牛肉:{kcal:176,protein:13.4,fat:9.8,carb:8.4,fiber:1.2,sodium:640,unitWeight:220,cat:'菜肴',density:0.9,gi:null,aliases:['咖喱牛腩','牛肉咖喱']},
-冬瓜排骨汤:{kcal:52,protein:4.6,fat:2.8,carb:2.2,fiber:0.6,sodium:480,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['排骨冬瓜汤','冬瓜汤']},
-玉米排骨汤:{kcal:68,protein:4.8,fat:3.2,carb:4.8,fiber:0.8,sodium:480,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['排骨玉米汤','玉米汤']},
-番茄蛋汤:{kcal:44,protein:2.8,fat:2.2,carb:3.2,fiber:0.6,sodium:520,unitWeight:350,cat:'菜肴',density:1.0,gi:null,aliases:['西红柿鸡蛋汤','番茄鸡蛋汤']},
-紫菜蛋花汤:{kcal:38,protein:3.2,fat:1.8,carb:2.2,fiber:0.5,sodium:680,unitWeight:350,cat:'菜肴',density:1.0,gi:null,aliases:['蛋花汤','紫菜汤']},
-老鸭汤:{kcal:74,protein:7.6,fat:4.2,carb:1.8,fiber:0.4,sodium:520,unitWeight:400,cat:'菜肴',density:1.0,gi:0,aliases:['酸萝卜老鸭汤','炖老鸭汤']},
-鲫鱼豆腐汤:{kcal:66,protein:7.4,fat:3.4,carb:1.6,fiber:0.3,sodium:520,unitWeight:400,cat:'菜肴',density:1.0,gi:0,aliases:['豆腐鲫鱼汤','鲫鱼汤']},
+  冬瓜排骨汤:{kcal:78,protein:4.9,fat:6.1,carb:1.1,fiber:0.2,sodium:172,unitWeight:800,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'猪排骨',grams:150,ref:'猪排骨'},
+      {name:'冬瓜',grams:250,ref:'冬瓜'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['冬瓜排骨汤一份']},
+  玉米排骨汤:{kcal:100,protein:5.6,fat:6.3,carb:6.1,fiber:0.9,sodium:163,unitWeight:780,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'猪排骨',grams:150,ref:'猪排骨'},
+      {name:'玉米',grams:200,ref:'玉米'},
+      {name:'胡萝卜',grams:80,ref:'胡萝卜'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['玉米排骨汤一份']},
+  番茄蛋汤:{kcal:58,protein:3.4,fat:4.3,carb:1.5,fiber:0.1,sodium:222,unitWeight:610,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'番茄',grams:150,ref:'番茄'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['番茄蛋汤一碗','西红柿鸡蛋汤','番茄鸡蛋汤']},
+  紫菜蛋花汤:{kcal:58,protein:4.7,fat:3.9,carb:1.1,fiber:0.2,sodium:333,unitWeight:460,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'紫菜',grams:5,ref:'紫菜'},
+      {name:'鸡蛋',grams:50,ref:'鸡蛋'},
+      {name:'虾皮',grams:3,ref:'虾皮'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['紫菜蛋花汤一碗','紫菜汤']},
+  老鸭汤:{kcal:98,protein:6.6,fat:6.4,carb:3.9,fiber:1.5,sodium:528,unitWeight:680,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'鸭肉',grams:150,ref:'鸭肉'},
+      {name:'酸萝卜',grams:100,ref:'腌萝卜'},
+      {name:'笋干',grams:30,ref:'笋干'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['老鸭汤一份','酸萝卜老鸭汤']},
+  鲫鱼豆腐汤:{kcal:88,protein:8,fat:5.3,carb:2.1,fiber:0.1,sodium:170,unitWeight:715,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'鲫鱼',grams:200,ref:'鲫鱼'},
+      {name:'豆腐',grams:150,ref:'豆腐'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['鲫鱼豆腐汤一份','鲫鱼汤']},
 银耳莲子羹:{kcal:78,protein:1.2,fat:0.4,carb:18.4,fiber:1.6,sodium:20,unitWeight:300,cat:'菜肴',density:1.0,gi:null,aliases:['银耳羹','冰糖银耳莲子']},
-山药排骨汤:{kcal:62,protein:4.8,fat:2.6,carb:4.6,fiber:0.8,sodium:480,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['排骨山药汤','山药汤']},
-酸辣汤:{kcal:52,protein:3.6,fat:2.4,carb:4.2,fiber:0.8,sodium:760,unitWeight:350,cat:'菜肴',density:1.0,gi:null,aliases:['川味酸辣汤','酸辣浓汤']},
-罗宋汤:{kcal:72,protein:4.2,fat:3.4,carb:6.4,fiber:1.4,sodium:600,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['番茄牛肉汤','俄式罗宋汤']},
-菌菇汤:{kcal:42,protein:2.8,fat:2.0,carb:3.4,fiber:1.4,sodium:520,unitWeight:350,cat:'菜肴',density:1.0,gi:null,aliases:['什锦菌菇汤','杂菌汤']},
-白菜豆腐汤:{kcal:38,protein:3.2,fat:1.6,carb:2.6,fiber:1.0,sodium:500,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['豆腐白菜汤','家常白菜汤']},
+  山药排骨汤:{kcal:96,protein:5.5,fat:6.2,carb:5,fiber:0.5,sodium:175,unitWeight:800,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'猪排骨',grams:150,ref:'猪排骨'},
+      {name:'山药',grams:150,ref:'山药生'},
+      {name:'玉米',grams:100,ref:'玉米'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['山药排骨汤一份']},
+  酸辣汤:{kcal:71,protein:4.9,fat:3.6,carb:5,fiber:0.6,sodium:262,unitWeight:560,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'豆腐',grams:80,ref:'豆腐'},
+      {name:'木耳',grams:10,ref:'木耳'},
+      {name:'鸡蛋',grams:40,ref:'鸡蛋'},
+      {name:'淀粉',grams:15,ref:'淀粉'},
+      {name:'陈醋',grams:15,ref:'陈醋'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['酸辣汤一碗','川味酸辣汤']},
+  罗宋汤:{kcal:77,protein:4,fat:5,carb:4.2,fiber:0.6,sodium:133,unitWeight:800,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'牛腩',grams:100,ref:'牛腩'},
+      {name:'番茄',grams:150,ref:'番茄'},
+      {name:'土豆',grams:100,ref:'土豆'},
+      {name:'卷心菜',grams:100,ref:'卷心菜'},
+      {name:'洋葱',grams:50,ref:'洋葱'},
+      {name:'汤底',grams:300,ref:'猪骨汤'}
+    ],
+    aliases:['罗宋汤一碗','上海罗宋汤']},
+  菌菇汤:{kcal:51,protein:2.8,fat:3.6,carb:2.3,fiber:0.8,sodium:211,unitWeight:610,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'金针菇',grams:80,ref:'金针菇'},
+      {name:'香菇',grams:60,ref:'蘑菇'},
+      {name:'杏鲍菇',grams:60,ref:'杏鲍菇'},
+      {name:'食用油',grams:8,ref:'食用油'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['菌菇汤一碗','什锦菌菇汤']},
+  白菜豆腐汤:{kcal:46,protein:3.6,fat:2.4,carb:2.7,fiber:0.3,sodium:171,unitWeight:730,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'大白菜',grams:200,ref:'大白菜'},
+      {name:'豆腐',grams:150,ref:'豆腐'},
+      {name:'粉丝',grams:30,ref:'粉丝'},
+      {name:'汤底',grams:350,ref:'猪骨汤'}
+    ],
+    aliases:['白菜豆腐汤一碗']},
 花生猪脚汤:{kcal:112,protein:8.4,fat:6.8,carb:4.2,fiber:0.6,sodium:520,unitWeight:400,cat:'菜肴',density:1.0,gi:null,aliases:['猪脚花生汤','花生炖猪手']},
 乌鸡汤:{kcal:76,protein:8.2,fat:4.0,carb:1.4,fiber:0.2,sodium:460,unitWeight:400,cat:'菜肴',density:1.0,gi:0,aliases:['乌鸡炖汤','清炖乌鸡']},
 北方豆腐脑:{kcal:62,protein:4.8,fat:3.2,carb:3.4,fiber:0.4,sodium:620,unitWeight:300,cat:'菜肴',density:1.0,gi:null,aliases:['豆腐脑','咸豆腐脑']},
@@ -2405,7 +3695,424 @@ const FOODS = {
 带鱼煎:{kcal:200,protein:19.0,fat:12.5,carb:3.5,fiber:0,sodium:400,unitWeight:100,cat:'菜肴',density:1.0,gi:0,aliases:['煎带鱼','干煎带鱼','香煎刀鱼']},
 鸡蛋煎:{kcal:200,protein:13.0,fat:15.0,carb:1.0,fiber:0,sodium:230,unitWeight:55,cat:'菜肴',density:0.95,gi:0,aliases:['煎鸡蛋','煎蛋','荷包蛋']},
 鸡蛋炒:{kcal:210,protein:13.5,fat:16.0,carb:1.5,fiber:0,sodium:280,unitWeight:100,cat:'菜肴',density:0.9,gi:0,aliases:['炒鸡蛋','炒蛋','滑炒蛋']},
-
+  自嗨锅自热火锅:{kcal:155,protein:7.0,fat:8.5,carb:13.0,fiber:1.5,sodium:950,unitWeight:450,cat:'菜肴',density:0.9,gi:null,aliases:['自热火锅','自嗨锅火锅']},
+  莫小仙自热火锅:{kcal:150,protein:6.5,fat:8.0,carb:13.5,fiber:1.5,sodium:920,unitWeight:450,cat:'菜肴',density:0.9,gi:null,aliases:['莫小仙','莫小仙火锅']},
+  海底捞自热火锅:{kcal:160,protein:7.5,fat:9.0,carb:13.0,fiber:1.6,sodium:980,unitWeight:470,cat:'菜肴',density:0.9,gi:null,aliases:['海底捞自热火锅','海底捞火锅']},
+  番茄鱼:{kcal:81,protein:6.5,fat:5,carb:2.6,fiber:0.2,sodium:134,unitWeight:690,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'草鱼片',grams:200,ref:'草鱼'},
+      {name:'番茄',grams:200,ref:'番茄'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'蛋清',grams:15,ref:'蛋清'},
+      {name:'淀粉',grams:10,ref:'淀粉'},
+      {name:'汤底',grams:250,ref:'猪骨汤'}
+    ],
+    aliases:['番茄鱼一份','番茄鱼片']},
+  猪肚鸡:{kcal:90,protein:8.5,fat:5.8,carb:0.8,fiber:0.2,sodium:216,unitWeight:705,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'猪肚',grams:150,ref:'猪肚'},
+      {name:'鸡腿肉',grams:150,ref:'鸡腿'},
+      {name:'白胡椒',grams:5,ref:'白胡椒粉'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['猪肚鸡一份','胡椒猪肚鸡','猪肚包鸡']},
+  花胶鸡汤:{kcal:95,protein:8.1,fat:6.8,carb:0.4,fiber:0,sodium:234,unitWeight:620,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:180,ref:'鸡腿'},
+      {name:'花胶',grams:30,ref:'猪皮'},
+      {name:'姜片',grams:8,ref:'生姜'},
+      {name:'汤底',grams:400,ref:'猪骨汤'}
+    ],
+    aliases:['花胶鸡','花胶鸡汤一份']},
+  椰子鸡汤:{kcal:105,protein:5.6,fat:7.7,carb:4.3,fiber:0.6,sodium:114,unitWeight:750,cat:'菜肴',density:1.0,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:200,ref:'鸡腿'},
+      {name:'椰子肉',grams:50,ref:'椰子肉'},
+      {name:'椰汁',grams:300,ref:'椰树椰汁'},
+      {name:'汤底',grams:200,ref:'猪骨汤'}
+    ],
+    aliases:['椰子鸡','椰子鸡汤一份','海南椰子鸡']},
+  咖喱鸡:{kcal:156,protein:6.9,fat:9.5,carb:10.7,fiber:1.3,sodium:389,unitWeight:520,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:180,ref:'鸡腿'},
+      {name:'土豆',grams:150,ref:'土豆'},
+      {name:'胡萝卜',grams:80,ref:'胡萝卜'},
+      {name:'洋葱',grams:60,ref:'洋葱'},
+      {name:'咖喱块',grams:40,ref:'百梦多咖喱块'},
+      {name:'食用油',grams:12,ref:'食用油'}
+    ],
+    aliases:['咖喱鸡一份','日式咖喱鸡']},
+  剁椒鱼头:{kcal:139,protein:12.4,fat:7.4,carb:5.7,fiber:0.5,sodium:758,unitWeight:520,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鳙鱼头',grams:400,ref:'鳙鱼'},
+      {name:'剁椒',grams:80,ref:'湖南剁椒酱'},
+      {name:'食用油',grams:25,ref:'食用油'},
+      {name:'蒸鱼豉油',grams:15,ref:'李锦记蒸鱼豉油'}
+    ],
+    aliases:['剁椒鱼头一份','湘菜剁椒鱼头']},
+  臭鳜鱼:{kcal:193,protein:16.8,fat:13.9,carb:0.6,fiber:0.1,sodium:60,unitWeight:440,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'鳜鱼',grams:350,ref:'鳜鱼'},
+      {name:'五花肉',grams:50,ref:'五花肉'},
+      {name:'辣椒',grams:20,ref:'辣椒'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['臭鳜鱼一份','徽州臭鳜鱼']},
+  牛油火锅一人份:{kcal:158,protein:8.8,fat:12.4,carb:3.4,fiber:0.7,sodium:316,unitWeight:720,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'肥牛',grams:150,ref:'肥牛'},
+      {name:'毛肚',grams:80,ref:'牛百叶'},
+      {name:'鸭血',grams:60,ref:'鸭血'},
+      {name:'豆腐',grams:80,ref:'豆腐'},
+      {name:'黄豆芽',grams:60,ref:'黄豆芽'},
+      {name:'白菜',grams:100,ref:'大白菜'},
+      {name:'牛油锅底',grams:150,ref:'牛油锅底'},
+      {name:'蘸料',grams:40,ref:'芝麻酱'}
+    ],
+    aliases:['牛油火锅','重庆火锅','麻辣火锅','火锅一人份']},
+  清汤火锅一人份:{kcal:104,protein:6.6,fat:6.8,carb:4.5,fiber:0.8,sodium:205,unitWeight:690,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'羊肉卷',grams:150,ref:'羊肉卷'},
+      {name:'白菜',grams:120,ref:'大白菜'},
+      {name:'豆腐',grams:80,ref:'豆腐'},
+      {name:'金针菇',grams:60,ref:'金针菇'},
+      {name:'粉丝',grams:40,ref:'粉丝'},
+      {name:'清汤锅底',grams:200,ref:'清汤锅底'},
+      {name:'蘸料',grams:40,ref:'芝麻酱'}
+    ],
+    aliases:['清汤火锅','涮羊肉','老北京涮羊肉','铜锅涮肉']},
+  菌汤火锅一人份:{kcal:88,protein:5.6,fat:5.9,carb:4,fiber:1.4,sodium:256,unitWeight:625,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'鸡腿肉',grams:120,ref:'鸡腿'},
+      {name:'香菇',grams:60,ref:'蘑菇'},
+      {name:'金针菇',grams:60,ref:'金针菇'},
+      {name:'杏鲍菇',grams:50,ref:'杏鲍菇'},
+      {name:'青菜',grams:100,ref:'小白菜'},
+      {name:'菌汤锅底',grams:200,ref:'菌汤锅底'},
+      {name:'蘸料',grams:35,ref:'芝麻酱'}
+    ],
+    aliases:['菌汤火锅','菌菇火锅','养生火锅']},
+  番茄火锅一人份:{kcal:110,protein:5,fat:7.7,carb:5.6,fiber:0.8,sodium:229,unitWeight:755,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'肥牛',grams:120,ref:'肥牛'},
+      {name:'番茄',grams:200,ref:'番茄'},
+      {name:'豆腐',grams:80,ref:'豆腐'},
+      {name:'生菜',grams:80,ref:'生菜'},
+      {name:'粉丝',grams:40,ref:'粉丝'},
+      {name:'番茄锅底',grams:200,ref:'番茄锅底'},
+      {name:'蘸料',grams:35,ref:'芝麻酱'}
+    ],
+    aliases:['番茄火锅','番茄锅','海底捞番茄锅']},
+  鸳鸯火锅一人份:{kcal:161,protein:9.3,fat:12.5,carb:3.5,fiber:0.6,sodium:405,unitWeight:670,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'肥牛',grams:120,ref:'肥牛'},
+      {name:'虾滑',grams:60,ref:'虾'},
+      {name:'毛肚',grams:60,ref:'牛百叶'},
+      {name:'鸭血',grams:50,ref:'鸭血'},
+      {name:'白菜',grams:100,ref:'大白菜'},
+      {name:'豆腐',grams:60,ref:'豆腐'},
+      {name:'牛油锅底',grams:180,ref:'牛油锅底'},
+      {name:'蘸料',grams:40,ref:'芝麻酱'}
+    ],
+    aliases:['鸳鸯锅','鸳鸯火锅']},
+  麻辣烫一份:{kcal:103,protein:6.2,fat:5.4,carb:7.6,fiber:0.6,sodium:603,unitWeight:620,cat:'菜肴',density:0.88,gi:null,
+    components:[
+      {name:'宽粉',grams:100,ref:'粉丝'},
+      {name:'鱼丸',grams:50,ref:'鱼丸'},
+      {name:'牛肉丸',grams:50,ref:'牛肉丸'},
+      {name:'豆皮',grams:40,ref:'豆腐皮'},
+      {name:'金针菇',grams:50,ref:'金针菇'},
+      {name:'油麦菜',grams:80,ref:'油麦菜'},
+      {name:'麻辣汤底',grams:250,ref:'麻辣汤底'}
+    ],
+    aliases:['麻辣烫一人份','麻辣烫一碗']},
+  冒菜一份:{kcal:126,protein:6,fat:7.8,carb:7.9,fiber:0.6,sodium:485,unitWeight:650,cat:'菜肴',density:0.88,gi:null,
+    components:[
+      {name:'肥牛',grams:80,ref:'肥牛'},
+      {name:'宽粉',grams:80,ref:'粉丝'},
+      {name:'藕片',grams:60,ref:'莲藕生'},
+      {name:'土豆片',grams:60,ref:'土豆'},
+      {name:'豆皮',grams:40,ref:'豆腐皮'},
+      {name:'油麦菜',grams:80,ref:'油麦菜'},
+      {name:'麻辣汤底',grams:250,ref:'麻辣汤底'}
+    ],
+    aliases:['冒菜一人份','四川冒菜']},
+  串串香一人份:{kcal:121,protein:11.9,fat:5.6,carb:5.7,fiber:0.4,sodium:508,unitWeight:500,cat:'菜肴',density:0.88,gi:null,
+    components:[
+      {name:'牛肉串',grams:100,ref:'牛里脊'},
+      {name:'鸡胗串',grams:50,ref:'鸡胗'},
+      {name:'豆皮串',grams:50,ref:'豆腐皮'},
+      {name:'藕片串',grams:50,ref:'莲藕生'},
+      {name:'莴笋串',grams:50,ref:'莴笋'},
+      {name:'麻辣汤底',grams:200,ref:'麻辣汤底'}
+    ],
+    aliases:['串串香','冷锅串串','钵钵鸡']},
+  关东煮一份:{kcal:47,protein:3.4,fat:1.1,carb:6,fiber:0.5,sodium:594,unitWeight:580,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'鱼豆腐',grams:60,ref:'鱼豆腐'},
+      {name:'鱼丸',grams:50,ref:'鱼丸'},
+      {name:'蟹棒',grams:40,ref:'蟹棒'},
+      {name:'萝卜',grams:80,ref:'白萝卜'},
+      {name:'魔芋结',grams:60,ref:'魔芋'},
+      {name:'海带结',grams:40,ref:'海带'},
+      {name:'关东煮汤',grams:250,ref:'关东煮汤底'}
+    ],
+    aliases:['关东煮','日式关东煮','便利店关东煮']},
+  部队锅:{kcal:133,protein:6.4,fat:8.6,carb:7.5,fiber:0.4,sodium:948,unitWeight:780,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'午餐肉',grams:100,ref:'午餐肉'},
+      {name:'香肠',grams:80,ref:'香肠'},
+      {name:'泡菜',grams:100,ref:'酸菜'},
+      {name:'方便面',grams:100,ref:'方便面'},
+      {name:'豆腐',grams:80,ref:'豆腐'},
+      {name:'芝士片',grams:20,ref:'奶酪'},
+      {name:'高汤',grams:300,ref:'清汤锅底'}
+    ],
+    aliases:['部队锅','韩式部队锅','部队火锅']},
+  韩式烤肉一人份:{kcal:302,protein:4.8,fat:30.4,carb:3.5,fiber:0.6,sodium:439,unitWeight:380,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'五花肉',grams:200,ref:'五花肉'},
+      {name:'生菜',grams:80,ref:'生菜'},
+      {name:'大蒜',grams:10,ref:'大蒜'},
+      {name:'辣酱',grams:20,ref:'辣椒酱'},
+      {name:'芝麻油',grams:8,ref:'芝麻油'},
+      {name:'泡菜',grams:60,ref:'酸菜'}
+    ],
+    aliases:['韩式烤肉','韩国烤肉','烤肉一人份']},
+  烤鸡翅:{kcal:229,protein:14.8,fat:15.5,carb:7.8,fiber:0,sodium:410,unitWeight:180,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'鸡翅',grams:150,ref:'鸡翅'},
+      {name:'食用油',grams:10,ref:'食用油'},
+      {name:'生抽',grams:10,ref:'生抽'},
+      {name:'蜂蜜',grams:8,ref:'蜂蜜'}
+    ],
+    aliases:['烤鸡翅一份','蜜汁烤翅','烧烤鸡翅']},
+  烤茄子:{kcal:81,protein:1.4,fat:5.9,carb:6.1,fiber:1.2,sodium:215,unitWeight:350,cat:'菜肴',density:0.8,gi:null,
+    components:[
+      {name:'茄子',grams:300,ref:'茄子'},
+      {name:'蒜蓉',grams:20,ref:'大蒜'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'}
+    ],
+    aliases:['烤茄子一份','蒜蓉烤茄子','烧烤茄子']},
+  烤韭菜:{kcal:92,protein:2.5,fat:7.5,carb:5.2,fiber:1.9,sodium:9,unitWeight:220,cat:'菜肴',density:0.6,gi:null,
+    components:[
+      {name:'韭菜',grams:200,ref:'韭菜'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'辣椒粉',grams:5,ref:'辣椒粉'}
+    ],
+    aliases:['烤韭菜一份','烧烤韭菜']},
+  烤金针菇:{kcal:93,protein:2.5,fat:6.6,carb:7.1,fiber:2.3,sodium:259,unitWeight:240,cat:'菜肴',density:0.7,gi:null,
+    components:[
+      {name:'金针菇',grams:200,ref:'金针菇'},
+      {name:'蒜蓉',grams:15,ref:'大蒜'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'生抽',grams:10,ref:'生抽'}
+    ],
+    aliases:['烤金针菇一份','锡纸金针菇','烧烤金针菇']},
+  烤玉米:{kcal:124,protein:3.1,fat:5.8,carb:18,fiber:2.7,sodium:3,unitWeight:265,cat:'菜肴',density:0.8,gi:null,
+    components:[
+      {name:'玉米',grams:250,ref:'玉米'},
+      {name:'黄油',grams:15,ref:'动物黄油'}
+    ],
+    aliases:['烤玉米一份','黄油玉米','烧烤玉米']},
+  烤生蚝:{kcal:140,protein:8.4,fat:8.3,carb:8.3,fiber:0.2,sodium:196,unitWeight:210,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'生蚝',grams:150,ref:'生蚝'},
+      {name:'蒜蓉',grams:25,ref:'大蒜'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'粉丝',grams:20,ref:'粉丝'}
+    ],
+    aliases:['烤生蚝一份','蒜蓉生蚝','炭烤生蚝']},
+  烤扇贝:{kcal:128,protein:8.2,fat:7.3,carb:7.4,fiber:0.2,sodium:235,unitWeight:220,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'扇贝',grams:150,ref:'扇贝'},
+      {name:'蒜蓉',grams:25,ref:'大蒜'},
+      {name:'粉丝',grams:30,ref:'粉丝'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['烤扇贝一份','蒜蓉粉丝扇贝','炭烤扇贝']},
+  烤鱼一份:{kcal:192,protein:13.5,fat:12.7,carb:6.3,fiber:0.5,sodium:55,unitWeight:720,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'草鱼',grams:400,ref:'草鱼'},
+      {name:'土豆',grams:120,ref:'土豆'},
+      {name:'藕片',grams:80,ref:'莲藕生'},
+      {name:'豆皮',grams:60,ref:'豆腐皮'},
+      {name:'红油',grams:40,ref:'红油辣椒油'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['烤鱼','万州烤鱼','重庆烤鱼']},
+  铁板鱿鱼:{kcal:129,protein:11.5,fat:7.2,carb:5.1,fiber:0.7,sodium:281,unitWeight:315,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鱿鱼',grams:200,ref:'鱿鱼'},
+      {name:'洋葱',grams:80,ref:'洋葱'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'辣椒粉',grams:6,ref:'辣椒粉'},
+      {name:'生抽',grams:10,ref:'生抽'}
+    ],
+    aliases:['铁板鱿鱼一份','铁板鱿鱼须','烤鱿鱼']},
+  铁板豆腐:{kcal:160,protein:7.5,fat:12.3,carb:5.4,fiber:1.1,sodium:10,unitWeight:295,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'豆腐',grams:250,ref:'豆腐'},
+      {name:'食用油',grams:25,ref:'食用油'},
+      {name:'辣椒粉',grams:6,ref:'辣椒粉'},
+      {name:'孜然',grams:5,ref:'孜然粉'},
+      {name:'小葱',grams:10,ref:'小葱'}
+    ],
+    aliases:['铁板豆腐一份','铁板日本豆腐','烤豆腐']},
+  铁板牛肉:{kcal:121,protein:11.6,fat:6.1,carb:5.3,fiber:0.8,sodium:28,unitWeight:365,cat:'菜肴',density:0.88,gi:null,
+    components:[
+      {name:'牛肉',grams:180,ref:'牛里脊'},
+      {name:'洋葱',grams:100,ref:'洋葱'},
+      {name:'青椒',grams:60,ref:'青椒'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'黑胡椒',grams:5,ref:'现磨黑胡椒碎'}
+    ],
+    aliases:['铁板牛肉一份','黑椒铁板牛柳']},
+  铁板鸡排:{kcal:160,protein:16.6,fat:8.3,carb:3.5,fiber:0.6,sodium:43,unitWeight:305,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'鸡胸肉',grams:200,ref:'鸡胸肉'},
+      {name:'洋葱',grams:80,ref:'洋葱'},
+      {name:'食用油',grams:20,ref:'食用油'},
+      {name:'黑胡椒',grams:4,ref:'现磨黑胡椒碎'}
+    ],
+    aliases:['铁板鸡排一份','铁板鸡胸']},
+  火锅丸子拼盘:{kcal:150,protein:10.7,fat:5.8,carb:13.7,fiber:0.3,sodium:738,unitWeight:330,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鱼丸',grams:80,ref:'鱼丸'},
+      {name:'牛肉丸',grams:80,ref:'牛肉丸'},
+      {name:'撒尿牛丸',grams:60,ref:'撒尿牛丸'},
+      {name:'鱼豆腐',grams:60,ref:'鱼豆腐'},
+      {name:'蟹棒',grams:50,ref:'蟹棒'}
+    ],
+    aliases:['丸子拼盘','火锅丸子','丸子组合']},
+  豆腐皮卷:{kcal:226,protein:19.1,fat:11.6,carb:12.1,fiber:1,sodium:27,unitWeight:265,cat:'菜肴',density:0.75,gi:null,
+    components:[
+      {name:'豆腐皮',grams:100,ref:'豆腐皮'},
+      {name:'黄瓜',grams:80,ref:'黄瓜'},
+      {name:'胡萝卜',grams:60,ref:'胡萝卜'},
+      {name:'芝麻酱',grams:25,ref:'芝麻酱'}
+    ],
+    aliases:['豆皮卷','豆腐皮卷一份','凉拌豆皮卷']},
+  烧烤拼盘:{kcal:130,protein:7.3,fat:8.5,carb:7.2,fiber:1.2,sodium:29,unitWeight:625,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'羊肉串',grams:100,ref:'羊肉'},
+      {name:'鸡翅',grams:100,ref:'鸡翅'},
+      {name:'烤茄子',grams:150,ref:'茄子'},
+      {name:'烤韭菜',grams:100,ref:'韭菜'},
+      {name:'烤玉米',grams:150,ref:'玉米'},
+      {name:'食用油',grams:25,ref:'食用油'}
+    ],
+    aliases:['烧烤拼盘','烧烤一份','烤串拼盘']},
+  铁板烧套餐:{kcal:182,protein:12,fat:13.4,carb:3.4,fiber:0.7,sodium:52,unitWeight:490,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'牛排',grams:200,ref:'西冷牛排'},
+      {name:'虾',grams:80,ref:'虾'},
+      {name:'洋葱',grams:80,ref:'洋葱'},
+      {name:'豆芽',grams:100,ref:'黄豆芽'},
+      {name:'食用油',grams:25,ref:'食用油'},
+      {name:'黑胡椒',grams:5,ref:'现磨黑胡椒碎'}
+    ],
+    aliases:['铁板烧','铁板烧套餐一份','日式铁板烧']},
+  麻辣香锅自选:{kcal:197,protein:5.7,fat:15.7,carb:8.8,fiber:1.2,sodium:178,unitWeight:475,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'鸡翅',grams:80,ref:'鸡翅'},
+      {name:'午餐肉',grams:60,ref:'午餐肉'},
+      {name:'土豆片',grams:80,ref:'土豆'},
+      {name:'藕片',grams:60,ref:'莲藕生'},
+      {name:'西兰花',grams:80,ref:'西兰花'},
+      {name:'金针菇',grams:60,ref:'金针菇'},
+      {name:'辣椒油',grams:35,ref:'红油辣椒油'},
+      {name:'食用油',grams:20,ref:'食用油'}
+    ],
+    aliases:['麻辣香锅自选','香锅自选','自选香锅']},
+  干锅千页豆腐:{kcal:408,protein:26.7,fat:28.6,carb:11.9,fiber:0.4,sodium:38,unitWeight:355,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'千页豆腐',grams:200,ref:'豆腐皮'},
+      {name:'五花肉',grams:60,ref:'五花肉'},
+      {name:'青椒',grams:60,ref:'青椒'},
+      {name:'辣椒油',grams:20,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅千页豆腐一份','干锅千页']},
+  干锅虾:{kcal:157,protein:10.7,fat:9.7,carb:7.2,fiber:0.6,sodium:120,unitWeight:450,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'基围虾',grams:250,ref:'基围虾'},
+      {name:'土豆',grams:100,ref:'土豆'},
+      {name:'洋葱',grams:60,ref:'洋葱'},
+      {name:'辣椒油',grams:25,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅虾一份','香辣干锅虾']},
+  干锅牛蛙:{kcal:152,protein:11.3,fat:10.9,carb:2.6,fiber:0.5,sodium:57,unitWeight:380,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'田鸡腿',grams:200,ref:'田鸡腿'},
+      {name:'青椒',grams:80,ref:'青椒'},
+      {name:'洋葱',grams:60,ref:'洋葱'},
+      {name:'辣椒油',grams:25,ref:'红油辣椒油'},
+      {name:'食用油',grams:15,ref:'食用油'}
+    ],
+    aliases:['干锅牛蛙一份','香辣牛蛙']},
+  涮毛肚:{kcal:142,protein:11.1,fat:9.5,carb:4.5,fiber:0.8,sodium:396,unitWeight:340,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'毛肚',grams:200,ref:'牛百叶'},
+      {name:'麻辣汤底',grams:100,ref:'麻辣汤底'},
+      {name:'蘸料',grams:40,ref:'芝麻酱'}
+    ],
+    aliases:['涮毛肚一份','毛肚']},
+  涮鸭肠:{kcal:242,protein:11.4,fat:20.4,carb:4.1,fiber:1,sodium:455,unitWeight:290,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸭肠',grams:150,ref:'鸭肉'},
+      {name:'麻辣汤底',grams:100,ref:'麻辣汤底'},
+      {name:'蘸料',grams:40,ref:'芝麻酱'}
+    ],
+    aliases:['涮鸭肠一份','鸭肠']},
+  烤五花肉:{kcal:343,protein:5.7,fat:34.7,carb:3.6,fiber:0.4,sodium:248,unitWeight:310,cat:'菜肴',density:0.85,gi:null,
+    components:[
+      {name:'五花肉',grams:200,ref:'五花肉'},
+      {name:'生菜',grams:80,ref:'生菜'},
+      {name:'大蒜',grams:10,ref:'大蒜'},
+      {name:'辣酱',grams:20,ref:'辣椒酱'}
+    ],
+    aliases:['烤五花肉一份','碳烤五花肉']},
+  烤培根金针菇:{kcal:93,protein:10.3,fat:3.8,carb:5.2,fiber:1.9,sodium:552,unitWeight:255,cat:'菜肴',density:0.8,gi:null,
+    components:[
+      {name:'培根',grams:100,ref:'培根'},
+      {name:'金针菇',grams:150,ref:'金针菇'},
+      {name:'黑胡椒',grams:3,ref:'现磨黑胡椒碎'}
+    ],
+    aliases:['培根金针菇卷','金针菇培根卷']},
+  烤鸡胗:{kcal:188,protein:17.9,fat:10.6,carb:6.1,fiber:1.1,sodium:72,unitWeight:170,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸡胗',grams:150,ref:'鸡胗'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'孜然',grams:5,ref:'孜然粉'},
+      {name:'辣椒粉',grams:5,ref:'辣椒粉'}
+    ],
+    aliases:['烤鸡胗一份','烤鸡肫']},
+  烤鸡心:{kcal:233,protein:15,fat:18.7,carb:1.9,fiber:0.3,sodium:82,unitWeight:165,cat:'菜肴',density:0.9,gi:null,
+    components:[
+      {name:'鸡心',grams:150,ref:'鸡心'},
+      {name:'食用油',grams:12,ref:'食用油'},
+      {name:'孜然',grams:5,ref:'孜然粉'}
+    ],
+    aliases:['烤鸡心一份','烤鸡心串']},
+  烤牛排:{kcal:272,protein:17.3,fat:21.4,carb:1.9,fiber:0.5,sodium:52,unitWeight:225,cat:'菜肴',density:0.95,gi:null,
+    components:[
+      {name:'西冷牛排',grams:200,ref:'西冷牛排'},
+      {name:'黄油',grams:12,ref:'动物黄油'},
+      {name:'黑胡椒',grams:4,ref:'现磨黑胡椒碎'},
+      {name:'大蒜',grams:8,ref:'大蒜'}
+    ],
+    aliases:['烤牛排一份','煎牛排','牛排']},
+  烤黄鱼:{kcal:130,protein:16.1,fat:6.7,carb:1.2,fiber:0,sodium:326,unitWeight:335,cat:'菜肴',density:0.92,gi:null,
+    components:[
+      {name:'黄花鱼',grams:300,ref:'黄花鱼'},
+      {name:'食用油',grams:15,ref:'食用油'},
+      {name:'生抽',grams:12,ref:'生抽'},
+      {name:'小葱',grams:10,ref:'小葱'}
+    ],
+    aliases:['烤黄鱼一份','炭烤黄花鱼']},
 };
 
 const CATS = ['全部','主食','肉类','水产','蛋奶豆','蔬菜','水果','零食','饮品','调味','菜肴'];
@@ -2572,6 +4279,19 @@ let picked = [];        // [{key, grams}]
 let curCat = '全部';
 let keyword = '';
 let curGi = 'all';      // all | low | mid | high
+
+/**
+ * 成品菜配料拆分状态
+ *
+ * compOpen[i]  该条配料面板是否展开
+ * compState[i] 每项的 {on: 是否计入, grams: 实际克重}
+ *
+ * 注意：勾选/改克重后，主条的 grams 也要跟着变 ——
+ *       只算勾选项的总重。这样"只吃面不喝汤"时，
+ *       上面显示的热量就是真实摄入，而不是整份。
+ */
+const compOpen = {};
+const compState = {};
 
 /* ---------- 工具 ---------- */
 const $ = (id) => document.getElementById(id);
@@ -2762,6 +4482,51 @@ function renderPicked() {
       ? `<span class="gi-tag" style="color:#92400e;background:#fef3c7" title="品牌官方未公布营养数据，此为按同类产品推算的估算值">≈ 估算值</span>`
       : '';
 
+    // 配料表：成品菜可展开，逐项勾选 + 改克重（比如"汤没喝"就不勾）
+    const comps = (f.components && f.components.length) ? f.components : null;
+    const compBtn = comps
+      ? `<button class="quick" data-comp="${i}" style="color:var(--brand-dark);font-weight:600">
+           ${compOpen[i] ? '收起配料' : '拆分配料 (' + comps.length + ')'}</button>`
+      : '';
+
+    let compHtml = '';
+    if (comps && compOpen[i]) {
+      // 每项状态：是否计入 + 实际克重（用户可改）
+      const st = compState[i] || (compState[i] = comps.map((c) => ({ on: true, grams: c.grams })));
+      const rows = comps.map((c, ci) => {
+        const s = st[ci];
+        const ref = FOODS[c.ref];
+        const k = ref ? Math.round(ref.kcal * s.grams / 100) : 0;
+        return `<div class="comp-row ${s.on ? '' : 'comp-off'}">
+          <label class="comp-check">
+            <input type="checkbox" data-con="${i}-${ci}" ${s.on ? 'checked' : ''}>
+          </label>
+          <span class="comp-name">${c.name}</span>
+          <input class="comp-grams" type="number" inputmode="decimal" min="0" step="5"
+                 data-cg="${i}-${ci}" value="${s.grams}">
+          <span class="comp-unit">g</span>
+          <span class="comp-kcal">${k} kcal</span>
+        </div>`;
+      }).join('');
+
+      // 汇总：只算勾选的
+      let tk = 0, tg = 0;
+      comps.forEach((c, ci) => {
+        if (!st[ci].on) return;
+        const ref = FOODS[c.ref];
+        if (ref) { tk += ref.kcal * st[ci].grams / 100; tg += st[ci].grams; }
+      });
+
+      compHtml = `<div class="comp-panel">
+        ${rows}
+        <div class="comp-sum">
+          已选 ${tg} g · 合计 <b>${Math.round(tk)}</b> 千卡
+          ${st.every((s) => s.on) ? '' : '<span class="comp-warn">（有不计入的配料）</span>'}
+        </div>
+        <div class="comp-hint">不吃的配料取消勾选即可，上面那份的重量和热量会自动跟着变。</div>
+      </div>`;
+    }
+
     return `<div class="item">
       <div class="item-top">
         <span class="item-name">${it.key}</span>
@@ -2776,6 +4541,7 @@ function renderPicked() {
         <button class="step" data-inc="${i}">＋</button>
         ${uw && uw !== 100 ? `<button class="quick" data-uw="${i}">1份 ${uw}g</button>` : ''}
         <button class="quick" data-q="${i}" data-g="100">100g</button>
+        ${compBtn}
         <button class="rm" data-rm="${i}">移除</button>
       </div>
       <div class="macros">
@@ -2785,6 +4551,7 @@ function renderPicked() {
         <span>纤维 <b>${n.fiber}</b>g</span>
         <span>钠 <b>${n.sodium}</b>mg</span>
       </div>
+      ${compHtml}
     </div>`;
   }).join('');
 
@@ -2983,8 +4750,65 @@ $('pickedList').addEventListener('click', (e) => {
     const i = +d.q; picked[i].grams = +d.g; renderPicked();
   } else if (d.rm !== undefined) {
     picked.splice(+d.rm, 1); renderPicked();
+  } else if (d.comp !== undefined) {
+    // 展开/收起配料面板
+    const i = +d.comp;
+    compOpen[i] = !compOpen[i];
+    renderPicked();
   }
 });
+
+/**
+ * 配料勾选变化：只算勾选的配料，同步改主条克重。
+ *
+ * 这是「拆分记录」的核心 —— 用户取消"汤"的勾选时，
+ * 上面显示的总克重和总热量立刻变成"只吃面+菜"的真实值。
+ */
+$('pickedList').addEventListener('change', (e) => {
+  const box = e.target.closest('[data-con]');
+  if (!box) return;
+  const parts = box.dataset.con.split('-');
+  const i = +parts[0], ci = +parts[1];
+  const st = compState[i];
+  if (!st) return;
+
+  st[ci].on = box.checked;
+  syncCompToMain(i);
+  renderPicked();
+});
+
+/** 配料克重输入：实时改该项克重 */
+$('pickedList').addEventListener('input', (e) => {
+  const inp = e.target.closest('[data-cg]');
+  if (!inp) return;
+  const parts = inp.dataset.cg.split('-');
+  const i = +parts[0], ci = +parts[1];
+  const st = compState[i];
+  if (!st) return;
+
+  const raw = inp.value;
+  const g = raw === '' ? 0 : Math.max(0, num(parseFloat(raw)));
+  st[ci].grams = g;
+  syncCompToMain(i);
+  updateTotalsOnly();
+});
+
+/** 把「勾选配料的克重总和」写回主条目，保证两边永远一致 */
+function syncCompToMain(i) {
+  const f = FOODS[picked[i].key];
+  const st = compState[i];
+  if (!f || !f.components || !st) return;
+
+  let grams = 0;
+  f.components.forEach((c, ci) => { if (st[ci] && st[ci].on) grams += st[ci].grams; });
+
+  if (grams > 0) {
+    picked[i].grams = Math.round(grams);
+  } else {
+    // 全部取消勾选时保持原值，避免出现 0g 的诡异状态
+    picked[i].grams = 0;
+  }
+}
 
 // 输入克重：让用户能自由清空重输，不强制回填 0
 $('pickedList').addEventListener('input', (e) => {
@@ -3025,6 +4849,21 @@ function updateTotalsOnly() {
     const gl = glycemicLoad(p.key, p.grams);
     if (tags.length >= 2 && gl !== null && gl > 0) {
       tags[1].textContent = `血糖负荷 ${gl} · ${GL_LABEL[glLevel(gl)].label}`;
+    }
+    // 配料面板展开时，同步刷新每项的 kcal 与汇总（改主克重时配料 kcal 不变，
+    // 但汇总的"已选克重"要跟着主条目走，避免两边不一致）
+    const st = compState[i];
+    if (st && FOODS[p.key] && FOODS[p.key].components) {
+      const rows = row.querySelectorAll('.comp-row');
+      st.forEach((s, ci) => {
+        const r = rows[ci];
+        if (!r) return;
+        const kEl = r.querySelector('.comp-kcal');
+        if (kEl) {
+          const ref = FOODS[FOODS[p.key].components[ci].ref];
+          if (ref) kEl.textContent = Math.round(ref.kcal * s.grams / 100) + ' kcal';
+        }
+      });
     }
   });
 
